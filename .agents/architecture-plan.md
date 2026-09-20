@@ -187,4 +187,10 @@ Risco técnico principal: bloqueio de UDP por operadora móvel, CGNAT ou firewal
 
 Não-objetivos desta fatia: não importa o `GameEditorialRegistry` do LagCheck (notas, requisitos de sistema) — é conteúdo editorial de outro produto, sem curadoria própria do SignallQ; não altera thresholds do `ModoGamerEngine`; não substitui a estratégia regional existente (`game-latency-probe-worker` continua como está); não cobre todos os 21 jogos do catálogo, só os que tiverem endpoint público documentado.
 
-**Status: aguardando aprovação do Luiz sobre a mudança de promessa de produto antes de qualquer implementação por Davi/Ramon.**
+### Decisão do Luiz (2026-09-20)
+
+Aprovado: seguir com a medição real em vez de manter só a estimativa regional ("se temos o caminho melhor podemos usar"). Evidência de viabilidade de rota já existe — Luiz testou pessoalmente o mesmo beacon (`gamelift-ping.sa-east-1.api.aws:7770`) em iPhone físico via LagCheck, confirmando resposta real do endpoint em rede de produção (Wi-Fi/móvel). Essa evidência cobre a existência da rota; não cobre Android especificamente — `DatagramSocket` em Android é uma API diferente do `NWConnection` do iOS, então a prova em device Android real (seção "Testes e validação" acima) continua necessária antes do rollout, mas deixa de ser bloqueio de viabilidade e passa a ser validação de implementação.
+
+Nota à parte: uma tentativa de reproduzir a sondagem a partir deste ambiente de desenvolvimento (sandbox de nuvem, não device) não obteve resposta do beacon em 8 tentativas, enquanto um teste de controle (UDP/53 contra `1.1.1.1`) respondeu normalmente — ou seja, UDP sai desse ambiente, mas o destino específico não respondeu daqui. Isso não contradiz a evidência do Luiz em iPhone físico; só confirma que esse ambiente de sandbox não serve como substituto de teste de rede real (a mesma ressalva que já estava na seção "Testes e validação").
+
+**Status: aprovado por Luiz — liberado para Davi/Ramon implementarem conforme este plano. Gate restante é técnico (validação em Android físico), não mais de produto.**
