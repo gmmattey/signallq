@@ -26,13 +26,13 @@ last_updated: "2026-08-19"
 | versionName / versionCode | **1.0.8** / **88** | `android/gradle/libs.versions.toml` |
 | compileSdk / minSdk / targetSdk | 37 / 24 / 36 | `android/gradle/libs.versions.toml` |
 | Compose BOM · Room · Hilt | 2026.06.01 · 2.8.4 · 2.60.1 | `android/gradle/libs.versions.toml` |
-| Módulos Gradle | **21** | `android/settings.gradle.kts` |
+| Módulos Gradle | **22** | `android/settings.gradle.kts` |
 | Workers Cloudflare | 5 | `integrations/cloudflare/*/wrangler.toml` |
 | Tabelas D1 | 38 — 20 admin + 18 diagnostic | `*/migrations/*.sql`, `*/schema.sql` |
 | Contratos OpenAPI | 7 contratos · **122** endpoints | `docs_ai/CONTRATOS/openapi/` |
 | Arquivos `.kt` em caminho legado `io/veloo` | 0 (sendo 0 em `src/main`) | dívida conhecida — higiene §4.1 |
 
-**Módulos (21):** :app :core:diagnostico :core:featureflags :core:nds :core:relatorio :coreDatabase :coreDatastore :coreNetwork :corePermissions :coreRecommendation :coreTelephony :featureDevices :featureDiagnostico :featureDns :featureFibra :featureHistory :featureHome :featureRouter :featureSettings :featureSpeedtest :featureWifi
+**Módulos (22):** :app :core:diagnostico :core:featureflags :core:nds :core:probejogo :core:relatorio :coreDatabase :coreDatastore :coreNetwork :corePermissions :coreRecommendation :coreTelephony :featureDevices :featureDiagnostico :featureDns :featureFibra :featureHistory :featureHome :featureRouter :featureSettings :featureSpeedtest :featureWifi
 
 **Workers:**
 
