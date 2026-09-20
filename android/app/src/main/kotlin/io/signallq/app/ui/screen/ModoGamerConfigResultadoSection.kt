@@ -42,10 +42,13 @@ import androidx.compose.ui.unit.dp
 import io.signallq.app.ads.AdSlot
 import io.signallq.app.ads.AdUnitIds
 import io.signallq.app.ads.NativeAdContentSignal
+import io.signallq.app.BuildConfig
 import io.signallq.app.core.diagnostico.DeviceJogo
+import io.signallq.app.core.probejogo.SondaGameLiftBeacon
 import io.signallq.app.feature.diagnostico.topology.lan.NatUdpResultado
 import io.signallq.app.feature.diagnostico.topology.lan.NatUdpTipo
 import io.signallq.app.feature.diagnostico.topology.lan.StunNatProbe
+import io.signallq.app.feature.speedtest.AnalisadorAmostragemPing
 import io.signallq.app.feature.speedtest.PingExecutor
 import io.signallq.app.modogamer.ModoGamerEtapa
 import io.signallq.app.modogamer.SelecaoJogoModoGamer
@@ -69,6 +72,7 @@ import java.text.DateFormat
 import java.util.Date
 
 private const val AMOSTRAS_PING_ESPECIFICO = 24
+private const val AMOSTRAS_SONDA_ROTA_REAL = 20
 private const val TIMEOUT_NAT_UDP_MS = 3_000L
 
 /** Medição dedicada opcional (issue #1487, "Medir o tempo de resposta agora") — reaproveita
@@ -83,21 +87,53 @@ internal data class MedicaoPingEspecifico(
     val natUdp: NatUdpResultado,
 )
 
+/**
+ * Architecture Plan "Modo gamer — medição real de rota..." (aprovado por Luiz 2026-09-20):
+ * tenta primeiro o eco UDP real contra o beacon regional AWS GameLift ([SondaGameLiftBeacon])
+ * antes de cair na estimativa HTTPS antiga ([PingExecutor] contra [probeUrl]). Sem resposta UDP
+ * válida nenhuma ([AnalisadorAmostragemPing.analisar] devolve `amostrasValidas == 0`), nunca
+ * fabrica sucesso — cai no fallback, exatamente como se a sonda real não existisse. Isso
+ * preserva o comportamento e o contrato de [ModoGamerMedindoConteudo]/`confirmarMedicao` sem
+ * exigir nenhuma mudança em `ModoGamerScreen.kt`.
+ */
 private suspend fun medirPingEspecifico(probeUrl: String): MedicaoPingEspecifico =
     coroutineScope {
-        val pingDeferred = async(Dispatchers.IO) { PingExecutor(targetUrl = probeUrl).executar(count = AMOSTRAS_PING_ESPECIFICO) }
+        val rotaRealDeferred = async(Dispatchers.IO) { medirAmostrasRotaReal() }
         val natDeferred = async(Dispatchers.IO) { StunNatProbe().sondar() }
-        val ping = pingDeferred.await()
+
+        val resultadoRotaReal = rotaRealDeferred.await()?.let { AnalisadorAmostragemPing.analisar(it) }
         val nat =
             withTimeoutOrNull(TIMEOUT_NAT_UDP_MS) { natDeferred.await() }
                 ?: NatUdpResultado(NatUdpTipo.NAO_VERIFICADO).also { natDeferred.cancel() }
-        MedicaoPingEspecifico(
-            latenciaMs = ping.latenciaMs,
-            jitterMs = ping.jitterMs,
-            perdaPercentual = ping.perdaPercentual,
-            natUdp = nat,
-        )
+
+        if (resultadoRotaReal != null && resultadoRotaReal.amostrasValidas > 0) {
+            MedicaoPingEspecifico(
+                latenciaMs = resultadoRotaReal.latenciaMs,
+                jitterMs = resultadoRotaReal.jitterMs,
+                perdaPercentual = resultadoRotaReal.perdaPercentual,
+                natUdp = nat,
+            )
+        } else {
+            val ping = PingExecutor(targetUrl = probeUrl).executar(count = AMOSTRAS_PING_ESPECIFICO)
+            MedicaoPingEspecifico(
+                latenciaMs = ping.latenciaMs,
+                jitterMs = ping.jitterMs,
+                perdaPercentual = ping.perdaPercentual,
+                natUdp = nat,
+            )
+        }
     }
+
+/** `null` quando a sondagem UDP falha por completo (exceção de rede) — [runCatching] aqui é
+ *  deliberado: rede indisponível, DNS falho ou UDP bloqueado pela operadora/roteador não podem
+ *  derrubar o fluxo, só empurrar para o fallback HTTPS existente. */
+private suspend fun medirAmostrasRotaReal(): List<Double?>? =
+    runCatching {
+        SondaGameLiftBeacon(
+            host = BuildConfig.GAMELIFT_BEACON_HOST,
+            port = BuildConfig.GAMELIFT_BEACON_PORT,
+        ).sondar(AMOSTRAS_SONDA_ROTA_REAL)
+    }.getOrNull()
 
 /**
  * Tela de carregamento enquanto o app faz o teste de rede real e atualizado.

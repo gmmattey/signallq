@@ -54,6 +54,10 @@ include(
     // signallq-diagnostic-worker), com contrato proprio versionado e multiplos
     // consumidores futuros (NDS-02+). Decisao registrada na PR da fatia NDS-01.
     ":core:nds",
+    // Client UDP determinístico do beacon regional AWS GameLift (Architecture Plan "Modo gamer —
+    // medição real de rota...", aprovado por Luiz 2026-09-20). Kotlin puro, sem dependência de
+    // :core:diagnostico nem :feature:speedtest -- so DatagramSocket. Consumido por :app.
+    ":core:probejogo",
 )
 
 project(":coreNetwork").projectDir    = File("core/network")

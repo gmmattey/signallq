@@ -117,11 +117,28 @@ android {
 
         // GH#935 — sonda regional (TCP/HTTPS) usada pela tela Jogos (REGIONAL_ESTIMATE).
         // Worker leve, sem logica de jogo, so eco/latencia (integrations/cloudflare/game-latency-probe-worker).
-        // Nao e segredo — apenas infraestrutura.
+        // Nao e segredo — apenas infraestrutura. Mantido como fallback quando a sonda UDP
+        // (abaixo) nao responde -- ver Architecture Plan "Modo gamer — medicao real de rota...".
         buildConfigField(
             "String",
             "GAME_LATENCY_PROBE_URL",
             "\"https://signallq-game-latency-probe.giammattey-luiz.workers.dev/probe\"",
+        )
+        // Beacon UDP publico de referencia da AWS GameLift (regiao sa-east-1) -- endpoint
+        // documentado pela AWS, ja validado em producao pelo LagCheck (produto irmao iOS,
+        // docs/09-decisao-rede-piloto.md) e por Luiz em iPhone fisico. Nao e segredo, nao e
+        // servico proprio, sem custo -- AGENTS.md §10 nao se aplica (endpoint publico gratuito
+        // de terceiro, sem contrato). Medicao de rota REGIONAL DE REFERENCIA, nunca "ping do
+        // jogo" -- ver Architecture Plan, riscos de produto.
+        buildConfigField(
+            "String",
+            "GAMELIFT_BEACON_HOST",
+            "\"gamelift-ping.sa-east-1.api.aws\"",
+        )
+        buildConfigField(
+            "int",
+            "GAMELIFT_BEACON_PORT",
+            "7770",
         )
         // Catálogo público de disponibilidade, operado pelo Linka. Não é segredo e fica
         // isolado do endpoint de diagnóstico: um incidente externo nunca vira score local.
@@ -379,6 +396,9 @@ dependencies {
     // #1347) — catalogo tipado + FeatureFlagProvider. So :app consome nesta fase (F4/#1480
     // instrumenta os modulos feature de verdade).
     implementation(project(":core:featureflags"))
+    // Client UDP deterministico do beacon regional AWS GameLift (Architecture Plan "Modo
+    // gamer — medicao real de rota...", aprovado por Luiz 2026-09-20).
+    implementation(project(":core:probejogo"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

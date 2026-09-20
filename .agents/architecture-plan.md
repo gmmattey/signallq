@@ -194,3 +194,11 @@ Aprovado: seguir com a medição real em vez de manter só a estimativa regional
 Nota à parte: uma tentativa de reproduzir a sondagem a partir deste ambiente de desenvolvimento (sandbox de nuvem, não device) não obteve resposta do beacon em 8 tentativas, enquanto um teste de controle (UDP/53 contra `1.1.1.1`) respondeu normalmente — ou seja, UDP sai desse ambiente, mas o destino específico não respondeu daqui. Isso não contradiz a evidência do Luiz em iPhone físico; só confirma que esse ambiente de sandbox não serve como substituto de teste de rede real (a mesma ressalva que já estava na seção "Testes e validação").
 
 **Status: aprovado por Luiz — liberado para Davi/Ramon implementarem conforme este plano. Gate restante é técnico (validação em Android físico), não mais de produto.**
+
+### Implementação — fatia 1 (2026-09-20)
+
+Entregue: módulo `:core:probejogo` com `SondaGameLiftBeacon` (client UDP do beacon regional AWS GameLift, `gamelift-ping.sa-east-1.api.aws:7770` — o único endpoint com evidência real de funcionamento, validado por Luiz em iPhone via LagCheck), com testes herméticos (servidor UDP fake em loopback, nunca contra rede real). `medirPingEspecifico` (`ModoGamerConfigResultadoSection.kt`) tenta a sonda real primeiro e cai no `PingExecutor` HTTPS existente sem nenhuma amostra válida — nunca fabrica sucesso, nunca trata timeout como resposta. Nenhuma mudança em `ModoGamerScreen.kt` nem no contrato de `ResultadoModoGamer`/`confirmarMedicao`.
+
+Simplificação deliberada em relação ao texto original desta seção: sem evidência de fonte distinta na UI ("medição real" vs "estimativa HTTPS") — exigiria mudar a assinatura de `confirmarMedicao`, o que tocaria `ModoGamerScreen.kt`. A medição usa a melhor fonte disponível silenciosamente.
+
+Não entregue nesta fatia (issue #1903): protocolo Valve A2S_INFO para CS2/Dota2 (sem evidência de endpoint real — não inventado), PlayFab QoS, evidência de fonte na UI, validação em Android físico.
