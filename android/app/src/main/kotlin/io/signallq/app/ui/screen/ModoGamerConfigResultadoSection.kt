@@ -39,10 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.signallq.app.BuildConfig
 import io.signallq.app.ads.AdSlot
 import io.signallq.app.ads.AdUnitIds
 import io.signallq.app.ads.NativeAdContentSignal
-import io.signallq.app.BuildConfig
 import io.signallq.app.core.diagnostico.DeviceJogo
 import io.signallq.app.core.probejogo.SondaGameLiftBeacon
 import io.signallq.app.feature.diagnostico.topology.lan.NatUdpResultado
