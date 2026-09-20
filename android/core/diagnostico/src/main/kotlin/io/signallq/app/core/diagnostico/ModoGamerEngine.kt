@@ -390,18 +390,31 @@ object CatalogoJogosModoGamer {
             JogoCatalogoModoGamer("apex_legends", "Apex Legends", CategoriaJogoModoGamer.BATTLE_ROYALE),
             JogoCatalogoModoGamer("pubg_battlegrounds", "PUBG: Battlegrounds", CategoriaJogoModoGamer.BATTLE_ROYALE),
             // ── FPS competitivo ──────────────────────────────────────────────────
-            JogoCatalogoModoGamer("valorant", "Valorant", CategoriaJogoModoGamer.FPS_COMPETITIVO, "104.160.152.3"),
+            // Nenhuma entrada usa specificProbeHost — issue #1903: os hosts antigos aqui
+            // ("104.160.152.3", "gru.valve.net") eram dado morto herdado do legado "Jogos"
+            // (GH#935), nunca validados (gru.valve.net nem resolve em DNS) e quebrados como
+            // alvo HTTPS do PingExecutor (faltava scheme, sempre lançava
+            // IllegalArgumentException, capturado e tratado como "sem medição"). A sonda UDP
+            // real do beacon AWS GameLift (medirAmostrasRotaReal, ModoGamerConfigResultadoSection.kt)
+            // já roda para TODO jogo do catálogo, independente de specificProbeHost — não há
+            // equivalente Valve/Riot documentado e público pra substituir por um host real (ver
+            // achado da issue #1903: CS2/Dota2 usam matchmaking privado atrás do Steam Datagram
+            // Relay, sem servidor fixo queryable; integrar o SDK da Steam seria dependência
+            // estrutural nova, fora do escopo desta fatia). Removidos para não deixar dado morto
+            // no catálogo — sem specificProbeHost, o fallback HTTPS (quando a sonda UDP falha)
+            // usa BuildConfig.GAME_LATENCY_PROBE_URL, que funciona de verdade.
+            JogoCatalogoModoGamer("valorant", "Valorant", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("codm", "Call of Duty Mobile", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("ea_fc", "EA FC", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("overwatch", "Overwatch", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("rainbow_six_siege", "Rainbow Six Siege", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("marvel_rivals", "Marvel Rivals", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("the_finals", "THE FINALS", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("counter_strike_2", "Counter-Strike 2", CategoriaJogoModoGamer.FPS_COMPETITIVO, "gru.valve.net"),
+            JogoCatalogoModoGamer("counter_strike_2", "Counter-Strike 2", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             JogoCatalogoModoGamer("rocket_league", "Rocket League", CategoriaJogoModoGamer.FPS_COMPETITIVO),
             // ── MOBA ─────────────────────────────────────────────────────────────
-            JogoCatalogoModoGamer("league_of_legends", "League of Legends", CategoriaJogoModoGamer.MOBA, "104.160.152.3"),
-            JogoCatalogoModoGamer("dota_2", "Dota 2", CategoriaJogoModoGamer.MOBA, "gru.valve.net"),
+            JogoCatalogoModoGamer("league_of_legends", "League of Legends", CategoriaJogoModoGamer.MOBA),
+            JogoCatalogoModoGamer("dota_2", "Dota 2", CategoriaJogoModoGamer.MOBA),
             // ── Casual ou mobile ─────────────────────────────────────────────────
             JogoCatalogoModoGamer("minecraft", "Minecraft", CategoriaJogoModoGamer.CASUAL),
             JogoCatalogoModoGamer("roblox", "Roblox", CategoriaJogoModoGamer.CASUAL),
