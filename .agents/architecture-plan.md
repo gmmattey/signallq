@@ -143,3 +143,62 @@ O banner recebe contexto explícito de transporte. Sem Wi-Fi ativo, o CTA não a
 Cobrir unitariamente o mapeador de exceções (incluindo `UnknownHostException` embrulhada no prefixo `download_failed`), `estadoAnaliseGuiada` e as duas telas contra mensagem pública, sem texto técnico. Cobrir Compose para Sinal em móvel versus desconectado e CTA do banner em: sem transporte (não abre o diálogo), Wi-Fi sem internet (abre e executa o fluxo existente) e Wi-Fi válido. Rodar os testes focados de `:feature:speedtest` e `:app`, depois `test`, `ktlintCheck`, `detekt` e `assembleDebug`; validar em aparelho real sem SIM/Wi-Fi e em Wi-Fi conectado sem internet.
 
 Risco principal: inferir “offline” apenas pelo erro de DNS e esconder uma falha específica de Wi-Fi. A classificação deve usar o estado de conectividade no momento da tentativa e deixar DNS/hostname como causa pública distinta quando houver transporte. Não altera thresholds, motor de diagnóstico, persistência, Worker ou comportamento de rede móvel medida.
+
+## Modo gamer — medição real de rota contra infraestrutura do jogo (UDP)
+
+### Gate de produto antes do gate técnico
+
+Antes de qualquer arquitetura: o comentário de origem do `game-latency-probe-worker` (GH#935) registra uma decisão deliberada — "NENHUMA lógica de jogo, autenticação ou estado aqui, de propósito, para o dado nunca ser confundido com 'ping real da partida'". A proposta desta fatia é o inverso dessa decisão: medir handshake UDP real contra a infraestrutura pública do próprio jogo (AWS GameLift, Valve A2S, Azure PlayFab QoS), como o LagCheck (iOS, mesmo portfólio) já faz. Isso muda a promessa feita ao usuário — de "estimativa regional" para "medição real contra o provedor do jogo" — e usa infraestrutura de terceiro (Amazon/Valve/Microsoft) sem contrato do SignallQ com esses provedores. Essa reversão de promessa e o uso de infra de terceiro exigem aprovação explícita do Luiz (AGENTS.md §5 item 9 "integração entre produtos Buildea" e §10 "infraestrutura que crie custo/exposição" tratam de casos adjacentes; o caso central aqui é mudança de promessa de produto, que é decisão do Luiz, não arquitetural). Este plano cobre a arquitetura **caso a decisão de produto seja aprovada** — não é autorização para implementar.
+
+### Problema e comportamento esperado
+
+O Modo gamer hoje avalia "dá pra jogar" com métricas HTTPS genéricas (latência via `PingExecutor` contra `game-latency-probe-worker`, que é sonda regional sem lógica de jogo) ou com as métricas do speedtest geral. Nenhuma delas mede a rota real até a infraestrutura do jogo específico. O comportamento proposto: quando o jogo selecionado tiver protocolo de sondagem conhecido e documentado (GameLift, A2S, PlayFab), o usuário pode pedir uma medição real da rota até essa infraestrutura, como refinamento opcional — nunca obrigatório, nunca bloqueia o fluxo padrão, mesmo contrato que `pingEspecificoMs` já segue hoje.
+
+### Arquitetura atual relevante
+
+- `ModoGamerEngine.avaliar()` (`:core:diagnostico`) já tem o ponto de extensão certo: `pingEspecificoMs`/`jitterMs`/`perdaPercentual` substituem a leitura de latência do `input` sem mudar contrato de `ResultadoModoGamer` nem a tela (`ModoGamerEngine.kt:39-93`).
+- `PingExecutor` (`:feature:speedtest`) mede round-trip HTTPS, não handshake de protocolo de jogo; documenta explicitamente que Android não concede `CAP_NET_RAW` para ICMP bruto — mas isso não bloqueia UDP comum (`DatagramSocket`), que não exige privilégio elevado.
+- `CatalogoJogosModoGamer` já tem `specificProbeHost` para 4 jogos (Valorant, CS2, LoL, Dota2) — hoje não consumido por nenhum client real além do host regional genérico; é o esqueleto certo para carregar host/protocolo por jogo.
+- `game-latency-probe-worker` é HTTP puro (`GET/HEAD /probe` → `204`), não serve de proxy para handshake UDP — UDP não atravessa esse Worker.
+- O catálogo remoto de jogos existente (`signallq-diagnostic-worker/src/game-catalog.ts`, D1) guarda perfis de threshold (`GameProfileRecord`) do fluxo legado "Jogos" (GH#935), hoje não consumido pelo Modo gamer (que usa thresholds fixos do `ModoGamerEngine`). Não reaproveitar esse catálogo sem revisão de Ramon — ele carrega vocabulário e números do motor aposentado.
+
+### Decisão proposta
+
+1. Novo módulo `:core:probeJogo` (nome sujeito a revisão de Davi na convenção de módulos), dependência de `:core:network`, contendo um client UDP mínimo por protocolo (GameLift ping beacon, Valve A2S_INFO, PlayFab QoS) via `DatagramSocket`. Cada protocolo mede apenas round-trip de um handshake público documentado — nunca autentica, nunca entra em partida, nunca envia dado do usuário. Timeout curto e janela fixa de amostras (mesmo padrão do `ProbeAcceptancePolicy` do LagCheck: plano fixo, sem fallback silencioso de protocolo).
+2. `CatalogoJogosModoGamer` ganha um campo fechado opcional `sondaRota: SondaRotaJogo?` (host, porta, protocolo) só para os jogos com endpoint público confirmado e documentado por Ramon — começar pelos 4 que já têm `specificProbeHost`. Jogo sem sonda continua exatamente como hoje (sem regressão).
+3. `ModoGamerViewModel`/`ModoGamerConfigResultadoSection` ganham uma ação opcional "Medir rota real até o servidor do jogo" ao lado da existente "Medir ping específico agora" — dispara o client do novo módulo, produz `pingEspecificoMs`/`jitterMs`/`perdaPercentual` pelo mesmo caminho que já existe, com uma evidência adicional identificando a fonte como "medição real de rota" (distinta da evidência atual de `pingEspecificoMs`, que não deve ser confundida com esta). Nenhuma mudança em `ModoGamerScreen.kt` (scaffold) nem no contrato de `ResultadoModoGamer`.
+4. Alternativas rejeitadas: (a) estender `game-latency-probe-worker` para proxyar a sondagem — descartada, UDP não atravessa Cloudflare Worker HTTP sem Spectrum (custo novo, já fora de escopo por decisão anterior do próprio Worker); (b) reaproveitar `GameProfileRecord`/D1 do catálogo legado como fonte de threshold — descartada, é vocabulário do motor aposentado (`JogoConexaoEngine`), reintroduzi-lo contraria a fusão da issue #1487.
+
+### Contratos, segurança e custo
+
+Nenhum novo Worker, nenhuma credencial, nenhum dado do usuário trafegado — a sondagem é IP/porta público do provedor de infraestrutura do jogo, mesmo modelo do LagCheck. Não é "novo fornecedor com custo recorrente" (AGENTS.md §10): os endpoints (GameLift, A2S, PlayFab) são públicos e gratuitos, sem contrato do SignallQ com Amazon/Valve/Microsoft — mas justamente por não haver contrato, a lista de hosts é fechada, curada e documentada por Ramon, nunca descoberta dinamicamente. Lista de hosts fica em `:core:probeJogo`, nunca hardcoded solta em `:app`.
+
+### Compatibilidade, falhas e rollback
+
+Ausência de `sondaRota` no catálogo preserva o comportamento atual (jogo sem sonda nunca oferece a nova ação). Timeout, resposta malformada ou protocolo sem resposta produzem "sem dados" nessa medição específica — nunca fallback para latência HTTPS travestida de medição real, nunca trata timeout como sucesso (regra §8 do AGENTS.md). Rollback é remover a entrada de UI que dispara a ação nova; o resto do Modo gamer continua idêntico.
+
+### Testes e validação
+
+Unidade hermética por protocolo (fixtures de handshake GameLift/A2S/PlayFab, resposta válida/inválida/timeout, sem vazar payload). Regressão do `ModoGamerEngine` com e sem a nova evidência, garantindo que jogos sem `sondaRota` não regridem. Teste de rede real em device (Wi-Fi e móvel) para confirmar que `DatagramSocket` UDP funciona nas condições de OEM/firewall observadas — risco conhecido de operadoras/roteadores bloquearem UDP de saída para portas não padrão, precisa validação de Breno antes de qualquer rollout.
+
+### Riscos e não-objetivos
+
+Risco técnico principal: bloqueio de UDP por operadora móvel, CGNAT ou firewall doméstico é comum e indistinguível de indisponibilidade real do provedor — a UI deve comunicar isso como incerteza, nunca como "servidor do jogo fora do ar". Risco de produto: qualquer normalização dessa medição como "ping real da partida" (em vez de "rota até a infraestrutura pública do provedor") repete o erro que o `game-latency-probe-worker` foi desenhado para evitar — a cópia da evidência precisa deixar isso explícito, revisão de Cora obrigatória antes do rollout.
+
+Não-objetivos desta fatia: não importa o `GameEditorialRegistry` do LagCheck (notas, requisitos de sistema) — é conteúdo editorial de outro produto, sem curadoria própria do SignallQ; não altera thresholds do `ModoGamerEngine`; não substitui a estratégia regional existente (`game-latency-probe-worker` continua como está); não cobre todos os 21 jogos do catálogo, só os que tiverem endpoint público documentado.
+
+### Decisão do Luiz (2026-09-20)
+
+Aprovado: seguir com a medição real em vez de manter só a estimativa regional ("se temos o caminho melhor podemos usar"). Evidência de viabilidade de rota já existe — Luiz testou pessoalmente o mesmo beacon (`gamelift-ping.sa-east-1.api.aws:7770`) em iPhone físico via LagCheck, confirmando resposta real do endpoint em rede de produção (Wi-Fi/móvel). Essa evidência cobre a existência da rota; não cobre Android especificamente — `DatagramSocket` em Android é uma API diferente do `NWConnection` do iOS, então a prova em device Android real (seção "Testes e validação" acima) continua necessária antes do rollout, mas deixa de ser bloqueio de viabilidade e passa a ser validação de implementação.
+
+Nota à parte: uma tentativa de reproduzir a sondagem a partir deste ambiente de desenvolvimento (sandbox de nuvem, não device) não obteve resposta do beacon em 8 tentativas, enquanto um teste de controle (UDP/53 contra `1.1.1.1`) respondeu normalmente — ou seja, UDP sai desse ambiente, mas o destino específico não respondeu daqui. Isso não contradiz a evidência do Luiz em iPhone físico; só confirma que esse ambiente de sandbox não serve como substituto de teste de rede real (a mesma ressalva que já estava na seção "Testes e validação").
+
+**Status: aprovado por Luiz — liberado para Davi/Ramon implementarem conforme este plano. Gate restante é técnico (validação em Android físico), não mais de produto.**
+
+### Implementação — fatia 1 (2026-09-20)
+
+Entregue: módulo `:core:probejogo` com `SondaGameLiftBeacon` (client UDP do beacon regional AWS GameLift, `gamelift-ping.sa-east-1.api.aws:7770` — o único endpoint com evidência real de funcionamento, validado por Luiz em iPhone via LagCheck), com testes herméticos (servidor UDP fake em loopback, nunca contra rede real). `medirPingEspecifico` (`ModoGamerConfigResultadoSection.kt`) tenta a sonda real primeiro e cai no `PingExecutor` HTTPS existente sem nenhuma amostra válida — nunca fabrica sucesso, nunca trata timeout como resposta. Nenhuma mudança em `ModoGamerScreen.kt` nem no contrato de `ResultadoModoGamer`/`confirmarMedicao`.
+
+Simplificação deliberada em relação ao texto original desta seção: sem evidência de fonte distinta na UI ("medição real" vs "estimativa HTTPS") — exigiria mudar a assinatura de `confirmarMedicao`, o que tocaria `ModoGamerScreen.kt`. A medição usa a melhor fonte disponível silenciosamente.
+
+Não entregue nesta fatia (issue #1903): protocolo Valve A2S_INFO para CS2/Dota2 (sem evidência de endpoint real — não inventado), PlayFab QoS, evidência de fonte na UI, validação em Android físico.
