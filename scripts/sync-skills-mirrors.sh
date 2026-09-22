@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fonte canônica: .agents/skills/. O script sincroniza os espelhos de compatibilidade
-# usados pelo Claude Code (.claude/skills) e pelo GitHub/Copilot (.github/skills).
-# Nunca crie regra exclusiva em um espelho: edite .agents/skills e sincronize.
+# Fonte canônica: .claude/skills/. O script sincroniza os espelhos de compatibilidade
+# usados pelo Codex (.agents/skills) e pelo GitHub/Copilot (.github/skills).
+# Nunca crie regra exclusiva em um espelho: edite .claude/skills e sincronize.
 #
 # Uso: scripts/sync-skills-mirrors.sh [--check]
 #   --check  não escreve; falha se um espelho divergir da fonte canônica.
 
 cd "$(dirname "$0")/.."
 
-CANONICAL=".agents/skills"
-MIRRORS=(".claude/skills" ".github/skills")
+CANONICAL=".claude/skills"
+MIRRORS=(".agents/skills" ".github/skills")
 CHECK_ONLY=false
 
 if [[ "${1:-}" == "--check" ]]; then

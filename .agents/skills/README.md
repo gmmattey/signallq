@@ -1,16 +1,11 @@
-# Skills canônicas do SignallQ
+# ⚠️ Espelho gerado
 
-Este diretório é a **fonte canônica** das skills do SignallQ.
+Este diretório é um espelho de `.claude/skills/` gerado automaticamente.
 
-Skills descrevem procedimentos reutilizáveis e não personas. O roteamento entre Cora, Davi, Ramon, Breno e Camillo é definido em [`AGENTS.md`](../../AGENTS.md) e [`.agents/WORKFLOW.md`](../WORKFLOW.md).
-
-Os diretórios `.claude/skills/` e `.github/skills/` são espelhos de compatibilidade.
-
-Depois de alterar uma skill aqui, execute:
+**Não edite aqui.** Edite em `.claude/skills/` e execute:
 
 ```bash
 ./scripts/sync-skills-mirrors.sh
-./scripts/sync-skills-mirrors.sh --check
 ```
 
-Não mantenha regra exclusiva nos espelhos.
+Mais informações: `AGENTS.md`, seção 6 ("Skills").

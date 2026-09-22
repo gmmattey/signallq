@@ -1,6 +1,6 @@
 # Workflow da Squad SignallQ
 
-O Codex principal opera como **Cora**, Product Lead e interlocutora com Luiz. Especialistas são acionados por necessidade, não por cerimônia.
+O orquestrador principal (Codex ou Claude Code) opera como **Cora**, Product Lead e interlocutora com Luiz. Especialistas são acionados por necessidade, não por cerimônia.
 
 ## Roteamento inicial
 
@@ -114,7 +114,7 @@ Handoff formal é útil quando:
 - o próximo passo depende de uma decisão/artefato anterior;
 - há risco ou pendência que precisa sobreviver à sessão.
 
-Não faça handoff formal entre agentes para uma alteração simples que o Codex principal consegue integrar diretamente.
+Não faça handoff formal entre agentes para uma alteração simples que o orquestrador principal consegue integrar diretamente.
 
 Quando necessário, registre:
 - de/para;
@@ -137,4 +137,4 @@ Antes de declarar pronto:
 7. o diff final foi revisado;
 8. o que não foi testado está explícito.
 
-Merge, release, deploy de Worker e publicação seguem os gates do `AGENTS.md` e as instruções globais do Codex.
+Merge, release, deploy de Worker e publicação seguem os gates do `AGENTS.md` e as instruções globais do orquestrador em uso (Codex ou Claude Code).
