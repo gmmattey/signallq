@@ -14,8 +14,8 @@ class ScoreEngineTest {
         nome: String,
         nota: Int?,
         provenance: Provenance = Provenance.medida,
-    ) =
-        EvidenceScore(nome, nota, provenance)
+        confiancaAmostral: ConfiancaAmostral? = null,
+    ) = EvidenceScore(nome, nota, provenance, confiancaAmostral)
 
     // ── Media ponderada basica (Wi-Fi) ──────────────────────────────────────────
 
@@ -148,7 +148,13 @@ class ScoreEngineTest {
     // ── Tetos por metrica critica isolada ───────────────────────────────────
 
     @Test
-    fun `perda de pacotes critica medida limita o score a 45`() {
+    fun `perda de pacotes critica com confianca amostral suficiente limita o score a 45`() {
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): o gate de ScoreEngine.aplicarTetos migrou de
+        // `provenance == Provenance.medida` (inatingivel em producao via timeout HTTP)
+        // para `confiancaAmostral == SUFICIENTE` (2+ timeouts/consecutivos/confirmados).
+        // Comportamento esperado preservado: perda critica "de verdade" continua
+        // limitando o score a 45 — so o mecanismo que sinaliza "de verdade" mudou.
         val resultado =
             ScoreEngine.calcular(
                 ScoreEngine.TipoConexao.WIFI,
@@ -158,14 +164,17 @@ class ScoreEngineTest {
                     ev("velocidade", 100),
                     ev("dns", 100),
                     ev("historico", 100),
-                    ev("perdaPacotesStatus", 15, Provenance.medida), // critico
+                    ev("perdaPacotesStatus", 15, Provenance.estimada, ConfiancaAmostral.SUFICIENTE), // critico
                 ),
             )
         assertTrue(resultado.score!! <= ScoreEngine.TETO_PERDA_PACOTES_CRITICA)
     }
 
     @Test
-    fun `perda de pacotes critica mas apenas estimada nao aplica teto`() {
+    fun `perda de pacotes critica mas com confianca amostral insuficiente nao aplica teto`() {
+        // Caso novo pedido pelo Luiz: 1 timeout isolado (confianca insuficiente) nunca
+        // aplica o teto critico sozinho, mesmo com nota critica calculada sobre o
+        // percentual medido.
         val resultado =
             ScoreEngine.calcular(
                 ScoreEngine.TipoConexao.WIFI,
@@ -175,7 +184,7 @@ class ScoreEngineTest {
                     ev("velocidade", 100),
                     ev("dns", 100),
                     ev("historico", 100),
-                    ev("perdaPacotesStatus", 15, Provenance.estimada),
+                    ev("perdaPacotesStatus", 15, Provenance.estimada, ConfiancaAmostral.INSUFICIENTE),
                 ),
             )
         assertEquals(100, resultado.score)

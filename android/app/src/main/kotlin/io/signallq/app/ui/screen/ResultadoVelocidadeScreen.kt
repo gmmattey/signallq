@@ -93,6 +93,7 @@ import io.signallq.app.ui.component.classificarJitterLocal
 import io.signallq.app.ui.component.classificarLatenciaLocal
 import io.signallq.app.ui.component.classificarPerdaPacotesLocal
 import io.signallq.app.ui.component.classificarUploadLocal
+import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import io.signallq.app.ui.component.corSemantica
 import io.signallq.app.ui.component.labelPt
 import kotlinx.coroutines.launch
@@ -230,7 +231,15 @@ fun ResultadoVelocidadeScreen(
 
     val statusPerda = remember(resultado.perdaPercentual) { classificarPerdaPacotesLocal(resultado.perdaPercentual) }
     val corPerda = statusPerda.corSemantica(c)
-    val veredictoPerda = statusPerda.labelPt()
+    // .agents/architecture-plan.md ("Confiabilidade estatística do diagnóstico de rede", passo
+    // 6) — 1 timeout isolado (confiança amostral insuficiente) não deve ser apresentado como
+    // diagnóstico definitivo; o percentual em si continua visível no card, só o rótulo abaixo
+    // dele troca de veredito ("Ruim"/"Ótimo"...) para o aviso de instabilidade pontual.
+    val notaInstabilidadePerda =
+        remember(resultado.perdaPercentual, resultado.perdaConfianca) {
+            copyInstabilidadePerdaPacotes(resultado.perdaPercentual, resultado.perdaConfianca)
+        }
+    val veredictoPerda = notaInstabilidadePerda ?: statusPerda.labelPt()
 
     val statusLatencia = remember(resultado.latenciaMs) { classificarLatenciaLocal(resultado.latenciaMs) }
     val corLatencia = statusLatencia.corSemantica(c)

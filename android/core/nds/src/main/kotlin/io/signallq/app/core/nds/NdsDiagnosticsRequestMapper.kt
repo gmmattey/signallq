@@ -1,9 +1,11 @@
 package io.signallq.app.core.nds
 
 import io.signallq.app.core.diagnostico.BandaWifi
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DnsDiagnosticInput
+import io.signallq.app.core.diagnostico.InternetDiagnosticInput
 import io.signallq.app.core.diagnostico.MobileDiagnosticInput
 import io.signallq.app.core.diagnostico.banda
 import io.signallq.app.core.network.contracts.localdevice.SafeLocalDeviceContext
@@ -135,7 +137,7 @@ fun DiagnosticInput.toNdsDiagnosticsRequest(
                 jitterMs = it.jitterMs,
                 downloadMbps = it.downloadMbps,
                 uploadMbps = it.uploadMbps,
-                packetLossPercent = it.perdaPercentual,
+                packetLossPercent = it.perdaPercentualConfiavelParaNds(),
                 packetLossSource = toNdsPacketLossSource(it.packetLossSource),
             )
         }
@@ -146,7 +148,7 @@ fun DiagnosticInput.toNdsDiagnosticsRequest(
             NdsQualityInfo(
                 latencyMs = it.latencyMs,
                 jitterMs = it.jitterMs,
-                packetLossPercent = it.perdaPercentual,
+                packetLossPercent = it.perdaPercentualConfiavelParaNds(),
                 loadedLatencyMs = loadedLatencyMs,
                 bufferbloatMs = it.bufferbloatMs,
             )
@@ -343,6 +345,34 @@ private fun toNdsPacketLossSource(fonte: String?): NdsProvenance? =
         "unknown" -> NdsProvenance.UNKNOWN
         else -> null
     }
+
+/**
+ * Filtro de confiança amostral (.agents/architecture-plan.md, "Confiabilidade
+ * estatística do diagnóstico de rede", seção 8) — o contrato NDS remoto
+ * ([NdsProvenance]) NÃO muda de enum nesta fase; a decisão foi filtrar localmente o
+ * que é enviado. Só reporta [InternetDiagnosticInput.perdaPercentual] quando a
+ * amostra tem [ConfiancaAmostral.SUFICIENTE] — 1 timeout isolado (confiança
+ * insuficiente, ou `null`/desconhecida: histórico legado sem o campo, entrada não
+ * originada de speedtest) nunca chega à IA como percentual "confiável" o bastante
+ * para basear causa raiz. Omitido do JSON (nunca um valor inventado ou forçado a 0),
+ * mesmo padrão já usado para `null`/`"naoMedido"`/`"unknown"`.
+ *
+ * Fonte única do filtro para o payload remoto: [NdsSpeedInfo.packetLossPercent] e
+ * [NdsQualityInfo.packetLossPercent] chamam esta MESMA função — não duplicar a regra.
+ *
+ * Dois outros consumidores de [InternetDiagnosticInput.perdaPercentual] NÃO passam
+ * por este payload NDS — não herdavam o filtro automaticamente, então cada um
+ * recebeu o MESMO gate (`perdaConfianca == SUFICIENTE`) no ponto mínimo necessário,
+ * sem duplicar o VALOR de nenhum threshold de negócio:
+ * - `RecomendacaoPraticaEngine.recomendarPerdaDePacotes` (`:feature:diagnostico`) — lê
+ *   [InternetDiagnosticInput.perdaPercentual] direto; ganhou o gate no flag `critico`
+ *   que decide entre "Atenção"/"Crítico".
+ * - `AiModels.internetToMetricas` (`:feature:diagnostico`, worker de IA legado que
+ *   NÃO passa pelo NDS) — ganhou o gate direto no campo
+ *   `AiMetricasAtuais.perdaPacotesPercentual`.
+ */
+private fun InternetDiagnosticInput.perdaPercentualConfiavelParaNds(): Double? =
+    if (perdaConfianca == ConfiancaAmostral.SUFICIENTE) perdaPercentual else null
 
 private fun ndsProfile(
     perfilGamer: Boolean,

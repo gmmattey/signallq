@@ -1,6 +1,7 @@
 package io.signallq.app.feature.diagnostico
 
 import io.signallq.app.core.diagnostico.BandaWifi
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DiagnosticResult
@@ -501,7 +502,14 @@ object RecomendacaoPraticaEngine {
         if (fonte == "naoMedido" || fonte == "unknown") return null
 
         val estimada = fonte == "estimated"
-        val critico = perda >= 3.0
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): mesmo gate de confianca amostral usado por
+        // GameReadinessClassifier/UsageProfileClassifier/ScoreEngine — 1 timeout
+        // isolado (confianca insuficiente, ou null/desconhecida) nao deve sozinho
+        // escalar esta recomendacao para "critico" (texto mais forte, "contate a
+        // operadora"). Nao suprime a recomendacao inteira — perda >=1% ainda aparece
+        // como "Atencao", so o nivel "critico" exige confianca suficiente.
+        val critico = perda >= 3.0 && internet.perdaConfianca == ConfiancaAmostral.SUFICIENTE
 
         val avisoConfiabilidade =
             if (estimada) {

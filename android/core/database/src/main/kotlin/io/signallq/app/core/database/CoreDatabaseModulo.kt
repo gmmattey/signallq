@@ -321,6 +321,23 @@ object CoreDatabaseModulo {
             }
         }
 
+    /** `.agents/architecture-plan.md` ("Confiabilidade estatística do diagnóstico de rede",
+     *  seção 8/10 passo 5) — persiste a confiança amostral da perda de pacotes e os campos de
+     *  latência (p95/máximo/picos) que o motor já calculava mas não propagava até `medicao`.
+     *  100% aditiva: 4 colunas nullable novas, nenhuma coluna existente alterada/removida,
+     *  nenhuma linha perdida. Linhas já existentes recebem `NULL` nas 4 colunas — nunca inferido
+     *  retroativamente (SQLite já faz isso por padrão em `ADD COLUMN` sem `DEFAULT`, sem
+     *  necessidade de `UPDATE`). */
+    internal val MIGRATION_20_21 =
+        object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE medicao ADD COLUMN perdaConfianca TEXT")
+                db.execSQL("ALTER TABLE medicao ADD COLUMN latenciaP95Ms REAL")
+                db.execSQL("ALTER TABLE medicao ADD COLUMN latenciaMaxMs REAL")
+                db.execSQL("ALTER TABLE medicao ADD COLUMN latenciaPicos INTEGER")
+            }
+        }
+
     fun criarBanco(context: Context): SignallQDatabase =
         Room
             .databaseBuilder(
@@ -346,5 +363,6 @@ object CoreDatabaseModulo {
             .addMigrations(MIGRATION_17_18)
             .addMigrations(MIGRATION_18_19)
             .addMigrations(MIGRATION_19_20)
+            .addMigrations(MIGRATION_20_21)
             .build()
 }

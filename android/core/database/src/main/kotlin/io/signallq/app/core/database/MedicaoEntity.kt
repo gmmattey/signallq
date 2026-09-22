@@ -64,4 +64,22 @@ data class MedicaoEntity(
      *  coluna existir — nunca inventado por trás.
      */
     val networkId: String? = null,
+    /** Confiança amostral da perda de pacotes desta medição (nome de `ConfiancaAmostral`:
+     *  `"SUFICIENTE"`/`"INSUFICIENTE"`, `:core:diagnostico`) — eixo ortogonal a
+     *  [packetLossSource] (.agents/architecture-plan.md, "Confiabilidade estatística do
+     *  diagnóstico de rede"). Null em linhas persistidas antes desta coluna existir — NUNCA
+     *  inferido retroativamente; consumidores tratam null como confiança insuficiente só na
+     *  exibição/reclassificação, nunca recalculam o passado. */
+    val perdaConfianca: String? = null,
+    /** p95 da latência (amostras válidas, antes do filtro de outlier) — já calculado pelo
+     *  motor (`AnalisadorAmostragemPing`), só não era propagado até aqui antes desta migração.
+     *  Null em linhas antigas (não calculado/não persistido nessa época), nunca 0.0 fingindo
+     *  cálculo real. */
+    val latenciaP95Ms: Double? = null,
+    /** Máximo da latência (amostras válidas, antes do filtro de outlier). Mesmo contrato de
+     *  nulidade de [latenciaP95Ms]. */
+    val latenciaMaxMs: Double? = null,
+    /** Quantidade de picos de latência detectados na amostragem. Mesmo contrato de nulidade
+     *  de [latenciaP95Ms]. */
+    val latenciaPicos: Int? = null,
 )

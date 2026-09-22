@@ -34,6 +34,7 @@ import io.signallq.app.ui.LocalLkTokens
 import io.signallq.app.ui.component.LkSectionOverline
 import io.signallq.app.ui.component.LocalDeviceSection
 import io.signallq.app.ui.component.SignallQButton
+import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import io.signallq.app.ui.component.mapLocalDeviceSectionUiState
 
 /**
@@ -100,7 +101,12 @@ fun DetalhesTecnicosScreen(
             HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
             DetalheRow("Jitter", "%.0f ms".format(resultado.jitterMs), c)
             HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
-            DetalheRow("Falhas estimadas", "%.1f%%".format(resultado.perdaPercentual), c)
+            DetalheRow(
+                label = "Falhas estimadas",
+                valor = "%.1f%%".format(resultado.perdaPercentual),
+                c = c,
+                sublabel = copyInstabilidadePerdaPacotes(resultado.perdaPercentual, resultado.perdaConfianca),
+            )
             HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
             DetalheRow("Servidor", localizacaoServidor ?: "Não informado pelo teste", c)
 
@@ -125,6 +131,28 @@ fun DetalhesTecnicosScreen(
             DetalheRow("Resposta durante download", "%.0f ms".format(resultado.latencyDownloadMs), c)
             HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
             DetalheRow("Resposta durante upload", "%.0f ms".format(resultado.latencyUploadMs), c)
+            // .agents/architecture-plan.md ("Confiabilidade estatística do diagnóstico de
+            // rede", passo 6) — visão de detalhe técnico: p95/máximo/amostras/timeouts/janela
+            // de confirmação da amostragem de latência, sempre que existirem. Nunca aparece
+            // pra dado legado — os 3 campos de fases usam default 0.0/0 só por compatibilidade
+            // de construtor, mas todo resultado real de speedtest atual já os calcula.
+            HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
+            DetalheRow("Latência (p95)", "%.0f ms".format(resultado.diagnosticoFases.latenciaP95Ms), c)
+            HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
+            DetalheRow("Latência (máxima)", "%.0f ms".format(resultado.diagnosticoFases.latenciaMaxMs), c)
+            HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
+            DetalheRow(
+                label = "Amostras de latência",
+                valor =
+                    "${resultado.diagnosticoFases.latenciaAmostrasValidas} válidas de " +
+                        "${resultado.diagnosticoFases.latenciaAmostrasTotais}",
+                c = c,
+                sublabel = "Timeouts: ${resultado.diagnosticoFases.latenciaTimeouts}",
+            )
+            if (resultado.diagnosticoFases.latenciaConfirmacaoExecutada) {
+                HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
+                DetalheRow("Amostragem confirmada", "Sim, rodou uma segunda janela de leitura", c)
+            }
             if (resultado.dnsLatencyMs != null) {
                 HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
                 DetalheRow(

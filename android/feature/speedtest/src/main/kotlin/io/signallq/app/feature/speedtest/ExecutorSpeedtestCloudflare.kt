@@ -1,5 +1,7 @@
 ﻿package io.signallq.app.feature.speedtest
 
+import io.signallq.app.core.diagnostico.EvidenciaPerdaPacotes
+import io.signallq.app.core.diagnostico.MetricStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -54,6 +56,11 @@ class ExecutorSpeedtestCloudflare(
         // responde, (b) latência SOB CARGA durante download/upload (medida de propósito
         // contra o mesmo host da transferência), (c) default de [latencyProbeUrl].
         const val HOST_PUBLICO_LATENCIA = "https://speed.cloudflare.com/__down?bytes=0"
+
+        // Camillo/Luiz (.agents/architecture-plan.md, seção 7): +20 probes brutos quando
+        // o baseline de latência já deu QUALQUER sinal de problema (deveConfirmarAmostragem).
+        // Disparo único — sem loop, para não estourar o orçamento de tempo do teste.
+        const val PROBES_JANELA_CONFIRMACAO = 20
 
         // Pool adaptativo: móvel usa menos conexões e keep-alive curto para poupar bateria/dados.
         // Wi-Fi/fixo usa pool maior para throughput máximo no speedtest.
@@ -545,24 +552,27 @@ class ExecutorSpeedtestCloudflare(
             )
         }
 
-    private suspend fun executarFaseLatencia(
+    internal suspend fun executarFaseLatencia(
         config: SpeedtestConfig,
         redeInicial: String?,
         connectionTypeProvider: (() -> String?)?,
         onPingProgress: ((Int, Int) -> Unit)? = null,
     ): LatencyPhase {
-        val resultadoProbe = coletarAmostrasLatencia(latencyProbeUrl, config, redeInicial, connectionTypeProvider, onPingProgress)
+        val coletaProbe = coletarAmostrasLatencia(latencyProbeUrl, config, redeInicial, connectionTypeProvider, onPingProgress)
 
         // GH#1118: worker dedicado sem resposta (perda total) — cai pro host público em
         // vez de devolver latência sem dado. Se o probe já É o host público (default sem
         // override), não há para onde cair — usa o resultado como veio.
-        val resultado =
-            if (latencyProbeUrl != HOST_PUBLICO_LATENCIA && ValidadorBaselineLatencia.probeIndisponivel(resultadoProbe)) {
+        val coleta =
+            if (latencyProbeUrl != HOST_PUBLICO_LATENCIA && ValidadorBaselineLatencia.probeIndisponivel(coletaProbe.resultado)) {
                 Timber.w("latenciaBase: probe dedicado sem resposta ($latencyProbeUrl), fallback para host publico")
                 coletarAmostrasLatencia(HOST_PUBLICO_LATENCIA, config, redeInicial, connectionTypeProvider, onPingProgress)
             } else {
-                resultadoProbe
+                coletaProbe
             }
+
+        val resultado = coleta.resultado
+        val evidenciaPerda = AnalisadorAmostragemPing.avaliarConfianca(resultado, coleta.confirmacaoExecutada)
 
         return LatencyPhase(
             latenciaMs = resultado.latenciaMs,
@@ -571,19 +581,37 @@ class ExecutorSpeedtestCloudflare(
             totalAmostras = resultado.totalAmostras,
             amostrasValidas = resultado.amostrasValidas,
             timeouts = resultado.timeouts,
+            p95Ms = resultado.p95Ms,
+            maxMs = resultado.maxMs,
+            picos = resultado.picos,
+            evidenciaPerda = evidenciaPerda,
         )
     }
 
-    private suspend fun coletarAmostrasLatencia(
+    /** Resultado interno de [coletarAmostrasLatencia]: o [resultado] já inclui as
+     *  amostras extras da janela de confirmação quando ela rodou ([confirmacaoExecutada]). */
+    internal data class ResultadoColetaLatencia(
+        val resultado: ResultadoAmostragemPing,
+        val confirmacaoExecutada: Boolean,
+    )
+
+    internal suspend fun coletarAmostrasLatencia(
         url: String,
         config: SpeedtestConfig,
         redeInicial: String?,
         connectionTypeProvider: (() -> String?)?,
         onPingProgress: ((Int, Int) -> Unit)?,
-    ): ResultadoAmostragemPing {
+    ): ResultadoColetaLatencia {
+        val inicioNs = System.nanoTime()
+
+        fun orcamentoEstourado(): Boolean {
+            val orcamentoMs = config.latenciaOrcamentoMs ?: return false
+            return (System.nanoTime() - inicioNs) / 1_000_000L >= orcamentoMs
+        }
+
         val bruto = mutableListOf<Double?>()
         repeat(config.pingCount) { i ->
-            if (mudouRede(redeInicial, connectionTypeProvider)) return@repeat
+            if (mudouRede(redeInicial, connectionTypeProvider) || orcamentoEstourado()) return@repeat
             bruto.add(medirPing(url))
             onPingProgress?.invoke(i + 1, config.pingCount)
         }
@@ -591,8 +619,59 @@ class ExecutorSpeedtestCloudflare(
         // Algoritmo de mediana/outlier/jitter/perda extraído para AnalisadorAmostragemPing
         // (GH#1019) — reusado também por PingExecutor. Aqui só permanece o que é
         // específico do speedtest: laço de coleta com corte por mudança de rede.
-        return AnalisadorAmostragemPing.analisar(bruto)
+        val baseline = AnalisadorAmostragemPing.analisar(bruto)
+
+        // Camillo/Luiz (.agents/architecture-plan.md, "Confiabilidade estatística do
+        // diagnóstico de rede" seção 7): janela de confirmação de +20 probes brutos,
+        // disparo único (sem loop, para não estourar o orçamento de tempo do teste),
+        // quando o baseline já deu QUALQUER sinal de problema. Continuação da MESMA
+        // coleta (a lista `bruto` já tem a 1ª amostra "de aquecimento" descartada só
+        // uma vez por AnalisadorAmostragemPing — não há novo warm-up aqui).
+        if (!deveConfirmarAmostragem(baseline) || orcamentoEstourado()) {
+            return ResultadoColetaLatencia(baseline, confirmacaoExecutada = false)
+        }
+
+        repeat(PROBES_JANELA_CONFIRMACAO) { i ->
+            if (mudouRede(redeInicial, connectionTypeProvider) || orcamentoEstourado()) return@repeat
+            bruto.add(medirPing(url))
+            // Mantém o progresso reportado no teto do baseline durante a confirmação —
+            // não redesenha a barra de progresso (fora de escopo desta mudança); evita
+            // que o percentual ande pra trás ao trocar o "total" no meio da coleta.
+            onPingProgress?.invoke(config.pingCount, config.pingCount)
+        }
+
+        // `confirmacaoExecutada = true` mesmo se o orçamento cortou a janela no meio —
+        // a confirmação REALMENTE rodou (não é o mesmo caso de "nem chegou a disparar"
+        // acima); o resultado é analisado sobre as amostras que deu tempo de coletar,
+        // igual ao corte por mudança de rede (nunca é tratado como erro).
+        val confirmado = AnalisadorAmostragemPing.analisar(bruto)
+        return ResultadoColetaLatencia(confirmado, confirmacaoExecutada = true)
     }
+
+    /**
+     * Os 4 gatilhos da janela de confirmação (seção 7 do plano): qualquer um dispara.
+     * Sinal de rede já saudável (o caso comum) não passa por nenhum — só paga o custo
+     * extra quando já há indício de problema no baseline.
+     */
+    internal fun deveConfirmarAmostragem(baseline: ResultadoAmostragemPing): Boolean {
+        if (baseline.timeouts >= 1) return true
+        if (baseline.picos > 0) return true
+        val jitterStatus = classificarJitterLocal(baseline.jitterMs)
+        if (jitterStatus == MetricStatus.regular || jitterStatus == MetricStatus.ruim) return true
+        return perdaProximaDeCorteDeNegocio(baseline.perdaPercentual)
+    }
+
+    // Cortes de negócio de perda de pacotes (fonte única: `regras-diagnostico-rede`,
+    // já usados por MetricClassifier/GameReadinessClassifier/UsageProfileClassifier/
+    // ScoreEvidenceBuilder — não duplicar o VALOR do threshold, só a checagem de
+    // proximidade que decide se vale a pena confirmar a amostra).
+    private val cortesPerdaNegocioPercentual = listOf(0.5, 1.0, 2.0, 3.0)
+
+    private fun perdaProximaDeCorteDeNegocio(perdaPercentual: Double): Boolean =
+        cortesPerdaNegocioPercentual.any { corte ->
+            val margem = corte * 0.30
+            perdaPercentual in (corte - margem)..(corte + margem)
+        }
 
     /**
      * GH#1118: se a latência base medida ficar maior que a latência sob carga, a medição
@@ -1070,6 +1149,7 @@ class ExecutorSpeedtestCloudflare(
                 packetLoss = latencyPhase.perdaPercentual,
                 bufferbloatDeltaMs = bufferbloatMs,
                 bufferbloat = severidadeBufferbloat,
+                perdaConfianca = latencyPhase.evidenciaPerda?.confianca,
             )
         return ResultadoSpeedtest(
             timestampEpochMs = System.currentTimeMillis(),
@@ -1091,6 +1171,7 @@ class ExecutorSpeedtestCloudflare(
             peakDownloadMbps = downloadPhase.peakMbps,
             peakUploadMbps = uploadPhase.peakMbps,
             packetLossSource = "estimated",
+            perdaConfianca = latencyPhase.evidenciaPerda?.confianca,
             dnsLatencyMs = dns.latencyMs,
             dnsResolverIp = dns.resolverIp,
             dnsProvider = dns.provider,
@@ -1101,6 +1182,10 @@ class ExecutorSpeedtestCloudflare(
                     latenciaAmostrasTotais = latencyPhase.totalAmostras,
                     latenciaAmostrasValidas = latencyPhase.amostrasValidas,
                     latenciaTimeouts = latencyPhase.timeouts,
+                    latenciaP95Ms = latencyPhase.p95Ms,
+                    latenciaMaxMs = latencyPhase.maxMs,
+                    latenciaPicos = latencyPhase.picos,
+                    latenciaConfirmacaoExecutada = latencyPhase.evidenciaPerda?.confirmacaoExecutada ?: false,
                     downloadBytesTotal = downloadPhase.bytesTotal,
                     downloadAmostrasValidas = downloadPhase.amostrasInstantaneas.size,
                     downloadRequisicoesSucesso = downloadPhase.requisicoesSucesso,
@@ -1223,13 +1308,19 @@ class ExecutorSpeedtestCloudflare(
 
     // ── Data classes internos ─────────────────────────────────────────────────
 
-    private data class LatencyPhase(
+    internal data class LatencyPhase(
         val latenciaMs: Double,
         val jitterMs: Double,
         val perdaPercentual: Double,
         val totalAmostras: Int,
         val amostrasValidas: Int,
         val timeouts: Int,
+        // Antes descartados aqui (GH#1211 item 3 já calculava, ExecutorSpeedtestCloudflare
+        // só não propagava) — ver .agents/architecture-plan.md seção 2/8.
+        val p95Ms: Double = 0.0,
+        val maxMs: Double = 0.0,
+        val picos: Int = 0,
+        val evidenciaPerda: EvidenciaPerdaPacotes? = null,
     )
 
     private data class ThroughputPhase(
@@ -1254,7 +1345,7 @@ class ExecutorSpeedtestCloudflare(
         val mbps: Double,
     )
 
-    private data class SpeedtestConfig(
+    internal data class SpeedtestConfig(
         val pingCount: Int,
         val downloadDurationMs: Long,
         val uploadDurationMs: Long,
@@ -1266,6 +1357,19 @@ class ExecutorSpeedtestCloudflare(
         val uploadMaxStreams: Int,
         val downloadWarmupMs: Int,
         val uploadWarmupMs: Int,
+        // Camillo (achado médio de Breno no QA desta mudança, .agents/architecture-plan.md
+        // seção 9/10 item 8): teto de duração de PROTEÇÃO para a fase de latência inteira
+        // (baseline + janela de confirmação), só no modo fast. NÃO é um threshold de
+        // negócio (não muda pingCount=20, não muda os 4 gatilhos de confirmação, não muda
+        // nenhum corte de perda) — é uma rede de segurança de resiliência/UX: sem ela, o
+        // pior caso teórico do modo fast em rede muito degradada passou de ~60s (antes
+        // desta fatia) para até ~160s (20 probes baseline + 20 de confirmação, 4s de
+        // callTimeout cada). `null` = sem teto (modo complete preserva o comportamento
+        // já decidido na seção 7 do plano — mais completude, não é sensível a bateria/dados
+        // do jeito que o fast é). Comportamento ao estourar o teto: para de coletar novas
+        // amostras e analisa o que já foi coletado até ali — mesmo padrão já usado para
+        // `mudouRede()` (early-exit tolerante a resultado parcial, não um erro).
+        val latenciaOrcamentoMs: Long? = null,
     ) {
         companion object {
             fun fromModo(modo: ModoSpeedtest): SpeedtestConfig =
@@ -1273,7 +1377,12 @@ class ExecutorSpeedtestCloudflare(
                     // Espelho do TypeScript DOWNLOAD_CONFIG_FAST / DOWNLOAD_CONFIG_COMPLETE
                     ModoSpeedtest.fast ->
                         SpeedtestConfig(
-                            pingCount = 15,
+                            // Camillo/Luiz (.agents/architecture-plan.md, "Confiabilidade
+                            // estatistica..."): 15->20 probes brutos (19 efetivos pos
+                            // warm-up) para reduzir a resolucao minima de 1 timeout
+                            // isolado de 7,14% para 5,26% -- ainda insuficiente sozinho,
+                            // por isso a janela de confirmacao em coletarAmostrasLatencia.
+                            pingCount = 20,
                             downloadDurationMs = 7_000L,
                             uploadDurationMs = 7_000L,
                             downloadPayloadBytes = 10_000_000, // 10 MB
@@ -1284,6 +1393,7 @@ class ExecutorSpeedtestCloudflare(
                             uploadMaxStreams = 4,
                             downloadWarmupMs = 1_000,
                             uploadWarmupMs = 1_000,
+                            latenciaOrcamentoMs = 20_000L,
                         )
                     ModoSpeedtest.complete ->
                         SpeedtestConfig(

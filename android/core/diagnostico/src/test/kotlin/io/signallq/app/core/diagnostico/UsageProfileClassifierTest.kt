@@ -21,6 +21,7 @@ class UsageProfileClassifierTest {
         perda: Double = 0.0,
         bufferbloat: Double = 10.0,
         packetLossSource: String? = "modem",
+        perdaConfianca: ConfiancaAmostral? = null,
     ) = InternetDiagnosticInput(
         downloadMbps = download,
         uploadMbps = upload,
@@ -29,6 +30,7 @@ class UsageProfileClassifierTest {
         perdaPercentual = perda,
         bufferbloatMs = bufferbloat,
         packetLossSource = packetLossSource,
+        perdaConfianca = perdaConfianca,
     )
 
     private fun input(
@@ -65,13 +67,28 @@ class UsageProfileClassifierTest {
     }
 
     @Test
-    fun `navegacao comprometida com perda real maior ou igual a 1 por cento`() {
+    fun `navegacao comprometida com perda confirmada maior ou igual a 1 por cento`() {
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): gate migrado de packetLossSource == "modem" (Provenance.medida,
+        // inatingivel em producao) para perdaConfianca == SUFICIENTE (2+
+        // timeouts/consecutivos/confirmados). Comportamento esperado preservado — perda
+        // "de verdade" (agora: confirmada) continua escalando a Comprometido.
         val r =
             UsageProfileClassifier.classificar(
                 Perfil.NAVEGACAO,
-                input(internet = internetOk(perda = 1.0, packetLossSource = "modem")),
+                input(internet = internetOk(perda = 1.0, perdaConfianca = ConfiancaAmostral.SUFICIENTE)),
             )
         assertEquals(UsageProfileStatus.Comprometido, r.status)
+    }
+
+    @Test
+    fun `navegacao NAO fica comprometida com perda isolada de confianca insuficiente mesmo maior ou igual a 1 por cento`() {
+        val r =
+            UsageProfileClassifier.classificar(
+                Perfil.NAVEGACAO,
+                input(internet = internetOk(perda = 1.0, perdaConfianca = ConfiancaAmostral.INSUFICIENTE)),
+            )
+        assertEquals(UsageProfileStatus.Instavel, r.status)
     }
 
     // ── Streaming: download 45% + bufferbloat 25% + perda 15% + jitter 10% + historico 5% ──

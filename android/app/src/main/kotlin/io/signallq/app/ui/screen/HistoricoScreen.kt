@@ -85,6 +85,7 @@ import io.signallq.app.core.diagnostico.MetricStatus
 import io.signallq.app.core.network.EstadoConexao
 import io.signallq.app.feature.history.BlocoUptime
 import io.signallq.app.feature.history.ResumoHistorico
+import io.signallq.app.paraConfiancaAmostral
 import io.signallq.app.ui.FiltroConexaoHistorico
 import io.signallq.app.ui.LkRadius
 import io.signallq.app.ui.LkSpacing
@@ -100,6 +101,7 @@ import io.signallq.app.ui.component.Overline
 import io.signallq.app.ui.component.ads.NativeAdCard
 import io.signallq.app.ui.component.ads.NativeAdSource
 import io.signallq.app.ui.component.classificarBufferbloatLocal
+import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -1177,6 +1179,26 @@ private fun HistoricoDetailSheet(medicao: MedicaoEntity) {
         if (bufferbloat != null) {
             val (bloatVeredito, bloatColor) = bufferbloatVeredito(bufferbloat, c)
             LkSheetInfoRow("Bufferbloat", "${"%.0f".format(bufferbloat)} ms — $bloatVeredito", valueColor = bloatColor)
+            LkSheetDivider()
+        }
+        // .agents/architecture-plan.md ("Confiabilidade estatística do diagnóstico de rede",
+        // passo 6) — aviso de instabilidade pontual só quando a confiança amostral desta
+        // medição é insuficiente (1 timeout isolado); nunca aparece pra medição legada (sem
+        // essa coluna) nem quando a perda é confirmada/recorrente (comportamento normal).
+        val notaInstabilidadePerda =
+            copyInstabilidadePerdaPacotes(perda, medicao.perdaConfianca.paraConfiancaAmostral())
+        if (notaInstabilidadePerda != null) {
+            LkSheetInfoRow("Perda de pacotes", notaInstabilidadePerda, valueColor = c.warning)
+            LkSheetDivider()
+        }
+        // Visão de detalhe técnico: p95/máximo da latência, sempre que existirem (medições
+        // gravadas antes desta coluna existir ficam com os dois null — nunca inferido).
+        if (medicao.latenciaP95Ms != null) {
+            LkSheetInfoRow("Latência (p95)", "%.0f ms".format(medicao.latenciaP95Ms))
+            LkSheetDivider()
+        }
+        if (medicao.latenciaMaxMs != null) {
+            LkSheetInfoRow("Latência (máxima)", "%.0f ms".format(medicao.latenciaMaxMs))
             LkSheetDivider()
         }
         if (streaming != null) {

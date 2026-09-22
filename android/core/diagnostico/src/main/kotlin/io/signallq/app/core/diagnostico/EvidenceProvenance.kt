@@ -32,4 +32,13 @@ data class EvidenceScore(
     val dimensao: String,
     val nota: Int?,
     val provenance: Provenance,
+    /**
+     * Confiança amostral — SÓ preenchida pela dimensão `perdaPacotesStatus`
+     * (`.agents/architecture-plan.md`, "Confiabilidade estatística do diagnóstico de
+     * rede"). `null` para as demais 10 dimensões (RSSI, fibra, velocidade, etc.) — eixo
+     * ortogonal a [Provenance], não um substituto genérico. Consumido só por
+     * [ScoreEngine.aplicarTetos] para decidir o teto de perda crítica, no lugar do
+     * antigo gate `provenance == Provenance.medida` (inatingível via timeout HTTP).
+     */
+    val confiancaAmostral: ConfiancaAmostral? = null,
 )

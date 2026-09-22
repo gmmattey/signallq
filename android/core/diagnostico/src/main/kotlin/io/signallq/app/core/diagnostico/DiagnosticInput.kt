@@ -47,6 +47,22 @@ data class InternetDiagnosticInput(
      *  Fonte: ResultadoSpeedtest.packetLossSource. Usado pelo RecomendacaoPraticaEngine
      *  para não cravar perda de pacotes como certeza quando é apenas estimada. */
     val packetLossSource: String? = null,
+    /**
+     * Confiança amostral de [perdaPercentual] — eixo ORTOGONAL a [packetLossSource]/
+     * [Provenance] (.agents/architecture-plan.md, "Confiabilidade estatística do
+     * diagnóstico de rede"). Fonte: `ResultadoSpeedtest.perdaConfianca`
+     * (`AnalisadorAmostragemPing.avaliarConfianca`, `:feature:speedtest`).
+     *
+     * `null` = não calculada (execução antiga sem esse campo, ou histórico legado
+     * lido do banco antes desta migração) — tratado como
+     * [ConfiancaAmostral.INSUFICIENTE] pelos classificadores que consomem este campo
+     * (nunca reclassifica o passado, só não deixa 1 timeout isolado escalar sozinho).
+     * Consumido por [GameReadinessClassifier.perdaFaixa],
+     * [UsageProfileClassifier.perdaDimensao] e [ScoreEvidenceBuilder.perdaPacotesStatus]
+     * (via [ScoreEngine.aplicarTetos]) no lugar do antigo gate
+     * `provenance == Provenance.medida`, que era inatingível via timeout HTTP.
+     */
+    val perdaConfianca: ConfiancaAmostral? = null,
 )
 
 data class FibraDiagnosticInput(

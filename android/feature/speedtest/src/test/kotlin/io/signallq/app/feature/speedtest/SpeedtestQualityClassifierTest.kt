@@ -1,5 +1,6 @@
 ﻿package io.signallq.app.feature.speedtest
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -171,5 +172,64 @@ class SpeedtestQualityClassifierTest {
 
         val naFronteira = qualidadeBase(ul = 10.0, latency = 10.0, packetLoss = 0.0, bufferbloatDeltaMs = 100.0)
         assertEquals(GargaloPrimario.bufferbloat, naFronteira.gargaloPrimario)
+    }
+
+    // ── ConfiancaAmostral (.agents/architecture-plan.md, "Confiabilidade estatistica
+    //    do diagnostico de rede") — checkpoint 4 do plano de implementacao ──────────
+
+    @Test
+    fun `perda com confianca insuficiente NAO derruba o veredito para poor nem vira gargalo primario`() {
+        val comPerdaAcimaDoCorteMasIsolada =
+            SpeedtestQualityClassifier.classificarQualidade(
+                dl = 100.0,
+                ul = 50.0,
+                latency = 20.0,
+                jitter = 5.0,
+                packetLoss = 5.0, // isoladamente ja seria poor/gargalo=packetLoss
+                bufferbloatDeltaMs = 0.0,
+                bufferbloat = SeveridadeBufferbloat.none,
+                perdaConfianca = ConfiancaAmostral.INSUFICIENTE,
+            )
+
+        assertEquals(VereditoUso.good, comPerdaAcimaDoCorteMasIsolada.vereditoStreaming)
+        assertEquals(VereditoUso.good, comPerdaAcimaDoCorteMasIsolada.vereditoGamer)
+        assertEquals(VereditoUso.good, comPerdaAcimaDoCorteMasIsolada.vereditoVideoChamada)
+        assertEquals(GargaloPrimario.none, comPerdaAcimaDoCorteMasIsolada.gargaloPrimario)
+    }
+
+    @Test
+    fun `perda confirmada com confianca suficiente CONTINUA derrubando o veredito para poor e virando gargalo primario`() {
+        val comPerdaConfirmada =
+            SpeedtestQualityClassifier.classificarQualidade(
+                dl = 100.0,
+                ul = 50.0,
+                latency = 20.0,
+                jitter = 5.0,
+                packetLoss = 5.0,
+                bufferbloatDeltaMs = 0.0,
+                bufferbloat = SeveridadeBufferbloat.none,
+                perdaConfianca = ConfiancaAmostral.SUFICIENTE,
+            )
+
+        assertEquals(VereditoUso.poor, comPerdaConfirmada.vereditoGamer)
+        assertEquals(GargaloPrimario.packetLoss, comPerdaConfirmada.gargaloPrimario)
+    }
+
+    @Test
+    fun `outras metricas ruins continuam valendo mesmo com perda de confianca insuficiente`() {
+        // Perda isolada nao "salva" o veredito quando OUTRA metrica ja e ruim sozinha.
+        val bufferbloatSeveroComPerdaIsolada =
+            SpeedtestQualityClassifier.classificarQualidade(
+                dl = 100.0,
+                ul = 50.0,
+                latency = 20.0,
+                jitter = 5.0,
+                packetLoss = 5.0,
+                bufferbloatDeltaMs = 150.0,
+                bufferbloat = SeveridadeBufferbloat.severe,
+                perdaConfianca = ConfiancaAmostral.INSUFICIENTE,
+            )
+
+        assertEquals(GargaloPrimario.bufferbloat, bufferbloatSeveroComPerdaIsolada.gargaloPrimario)
     }
 }

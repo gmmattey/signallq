@@ -1,6 +1,7 @@
 package io.signallq.app.feature.diagnostico.ai
 
 import io.signallq.app.core.diagnostico.BandaWifi
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DiagnosticReport
@@ -759,7 +760,15 @@ object DiagnosisAiContextFactory {
             uploadMbps = i.uploadMbps,
             latenciaMs = i.latencyMs,
             jitterMs = i.jitterMs,
-            perdaPacotesPercentual = i.perdaPercentual,
+            // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico
+            // de rede", secao 8): mesmo filtro de NdsDiagnosticsRequestMapper (que a
+            // IA via NDS ja recebe) -- este e o caminho legado do worker de IA
+            // (nao passa pelo NDS), entao precisa do MESMO gate aplicado direto aqui,
+            // no ponto minimo (unica funcao que traduz InternetDiagnosticInput -> AI).
+            // So reporta perda quando a amostra tem confianca suficiente; 1 timeout
+            // isolado (ou null/desconhecida) nunca chega a IA como percentual
+            // "confiavel" o bastante pra basear causa raiz.
+            perdaPacotesPercentual = i.perdaPercentual.takeIf { i.perdaConfianca == ConfiancaAmostral.SUFICIENTE },
             bufferbloatMs = i.bufferbloatMs,
             rttGatewayMs = i.rttGatewayMs,
         )

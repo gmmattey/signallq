@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import io.signallq.app.BuildConfig
 import io.signallq.app.core.database.MedicaoEntity
 import io.signallq.app.feature.diagnostico.SnapshotDiagnostico
+import io.signallq.app.paraConfiancaAmostral
 import io.signallq.app.ui.LkRadius
 import io.signallq.app.ui.LkSpacing
 import io.signallq.app.ui.LkTokens
@@ -53,6 +54,7 @@ import io.signallq.app.ui.component.LkSectionOverline
 import io.signallq.app.ui.component.LkStatusDot
 import io.signallq.app.ui.component.LkSurfaceCard
 import io.signallq.app.ui.component.SignallQButton
+import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import io.signallq.app.ui.component.corContainer
 import io.signallq.app.ui.component.corConteudo
 import io.signallq.app.ui.component.labelPt
@@ -376,7 +378,16 @@ fun LaudoScreen(
                                     unidade = "%",
                                     c = c,
                                     modifier = Modifier.weight(1f),
-                                    nota = "estimado".takeIf { ultimaMedicao.packetLossSource == "estimated" },
+                                    // .agents/architecture-plan.md ("Confiabilidade estatística
+                                    // do diagnóstico de rede", passo 6) — quando a confiança
+                                    // amostral é insuficiente (1 timeout isolado), o aviso de
+                                    // instabilidade tem prioridade sobre o rótulo de metodologia
+                                    // "estimado" (eixo diferente, ver copyInstabilidadePerdaPacotes).
+                                    nota =
+                                        copyInstabilidadePerdaPacotes(
+                                            ultimaMedicao.perdaPercentual,
+                                            ultimaMedicao.perdaConfianca.paraConfiancaAmostral(),
+                                        ) ?: "estimado".takeIf { ultimaMedicao.packetLossSource == "estimated" },
                                 )
                                 LaudoMetrica(
                                     label = "Bufferbloat",
