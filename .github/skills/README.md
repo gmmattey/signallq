@@ -8,4 +8,4 @@ Este diretório é um espelho de `.claude/skills/` gerado automaticamente.
 ./scripts/sync-skills-mirrors.sh
 ```
 
-Mais informações: `.claude/CLAUDE.md`, seção "Skills locais e espelhos"
+Mais informações: `AGENTS.md`, seção 6 ("Skills").
