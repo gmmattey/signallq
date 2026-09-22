@@ -441,9 +441,14 @@ object UsageProfileClassifier {
     // ── Dimensoes compartilhadas entre perfis ───────────────────────────────────
 
     /**
-     * Perda de pacotes: OK sem perda real. Instavel quando estimada/baixa. Comprometido
-     * apenas quando MEDIDA REAL >=1%. Perda so estimada nunca eleva o status sozinha —
-     * conta como Instavel (nao Comprometido) e reduz confianca via [Provenance.estimada].
+     * Perda de pacotes: OK sem perda real. Instavel quando confianca amostral
+     * insuficiente/baixa. Comprometido apenas quando >=1% E
+     * [ConfiancaAmostral.SUFICIENTE] (`.agents/architecture-plan.md`, "Confiabilidade
+     * estatistica do diagnostico de rede" — substitui o gate antigo
+     * `provenance == Provenance.medida`, inatingivel via timeout HTTP). [provenance]
+     * continua vindo de [InternetDiagnosticInput.packetLossSource] — eixo diferente,
+     * so muda a fonte do STATUS (Instavel/Comprometido), nao a fonte da proveniencia
+     * exibida/usada por [confiancaMedia] (`temPerdaEstimada`).
      */
     private fun perdaDimensao(
         internet: InternetDiagnosticInput?,
@@ -462,9 +467,10 @@ object UsageProfileClassifier {
             }
         if (provenance == Provenance.indisponivel) return Dimensao(nomeCustom, peso, null, null, provenance)
 
+        val confiancaSuficiente = internet.perdaConfianca == ConfiancaAmostral.SUFICIENTE
         val status =
             when {
-                provenance == Provenance.medida && perda >= 1.0 -> UsageProfileStatus.Comprometido
+                confiancaSuficiente && perda >= 1.0 -> UsageProfileStatus.Comprometido
                 perda > 0.0 -> UsageProfileStatus.Instavel
                 else -> UsageProfileStatus.OK
             }

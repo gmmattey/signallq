@@ -25,7 +25,7 @@ import io.signallq.app.core.database.recommendation.RecommendationHistoryEntity
         ProviderDirectoryCacheEntity::class,
         AnalyticsOutboxEntity::class,
     ],
-    version = 20,
+    version = 21,
     exportSchema = true,
 )
 abstract class SignallQDatabase : RoomDatabase() {

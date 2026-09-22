@@ -1,5 +1,6 @@
 package io.signallq.app.feature.speedtest
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -132,5 +133,103 @@ class AnalisadorAmostragemPingTest {
         assertEquals(100.0, resultado.perdaPercentual, 0.0001)
         assertEquals(0.0, resultado.latenciaMs, 0.0001)
         assertEquals(0, resultado.amostrasValidas)
+    }
+
+    // ── timeoutsConsecutivosMax ──────────────────────────────────────────────
+
+    @Test
+    fun `timeoutsConsecutivosMax zero quando nao ha timeout`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(0.0, 10.0, 12.0, 11.0))
+
+        assertEquals(0, resultado.timeoutsConsecutivosMax)
+    }
+
+    @Test
+    fun `timeoutsConsecutivosMax conta a maior sequencia mesmo com timeouts nao-consecutivos intercalados`() {
+        // pos-descarte da 1a: [10, null, 12, null, null, 14] -> sequencias de 1 e 2 -> max = 2
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(0.0, 10.0, null, 12.0, null, null, 14.0))
+
+        assertEquals(3, resultado.timeouts)
+        assertEquals(2, resultado.timeoutsConsecutivosMax)
+    }
+
+    @Test
+    fun `timeoutsConsecutivosMax igual ao total quando todas as amostras sao timeout`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(null, null, null, null))
+
+        assertEquals(3, resultado.timeoutsConsecutivosMax)
+    }
+
+    // ── avaliarConfianca / EvidenciaPerdaPacotes ─────────────────────────────
+
+    @Test
+    fun `confianca suficiente quando nao ha nenhum timeout`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(0.0, 10.0, 12.0, 11.0))
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = false)
+
+        assertEquals(ConfiancaAmostral.SUFICIENTE, evidencia.confianca)
+        assertEquals(0.0, evidencia.perdaPercentual, 0.0001)
+        assertEquals(0, evidencia.timeoutsTotais)
+    }
+
+    @Test
+    fun `confianca insuficiente com 1 timeout isolado e sem confirmacao disparada`() {
+        val brutas = listOf<Double?>(1.0) + List(18) { 20.0 } + listOf(null)
+        val resultado = AnalisadorAmostragemPing.analisar(brutas)
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = false)
+
+        assertEquals(ConfiancaAmostral.INSUFICIENTE, evidencia.confianca)
+        assertEquals(1, evidencia.timeoutsTotais)
+        // fato medido nunca e forcado a 0 mesmo com confianca insuficiente
+        assertEquals(100.0 / 19.0, evidencia.perdaPercentual, 0.0001)
+        assertEquals(false, evidencia.confirmacaoExecutada)
+    }
+
+    @Test
+    fun `confianca continua insuficiente com 1 timeout isolado mesmo apos confirmacao nao encontrar mais nenhum`() {
+        // confirmacao rodou (janela de +20 probes) e confirmou que o timeout continua
+        // isolado -- o total de timeouts nao mudou, so o total de amostras cresceu.
+        val brutas = listOf<Double?>(1.0) + List(38) { 20.0 } + listOf(null)
+        val resultado = AnalisadorAmostragemPing.analisar(brutas)
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = true)
+
+        assertEquals(1, evidencia.timeoutsTotais)
+        assertEquals(ConfiancaAmostral.INSUFICIENTE, evidencia.confianca)
+        assertEquals(true, evidencia.confirmacaoExecutada)
+    }
+
+    @Test
+    fun `confianca suficiente com 2 timeouts nao-consecutivos`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(0.0, 10.0, null, 12.0, null, 14.0))
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = true)
+
+        assertEquals(2, evidencia.timeoutsTotais)
+        // nao-consecutivos: a maior sequencia continua sendo 1 (nunca 2 timeouts seguidos)
+        assertEquals(1, resultado.timeoutsConsecutivosMax)
+        assertEquals(ConfiancaAmostral.SUFICIENTE, evidencia.confianca)
+    }
+
+    @Test
+    fun `confianca suficiente com timeouts consecutivos`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(0.0, 10.0, null, null, 14.0))
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = false)
+
+        assertEquals(2, evidencia.timeoutsConsecutivosMax)
+        assertEquals(ConfiancaAmostral.SUFICIENTE, evidencia.confianca)
+    }
+
+    @Test
+    fun `100 por cento de timeout e confianca suficiente mesmo sendo caso especial`() {
+        val resultado = AnalisadorAmostragemPing.analisar(listOf(null, null, null, null))
+
+        val evidencia = AnalisadorAmostragemPing.avaliarConfianca(resultado, confirmacaoExecutada = false)
+
+        assertEquals(100.0, evidencia.perdaPercentual, 0.0001)
+        assertEquals(ConfiancaAmostral.SUFICIENTE, evidencia.confianca)
     }
 }

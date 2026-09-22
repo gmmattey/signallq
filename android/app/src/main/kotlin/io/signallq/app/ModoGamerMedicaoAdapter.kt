@@ -17,6 +17,7 @@ internal fun MedicaoEntity.paraMedicaoBaseModoGamer(): MedicaoBaseModoGamer =
                 perdaPercentual = perdaPercentual,
                 bufferbloatMs = bufferbloatMs,
                 packetLossSource = packetLossSource,
+                perdaConfianca = perdaConfianca.paraConfiancaAmostral(),
             ),
         medidoEmEpochMs = timestampEpochMs,
         networkId = networkId,

@@ -1,5 +1,7 @@
 package io.signallq.app.feature.speedtest
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
+import io.signallq.app.core.diagnostico.EvidenciaPerdaPacotes
 import kotlin.math.abs
 
 /**
@@ -10,6 +12,9 @@ import kotlin.math.abs
  * outlier que produz [latenciaMs] — GH#1211 item 3: o filtro de outlier é adequado para a
  * latência-base, mas não pode fazer os picos desaparecerem da análise de estabilidade.
  * [picos] é quantas amostras válidas foram descartadas pelo filtro (`> 3x` a mediana bruta).
+ * [timeoutsConsecutivosMax] é a maior sequência de timeouts consecutivos na lista bruta
+ * pós warm-up (0 se não houve nenhum) — usado por [AnalisadorAmostragemPing.avaliarConfianca]
+ * para distinguir timeout isolado de perda recorrente.
  */
 data class ResultadoAmostragemPing(
     val latenciaMs: Double,
@@ -21,6 +26,7 @@ data class ResultadoAmostragemPing(
     val maxMs: Double = 0.0,
     val p95Ms: Double = 0.0,
     val picos: Int = 0,
+    val timeoutsConsecutivosMax: Int = 0,
 )
 
 /**
@@ -66,7 +72,69 @@ object AnalisadorAmostragemPing {
             maxMs = validos.maxOrNull() ?: 0.0,
             p95Ms = percentil95(validos),
             picos = validos.size - usados.size,
+            timeoutsConsecutivosMax = timeoutsConsecutivosMax(semPrimeiro),
         )
+    }
+
+    /**
+     * Confianca amostral da perda de pacotes deste [resultado] — compõe em cima do que
+     * [analisar] já calculou, sem duplicar mediana/jitter/p95 (Camillo, arquitetura
+     * "Confiabilidade estatística do diagnóstico de rede", seção 6/7 de
+     * `.agents/architecture-plan.md`).
+     *
+     * Regra (decidida com o Luiz — não reabrir):
+     * - 0 timeouts → [ConfiancaAmostral.SUFICIENTE];
+     * - 100% de timeout (nenhuma amostra válida) → [ConfiancaAmostral.SUFICIENTE] — falha
+     *   total é o oposto de um evento isolado, não exige confirmação para ser confiável;
+     * - 2+ timeouts (consecutivos ou não) → [ConfiancaAmostral.SUFICIENTE];
+     * - exatamente 1 timeout isolado → [ConfiancaAmostral.INSUFICIENTE], MESMO que
+     *   [confirmacaoExecutada] seja `true` e a confirmação não tenha encontrado mais
+     *   nenhum timeout (evento confirmado como isolado continua isolado, não vira
+     *   crítico sozinho).
+     *
+     * [perdaPercentual] nunca é forçado a 0 — é sempre o valor real medido por
+     * [analisar]; só a interpretação ([ConfiancaAmostral]) muda.
+     */
+    fun avaliarConfianca(
+        resultado: ResultadoAmostragemPing,
+        confirmacaoExecutada: Boolean,
+    ): EvidenciaPerdaPacotes {
+        val timeouts = resultado.timeouts
+        val perdaTotal = resultado.totalAmostras > 0 && timeouts == resultado.totalAmostras
+
+        val confianca =
+            when {
+                timeouts == 0 -> ConfiancaAmostral.SUFICIENTE
+                perdaTotal -> ConfiancaAmostral.SUFICIENTE
+                timeouts >= 2 -> ConfiancaAmostral.SUFICIENTE
+                else -> ConfiancaAmostral.INSUFICIENTE
+            }
+
+        return EvidenciaPerdaPacotes(
+            perdaPercentual = resultado.perdaPercentual,
+            timeoutsTotais = timeouts,
+            timeoutsConsecutivosMax = resultado.timeoutsConsecutivosMax,
+            amostrasEfetivas = resultado.totalAmostras,
+            confirmacaoExecutada = confirmacaoExecutada,
+            confianca = confianca,
+        )
+    }
+
+    // Maior sequência de timeouts (amostra nula) consecutivos na lista bruta pós
+    // warm-up — usado por [avaliarConfianca] para diferenciar timeout isolado de
+    // perda recorrente/consecutiva, ainda que ambos possam somar o mesmo `timeouts`.
+    private fun timeoutsConsecutivosMax(amostras: List<Double?>): Int {
+        var atual = 0
+        var maximo = 0
+        for (amostra in amostras) {
+            if (amostra == null) {
+                atual += 1
+                maximo = maxOf(maximo, atual)
+            } else {
+                atual = 0
+            }
+        }
+        return maximo
     }
 
     private fun mediana(valores: List<Double>): Double {

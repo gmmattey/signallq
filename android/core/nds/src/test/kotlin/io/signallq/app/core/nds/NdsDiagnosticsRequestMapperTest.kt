@@ -1,5 +1,6 @@
 package io.signallq.app.core.nds
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticContext
 import io.signallq.app.core.diagnostico.DiagnosticInput
@@ -124,6 +125,11 @@ class NdsDiagnosticsRequestMapperTest {
                         perdaPercentual = 0.5,
                         bufferbloatMs = 65.0,
                         rttGatewayMs = 4,
+                        // .agents/architecture-plan.md ("Confiabilidade estatistica do
+                        // diagnostico de rede", secao 8): sem confianca == SUFICIENTE,
+                        // perdaPercentual fica omitido do payload NDS (ver testes
+                        // dedicados de ConfiancaAmostral mais abaixo).
+                        perdaConfianca = ConfiancaAmostral.SUFICIENTE,
                     ),
                 wifi = WifiDiagnosticInput(rssiDbm = -55, linkSpeedMbps = 433, frequenciaMhz = 5180, dispositivosNaRede = 6),
             )
@@ -481,6 +487,7 @@ class NdsDiagnosticsRequestMapperTest {
                         perdaPercentual = 0.5,
                         bufferbloatMs = 65.0,
                         rttGatewayMs = 4,
+                        perdaConfianca = ConfiancaAmostral.SUFICIENTE,
                     ),
                 dns = DnsDiagnosticInput(currentDnsIp = "8.8.8.8", currentDnsLatencyMs = 35),
                 fibra = FibraDiagnosticInput(rxPowerDbm = -22.0, txPowerDbm = 2.5, temperatureCelsius = 45.0, isUp = true),
@@ -911,5 +918,59 @@ class NdsDiagnosticsRequestMapperTest {
 
         val json = request.toJson()
         assertFalse("bloco plan nao deve virar chave quando null", json.has("plan"))
+    }
+
+    // -------------------------------------------------------------------------
+    // perdaConfianca (.agents/architecture-plan.md, "Confiabilidade estatistica do
+    // diagnostico de rede", secao 8) — checkpoint 7 do plano de implementacao.
+    // -------------------------------------------------------------------------
+
+    private fun internetComPerdaEConfianca(perdaConfianca: ConfiancaAmostral?) =
+        InternetDiagnosticInput(
+            downloadMbps = 100.0,
+            uploadMbps = 20.0,
+            latencyMs = 15.0,
+            jitterMs = 3.0,
+            perdaPercentual = 5.0,
+            bufferbloatMs = 10.0,
+            packetLossSource = "estimated",
+            perdaConfianca = perdaConfianca,
+        )
+
+    @Test
+    fun `perdaPercentual omitido do payload NDS quando confianca amostral e insuficiente`() {
+        val request =
+            DiagnosticInput(internet = internetComPerdaEConfianca(ConfiancaAmostral.INSUFICIENTE))
+                .toNdsDiagnosticsRequest(appVersion = "1.0.0")
+
+        assertNull("1 timeout isolado nao deve chegar a IA como percentual confiavel", request.speed?.packetLossPercent)
+        assertNull(request.quality?.packetLossPercent)
+
+        val json = request.toJson()
+        assertFalse("speed.packet_loss_percent nao deve virar chave quando confianca insuficiente", json.getJSONObject("speed").has("packet_loss_percent"))
+        assertFalse("quality.packetLossPercent nao deve virar chave quando confianca insuficiente", json.getJSONObject("quality").has("packetLossPercent"))
+    }
+
+    @Test
+    fun `perdaPercentual omitido do payload NDS quando confianca amostral e desconhecida (historico legado)`() {
+        val request =
+            DiagnosticInput(internet = internetComPerdaEConfianca(perdaConfianca = null))
+                .toNdsDiagnosticsRequest(appVersion = "1.0.0")
+
+        assertNull(
+            "ausencia de perdaConfianca (historico legado sem o campo) e tratada como insuficiente, nunca inventada",
+            request.speed?.packetLossPercent,
+        )
+        assertNull(request.quality?.packetLossPercent)
+    }
+
+    @Test
+    fun `perdaPercentual reportado normalmente no payload NDS quando confianca amostral e suficiente`() {
+        val request =
+            DiagnosticInput(internet = internetComPerdaEConfianca(ConfiancaAmostral.SUFICIENTE))
+                .toNdsDiagnosticsRequest(appVersion = "1.0.0")
+
+        assertEquals(5.0, request.speed?.packetLossPercent)
+        assertEquals(5.0, request.quality?.packetLossPercent)
     }
 }

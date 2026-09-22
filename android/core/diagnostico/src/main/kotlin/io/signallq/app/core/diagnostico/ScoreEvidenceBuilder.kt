@@ -193,7 +193,7 @@ object ScoreEvidenceBuilder {
                 perda >= 1.0 -> ScoreEngine.notaParaStatus(MetricStatus.ruim)
                 else -> ScoreEngine.notaParaStatus(MetricClassifier.classificarPerdaPacotes(perda))
             }
-        return EvidenceScore("perdaPacotesStatus", nota, provenance)
+        return EvidenceScore("perdaPacotesStatus", nota, provenance, confiancaAmostral = internet.perdaConfianca)
     }
 
     private fun bufferbloatStatus(input: DiagnosticInput): EvidenceScore {

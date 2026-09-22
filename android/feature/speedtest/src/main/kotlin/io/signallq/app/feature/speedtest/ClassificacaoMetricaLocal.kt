@@ -51,3 +51,13 @@ import io.signallq.app.core.diagnostico.MetricStatus
  */
 internal fun classificarBufferbloatLocal(deltaMs: Double): MetricStatus =
     MetricClassifier.classificarBufferbloat(deltaMs)
+
+/**
+ * Mesmo seam acima, para [MetricClassifier.classificarJitter] — usado por
+ * [ExecutorSpeedtestCloudflare] como um dos 4 gatilhos da janela de confirmação de
+ * amostragem (Camillo, "Confiabilidade estatística do diagnóstico de rede",
+ * `.agents/architecture-plan.md` seção 7, item 3: jitter classificado como
+ * regular/ruim no baseline dispara +20 probes de confirmação).
+ */
+internal fun classificarJitterLocal(jitterMs: Double): MetricStatus =
+    MetricClassifier.classificarJitter(jitterMs)

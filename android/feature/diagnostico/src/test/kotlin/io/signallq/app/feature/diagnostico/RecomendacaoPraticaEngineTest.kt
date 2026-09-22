@@ -1,6 +1,7 @@
 package io.signallq.app.feature.diagnostico
 
 import io.signallq.app.core.diagnostico.BandaWifi
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DiagnosticResult
@@ -656,6 +657,11 @@ class RecomendacaoPraticaEngineTest {
 
     @Test
     fun `situacao 11 - mostra perda de pacotes como conclusao forte quando fonte e medicao confiavel`() {
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): "critico" (usado por podeConcluir) agora exige tambem
+        // perdaConfianca == SUFICIENTE, nao so packetLossSource != "estimated" — 1
+        // timeout isolado nunca produzia essa combinacao em producao mesmo antes desta
+        // mudanca (packetLossSource == "modem" e inatingivel via timeout HTTP).
         val input =
             DiagnosticInput(
                 internet =
@@ -666,12 +672,33 @@ class RecomendacaoPraticaEngineTest {
                         jitterMs = 3.0,
                         perdaPercentual = 4.0,
                         packetLossSource = "modem",
+                        perdaConfianca = ConfiancaAmostral.SUFICIENTE,
                     ),
             )
         val r = RecomendacaoPraticaEngine.recomendar(input, achadosOk())
         val rec = r.first { it.id == "REC-11" }
         assertTrue(rec.podeConcluir)
         assertFalse(rec.mensagemUsuario.contains("indício"))
+    }
+
+    @Test
+    fun `situacao 11 - perda isolada de confianca insuficiente NAO produz conclusao forte mesmo com fonte nao-estimada`() {
+        val input =
+            DiagnosticInput(
+                internet =
+                    InternetDiagnosticInput(
+                        downloadMbps = 80.0,
+                        uploadMbps = 20.0,
+                        latencyMs = 20.0,
+                        jitterMs = 3.0,
+                        perdaPercentual = 4.0,
+                        packetLossSource = "modem",
+                        perdaConfianca = ConfiancaAmostral.INSUFICIENTE,
+                    ),
+            )
+        val r = RecomendacaoPraticaEngine.recomendar(input, achadosOk())
+        val rec = r.first { it.id == "REC-11" }
+        assertFalse(rec.podeConcluir)
     }
 
     @Test

@@ -1,5 +1,7 @@
 ﻿package io.signallq.app.feature.speedtest
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
+
 data class ResultadoSpeedtest(
     val timestampEpochMs: Long,
     val specVersion: String,
@@ -38,4 +40,14 @@ data class ResultadoSpeedtest(
      *  de verdade sobre "posso tratar isto como medicao valida" — substitui a checagem
      *  isolada de [contaminado]/[uploadNaoDetectado] pelos consumidores. */
     val status: MeasurementStatus = MeasurementStatus.COMPLETE,
+    /**
+     * Confiança amostral de [perdaPercentual] — eixo ortogonal a [packetLossSource]
+     * (.agents/architecture-plan.md, "Confiabilidade estatística do diagnóstico de
+     * rede"). `null` = não calculada (execução antiga/histórico legado antes desta
+     * mudança) — consumidores devem tratar `null` como
+     * [ConfiancaAmostral.INSUFICIENTE] só na exibição/reclassificação, nunca
+     * recalcular o passado. [perdaPercentual] em si NUNCA é forçado a 0 por causa
+     * disto — é sempre o valor real medido.
+     */
+    val perdaConfianca: ConfiancaAmostral? = null,
 )

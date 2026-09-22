@@ -16,6 +16,7 @@ import io.signallq.app.feature.speedtest.EstadoExecucaoSpeedtest
 import io.signallq.app.feature.speedtest.ExecutorSpeedtest
 import io.signallq.app.feature.speedtest.MeasurementStatus
 import io.signallq.app.network.IspInfoCache
+import io.signallq.app.paraColunaPersistencia
 import io.signallq.app.ui.BancoOperadoras
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -200,6 +201,18 @@ class SpeedtestPersistenceCoordinator
                                 // versao canonica das regras vigentes no momento da persistencia.
                                 executionId = resultado.executionId,
                                 rulesVersion = DiagnosticRulesVersion.CURRENT,
+                                // .agents/architecture-plan.md ("Confiabilidade estatística do
+                                // diagnóstico de rede", passo 5) — perdaConfianca e os campos de
+                                // latência (p95/máximo/picos) que o motor já calculava mas não
+                                // persistia. resultado sempre vem de uma execução real concluída
+                                // do ExecutorSpeedtestCloudflare, então os valores aqui são o
+                                // cálculo de verdade desta execução (nunca um default 0.0/null
+                                // fingindo dado real) — a nulidade só existe para linhas
+                                // legadas, gravadas antes desta coluna existir.
+                                perdaConfianca = resultado.perdaConfianca?.paraColunaPersistencia(),
+                                latenciaP95Ms = resultado.diagnosticoFases.latenciaP95Ms,
+                                latenciaMaxMs = resultado.diagnosticoFases.latenciaMaxMs,
+                                latenciaPicos = resultado.diagnosticoFases.latenciaPicos,
                             ),
                         )
                         ultimaMedicaoId = novoId

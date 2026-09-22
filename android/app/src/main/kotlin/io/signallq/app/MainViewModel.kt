@@ -851,6 +851,7 @@ class MainViewModel
                                 perdaPercentual = it.perdaPercentual,
                                 bufferbloatMs = it.bufferbloatMs,
                                 packetLossSource = it.packetLossSource,
+                                perdaConfianca = it.perdaConfianca.paraConfiancaAmostral(),
                             )
                         }
                     val wifiInput =
@@ -2633,6 +2634,7 @@ class MainViewModel
                     perdaPercentual = resultado.perdaPercentual,
                     bufferbloatMs = resultado.bufferbloatMs,
                     packetLossSource = resultado.packetLossSource,
+                    perdaConfianca = resultado.perdaConfianca,
                 )
             }
             return bancoDados.medicaoDao().observarUltimas(1).first().firstOrNull()?.let {
@@ -2644,6 +2646,7 @@ class MainViewModel
                     perdaPercentual = it.perdaPercentual,
                     bufferbloatMs = it.bufferbloatMs,
                     packetLossSource = it.packetLossSource,
+                    perdaConfianca = it.perdaConfianca.paraConfiancaAmostral(),
                 )
             }
         }

@@ -66,7 +66,13 @@ class ScoreEvidenceBuilderTest {
     }
 
     @Test
-    fun `diagnostico com perda de pacotes real critica aplica teto mesmo com resto saudavel`() {
+    fun `diagnostico com perda de pacotes confirmada critica aplica teto mesmo com resto saudavel`() {
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): o gate do teto migrou de packetLossSource == "modem"
+        // (Provenance.medida, inatingivel em producao) para perdaConfianca ==
+        // SUFICIENTE (2+ timeouts/consecutivos/confirmados). Comportamento esperado
+        // preservado — perda critica "de verdade" (agora: confirmada) continua
+        // limitando o score.
         val input =
             DiagnosticInput(
                 connectionType = ConnectionType.wifi,
@@ -78,13 +84,39 @@ class ScoreEvidenceBuilderTest {
                         jitterMs = 2.0,
                         perdaPercentual = 5.0,
                         bufferbloatMs = 5.0,
-                        packetLossSource = "modem",
+                        packetLossSource = "estimated",
+                        perdaConfianca = ConfiancaAmostral.SUFICIENTE,
                     ),
                 wifi = WifiDiagnosticInput(rssiDbm = -45, linkSpeedMbps = 400, frequenciaMhz = 5180),
                 dns = DnsDiagnosticInput(currentDnsLatencyMs = 20),
             )
         val report = DiagnosticRunner.run(input)
         assertTrue("score=${report.scoreConexao}", report.scoreConexao <= ScoreEngine.TETO_PERDA_PACOTES_CRITICA)
+    }
+
+    @Test
+    fun `diagnostico com perda critica isolada de confianca insuficiente NAO aplica teto`() {
+        // Caso novo pedido pelo Luiz: 1 timeout isolado (confianca insuficiente) nao
+        // aplica o teto critico sozinho, mesmo com percentual medido acima de 3%.
+        val input =
+            DiagnosticInput(
+                connectionType = ConnectionType.wifi,
+                internet =
+                    InternetDiagnosticInput(
+                        downloadMbps = 200.0,
+                        uploadMbps = 50.0,
+                        latencyMs = 15.0,
+                        jitterMs = 2.0,
+                        perdaPercentual = 5.0,
+                        bufferbloatMs = 5.0,
+                        packetLossSource = "estimated",
+                        perdaConfianca = ConfiancaAmostral.INSUFICIENTE,
+                    ),
+                wifi = WifiDiagnosticInput(rssiDbm = -45, linkSpeedMbps = 400, frequenciaMhz = 5180),
+                dns = DnsDiagnosticInput(currentDnsLatencyMs = 20),
+            )
+        val report = DiagnosticRunner.run(input)
+        assertTrue("score=${report.scoreConexao}", report.scoreConexao > ScoreEngine.TETO_PERDA_PACOTES_CRITICA)
     }
 
     @Test

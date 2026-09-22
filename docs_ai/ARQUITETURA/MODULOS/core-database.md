@@ -1,10 +1,10 @@
 ---
 title: "Módulo :coreDatabase"
-description: "Banco Room local do Consumer: 8 entidades, 7 DAOs, schema na versão 20 com 19 migrations encadeadas."
+description: "Banco Room local do Consumer: 8 entidades, 7 DAOs, schema na versão 21 com 20 migrations encadeadas."
 type: "técnico"
 status: "ativo"
 owner: "Camilo"
-last_updated: "2026-08-21"
+last_updated: "2026-09-22"
 ---
 
 # `:coreDatabase`
@@ -45,9 +45,9 @@ Nenhuma dependência de outro módulo do monorepo. `ResolvedorNetworkId` (`src/m
 
 | Arquivo/classe | Responsabilidade |
 |---|---|
-| `src/main/kotlin/io/signallq/app/core/database/SignallQDatabase.kt` | `@Database` com 8 entities, `version = 20`, `exportSchema = true`; expõe os 7 Daos |
-| `src/main/kotlin/io/signallq/app/core/database/CoreDatabaseModulo.kt` | define as 19 migrations e monta o `Room.databaseBuilder` (arquivo `linkaKotlin.db`) |
-| `src/main/kotlin/io/signallq/app/core/database/MedicaoEntity.kt` / `MedicaoDao.kt` | histórico de medições de speedtest/monitoramento; `networkId` (GH#1707) identifica a rede da medição pra comparação de reteste |
+| `src/main/kotlin/io/signallq/app/core/database/SignallQDatabase.kt` | `@Database` com 8 entities, `version = 21`, `exportSchema = true`; expõe os 7 Daos |
+| `src/main/kotlin/io/signallq/app/core/database/CoreDatabaseModulo.kt` | define as 20 migrations e monta o `Room.databaseBuilder` (arquivo `linkaKotlin.db`) |
+| `src/main/kotlin/io/signallq/app/core/database/MedicaoEntity.kt` / `MedicaoDao.kt` | histórico de medições de speedtest/monitoramento; `networkId` (GH#1707) identifica a rede da medição pra comparação de reteste; `perdaConfianca`/`latenciaP95Ms`/`latenciaMaxMs`/`latenciaPicos` (migração 20→21, `.agents/architecture-plan.md` "Confiabilidade estatística do diagnóstico de rede") — colunas nullable, `NULL` para todo registro anterior à migração, nunca inferidas retroativamente |
 | `src/main/kotlin/io/signallq/app/core/database/rede/ResolvedorNetworkId.kt` | resolve `networkId` estável (BSSID/SSID Wi-Fi ou operadora móvel) — promovido de `:featureSettings` na issue #1707 |
 | `src/main/kotlin/io/signallq/app/core/database/ApelidoDispositivoEntity.kt` / `ApelidoDispositivoDao.kt` | apelido por MAC de dispositivo da rede local |
 | `src/main/kotlin/io/signallq/app/core/database/chat/ChatSessionEntity.kt`, `ChatMessageEntity.kt`, `ChatSessionDao.kt` | sessões e mensagens do chat de diagnóstico |
@@ -58,7 +58,7 @@ Nenhuma dependência de outro módulo do monorepo. `ResolvedorNetworkId` (`src/m
 
 ### Schema Room
 
-- **Versão atual:** `20`
+- **Versão atual:** `21`
 - **`exportSchema`:** `true`; `room.schemaLocation` = `$projectDir/schemas`, `room.incremental` = `true`
 - **Arquivo do banco:** `linkaKotlin.db` (nome legado, mantido para não quebrar bases instaladas)
 
@@ -73,9 +73,9 @@ Nenhuma dependência de outro módulo do monorepo. `ResolvedorNetworkId` (`src/m
 | `ProviderDirectoryCacheEntity` | `provider_directory_cache` |
 | `AnalyticsOutboxEntity` | `analytics_outbox` |
 
-**Migrations:** 19 objetos `Migration`, de 1→2 até 19→20, todos registrados por `addMigrations` em `criarBanco`. Não há `fallbackToDestructiveMigration`. A última (`MIGRATION_19_20`, `internal`, GH#1787) cria `index_analytics_outbox_nextAttemptAtEpochMs` via `CREATE INDEX IF NOT EXISTS` — idempotente pra quem já tem o índice físico (criado pela 17→18 via SQL bruto) e pra quem não tem (instalação nova antes desta correção). Nenhum dado é alterado.
+**Migrations:** 20 objetos `Migration`, de 1→2 até 20→21, todos registrados por `addMigrations` em `criarBanco`. Não há `fallbackToDestructiveMigration`. A penúltima (`MIGRATION_19_20`, `internal`, GH#1787) cria `index_analytics_outbox_nextAttemptAtEpochMs` via `CREATE INDEX IF NOT EXISTS` — idempotente pra quem já tem o índice físico (criado pela 17→18 via SQL bruto) e pra quem não tem (instalação nova antes desta correção). A última (`MIGRATION_20_21`) adiciona 4 colunas nullable a `medicao` (`perdaConfianca TEXT`, `latenciaP95Ms REAL`, `latenciaMaxMs REAL`, `latenciaPicos INTEGER`) via `ALTER TABLE ... ADD COLUMN` — parte da fatia "Confiabilidade estatística do diagnóstico de rede" (`.agents/architecture-plan.md`), puramente aditiva. Nenhum dado é alterado em nenhuma das duas.
 
-**Testes de migration existentes** (`src/androidTest/.../`): `Migration9Para10Test`, `Migration13Para14Test`, `Migration14Para15Test`, `Migration15Para16Test`, `Migration16Para17Test`, `Migration17Para18Test`, `Migration18Para19Test`, `Migration19Para20Test` — 8 das 19 migrations têm teste dedicado. `Migration19Para20Test` cobre os 3 cenários reais: banco v19 com o índice físico já existente (quem migrou pela 17→18), banco v19 sem o índice (hipótese defensiva) e instalação nova direto na v20 via `Room.databaseBuilder` (sem migration nenhuma). Também há `ChatSessionDaoTest`, `AnalyticsOutboxDaoTest`, `RecommendationHistoryDaoTest` e `MedicaoDaoNetworkIdTest` (query `buscarUltimaComparavelNaRede`, GH#1707).
+**Testes de migration existentes** (`src/androidTest/.../`): `Migration9Para10Test`, `Migration13Para14Test`, `Migration14Para15Test`, `Migration15Para16Test`, `Migration16Para17Test`, `Migration17Para18Test`, `Migration18Para19Test`, `Migration19Para20Test`, `Migration20Para21Test` — 9 das 20 migrations têm teste dedicado. `Migration19Para20Test` cobre os 3 cenários reais: banco v19 com o índice físico já existente (quem migrou pela 17→18), banco v19 sem o índice (hipótese defensiva) e instalação nova direto na v20 via `Room.databaseBuilder` (sem migration nenhuma). `Migration20Para21Test` cobre banco v20 existente (linha antiga recebe as 4 colunas novas como `NULL`) e escrita nova pós-migração. Também há `ChatSessionDaoTest`, `AnalyticsOutboxDaoTest`, `RecommendationHistoryDaoTest`, `MedicaoDaoNetworkIdTest` (query `buscarUltimaComparavelNaRede`, GH#1707) e `MedicaoDaoPerdaConfiancaTest` (round-trip das 4 colunas novas).
 
 ## Riscos e dívidas
 
@@ -88,6 +88,6 @@ Nenhuma dependência de outro módulo do monorepo. `ResolvedorNetworkId` (`src/m
 - **Schemas de nomes antigos ainda versionados:** `schemas/io.linka.app.kotlin.core.database.LinkaDatabase/` (`1..10`) e `schemas/io.signallq.app.core.database.VelooDatabase/` (`10.json`) permanecem no repositório — três nomes de banco na história do produto (Linka → Veloo → SignallQ).
 - **Nomes legados em produção:** o arquivo do banco continua `linkaKotlin.db`. Trocar exige migração de dados, não é rename cosmético.
 - **Path físico alinhado ao package `io.signallq.app.*`** — migração de `io/signallq/app/kotlin/` concluída em 2026-08-15 (#1645).
-- **Cobertura parcial de migrations:** 11 das 19 migrations não têm teste instrumentado dedicado (nenhuma de 1→2 a 8→9, nem 10→11..12→13).
+- **Cobertura parcial de migrations:** 11 das 20 migrations não têm teste instrumentado dedicado (nenhuma de 1→2 a 8→9, nem 10→11..12→13).
 - Nenhum arquivo acima de 800 linhas.
 - **`networkId` (GH#1707) é `null` pra toda medição gravada por `MonitoramentoWorker`** (medição sintética "monitor" — não lê SSID/BSSID/operadora, só RSSI) e pra qualquer linha anterior à migração 18→19. A comparação de reteste (2.0.09e, ainda não implementada nesta fatia) precisa tratar `null` como "sem par comparável", nunca inventar rede.

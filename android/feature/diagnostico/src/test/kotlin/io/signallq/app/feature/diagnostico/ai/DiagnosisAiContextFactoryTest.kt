@@ -1,5 +1,6 @@
 package io.signallq.app.feature.diagnostico.ai
 
+import io.signallq.app.core.diagnostico.ConfiancaAmostral
 import io.signallq.app.core.diagnostico.ConnectionType
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DiagnosticReport
@@ -386,6 +387,10 @@ class DiagnosisAiContextFactoryTest {
 
     @Test
     fun instrucaoTom_eSerializadoNoJson_quandoPresente() {
+        // .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): perdaPacotesPercentual so chega ao contexto da IA quando
+        // perdaConfianca == SUFICIENTE (ver AiModels.internetToMetricas) — sem isso o
+        // badCount contaria so 1 metrica ruim (jitter), nao 2.
         val input =
             DiagnosticInput(
                 connectionType = ConnectionType.wifi,
@@ -396,6 +401,7 @@ class DiagnosisAiContextFactoryTest {
                         latencyMs = 30.0,
                         jitterMs = 60.0, // ruim
                         perdaPercentual = 3.0, // ruim
+                        perdaConfianca = ConfiancaAmostral.SUFICIENTE,
                     ),
             )
         val ctx = DiagnosisAiContextFactory.from(fakeReport(), input, ConnectionType.wifi)

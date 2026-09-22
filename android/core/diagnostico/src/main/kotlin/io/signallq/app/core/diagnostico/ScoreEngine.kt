@@ -157,7 +157,8 @@ object ScoreEngine {
      * Tetos por metrica critica isolada — mesmo padrao "pior caso vence" do
      * [io.signallq.app.core.network.contracts.fibra.ClassificadorSaudeGpon.classificar],
      * aplicado como limite superior porque aqui a escala e nota (alto = bom):
-     * - perda de pacotes REAL (nao estimada) critica (>=3%) -> teto 45
+     * - perda de pacotes critica (>=3%) COM confianca amostral suficiente (2+ timeouts,
+     *   consecutivos ou recorrentes confirmados — nao 1 timeout isolado) -> teto 45
      * - bufferbloat critico (>100ms) -> teto 60
      * - fibra RX fora da faixa critica (< -27 dBm) -> teto 35
      * - RSSI muito fraco (critico) + download baixo (nota de velocidade ruim/critico) -> teto 65
@@ -170,8 +171,14 @@ object ScoreEngine {
     ): Int {
         val tetos = mutableListOf<Int>()
 
+        // Camillo/Luiz (.agents/architecture-plan.md, "Confiabilidade estatística do
+        // diagnóstico de rede"): o teto de perda crítica usava provenance == medida,
+        // que perda via timeout HTTP nunca atinge de verdade (nunca é captura real de
+        // pacote) — o gate correto é confiança amostral: 2+ timeouts, timeouts
+        // consecutivos ou perda recorrente confirmada SIM devem poder escalar o score,
+        // 1 timeout isolado (mesmo confirmado como isolado) não deve sozinho.
         val perda = porNome["perdaPacotesStatus"]
-        if (perda?.provenance == Provenance.medida && perda.nota != null && perda.nota <= NOTA_CRITICO) {
+        if (perda?.confiancaAmostral == ConfiancaAmostral.SUFICIENTE && perda.nota != null && perda.nota <= NOTA_CRITICO) {
             tetos += TETO_PERDA_PACOTES_CRITICA
         }
 

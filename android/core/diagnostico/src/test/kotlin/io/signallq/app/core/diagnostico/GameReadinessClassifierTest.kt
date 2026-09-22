@@ -21,6 +21,7 @@ class GameReadinessClassifierTest {
         bufferbloat: Double? = 10.0,
         perda: Double? = 0.0,
         packetLossSource: String? = "modem",
+        perdaConfianca: ConfiancaAmostral? = null,
     ) = InternetDiagnosticInput(
         downloadMbps = download,
         uploadMbps = 20.0,
@@ -29,6 +30,7 @@ class GameReadinessClassifierTest {
         perdaPercentual = perda,
         bufferbloatMs = bufferbloat,
         packetLossSource = packetLossSource,
+        perdaConfianca = perdaConfianca,
     )
 
     private fun wifiForte(
@@ -84,13 +86,31 @@ class GameReadinessClassifierTest {
     }
 
     @Test
-    fun `fps competitivo ruim com perda real maior ou igual a 1 por cento`() {
+    fun `fps competitivo ruim com perda confirmada maior ou igual a 1 por cento`() {
+        // GH .agents/architecture-plan.md ("Confiabilidade estatistica do diagnostico de
+        // rede"): o gate mudou de `packetLossSource == "modem"` (Provenance.medida,
+        // inatingivel em producao — nunca ha captura real de pacote via timeout HTTP)
+        // para `perdaConfianca == SUFICIENTE` (2+ timeouts/consecutivos/confirmados).
+        // O comportamento esperado pelo teste original (perda >=1% "de verdade" deve
+        // escalar a Ruim) e preservado — so o mecanismo que sinaliza "de verdade" mudou.
         val r =
             GameReadinessClassifier.classificar(
                 Categoria.FPS_COMPETITIVO,
-                input(internet = internet(perda = 1.0, packetLossSource = "modem")),
+                input(internet = internet(perda = 1.0, perdaConfianca = ConfiancaAmostral.SUFICIENTE)),
             )
         assertEquals(ReadinessStatus.Ruim, r.status)
+    }
+
+    @Test
+    fun `fps competitivo NAO fica ruim com perda isolada de confianca insuficiente mesmo maior ou igual a 1 por cento`() {
+        // Caso novo pedido pelo Luiz: 1 timeout isolado (confianca insuficiente) nunca
+        // escala sozinho a Ruim, mesmo que o percentual medido bata o corte de 1%.
+        val r =
+            GameReadinessClassifier.classificar(
+                Categoria.FPS_COMPETITIVO,
+                input(internet = internet(perda = 1.0, perdaConfianca = ConfiancaAmostral.INSUFICIENTE)),
+            )
+        assertEquals(ReadinessStatus.Atencao, r.status)
     }
 
     @Test

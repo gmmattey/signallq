@@ -357,17 +357,21 @@ object GameReadinessClassifier {
             ReadinessStatus.Ruim -> 2
         }
 
-    /** Perda de pacotes: Bom sem perda real. Atencao quando estimada/qualquer perda
-     *  parcial. Ruim apenas com perda REAL MEDIDA >=1% — mesmo principio de
-     *  [UsageProfileClassifier.perdaDimensao] (perda so estimada nunca eleva a Ruim
-     *  sozinha). Retorna null quando o dado nao esta disponivel. */
+    /** Perda de pacotes: Bom sem perda real. Atencao quando qualquer perda parcial
+     *  sem confianca amostral suficiente. Ruim apenas quando >=1% E a amostra tem
+     *  [ConfiancaAmostral.SUFICIENTE] (`.agents/architecture-plan.md`, "Confiabilidade
+     *  estatistica do diagnostico de rede" — substitui o gate antigo
+     *  `provenance == Provenance.medida`, inatingivel via timeout HTTP: perda so
+     *  estimada por timeout nunca vira captura real de pacote, mas 2+ timeouts ou
+     *  timeouts consecutivos/confirmados SIM devem poder escalar). Retorna null
+     *  quando o dado nao esta disponivel. */
     private fun perdaFaixa(internet: InternetDiagnosticInput?): ReadinessStatus? {
         val perda = internet?.perdaPercentual ?: return null
         val fonte = internet.packetLossSource
         if (fonte == "naoMedido" || fonte == "unknown" || fonte == null) return null
-        val medida = fonte != "estimated"
+        val confiancaSuficiente = internet.perdaConfianca == ConfiancaAmostral.SUFICIENTE
         return when {
-            medida && perda >= 1.0 -> ReadinessStatus.Ruim
+            confiancaSuficiente && perda >= 1.0 -> ReadinessStatus.Ruim
             perda > 0.0 -> ReadinessStatus.Atencao
             else -> ReadinessStatus.Bom
         }
