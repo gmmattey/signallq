@@ -20,15 +20,15 @@ describe('getVerdict', () => {
 })
 
 describe('getUsageLevels', () => {
-  it('rates a fast, low-latency connection as tranquilo across the board', () => {
+  it('rates a fast, low-latency connection as Ótimo across the board (linguagem do app Android)', () => {
     const levels = getUsageLevels(150, 20, 15)
-    expect(levels.every((l) => l.s === 'Tranquilo')).toBe(true)
+    expect(levels.every((l) => l.s === 'Ótimo')).toBe(true)
   })
 
-  it('rates a slow connection as travando', () => {
+  it('rates a slow connection as Ruim', () => {
     const levels = getUsageLevels(1, 0.5, 300)
-    const hd = levels.find((l) => l.n === 'Vídeo em HD')
-    expect(hd?.s).toBe('Vai travar')
+    const videos = levels.find((l) => l.n === 'Vídeos em alta qualidade')
+    expect(videos?.s).toBe('Ruim')
   })
 
   it('handles null measurements as zero without throwing', () => {

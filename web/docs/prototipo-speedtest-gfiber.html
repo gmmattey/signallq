@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignallQ Speedtest — Protótipo Estilo GFiber</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-mono-num {
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    /* Dial & needle animations */
+    .needle {
+      transform-origin: 200px 200px;
+      transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .pulse-ring {
+      animation: pulseAnimation 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseAnimation {
+      0%, 100% { transform: scale(1); opacity: 0.35; }
+      50% { transform: scale(1.08); opacity: 0.1; }
+    }
+    /* Glow utilities */
+    .teal-glow {
+      box-shadow: 0 0 30px -5px rgba(0, 168, 126, 0.35);
+    }
+    .purple-glow {
+      box-shadow: 0 0 30px -5px rgba(109, 40, 217, 0.35);
+    }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] text-[#1F1F1F] min-h-screen flex flex-col justify-between selection:bg-[#E5FFF8]">
+
+  <!-- Top bar with brand & theme switcher -->
+  <header class="border-b border-[#E8EAED] bg-white sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div id="brand-badge" class="w-9 h-9 rounded-xl bg-[#008064] text-white flex items-center justify-center font-bold text-lg shadow-sm transition-colors duration-300">
+          Q
+        </div>
+        <div>
+          <span class="font-extrabold tracking-tight text-[18px] text-[#1F1F1F]">SignallQ</span>
+          <span class="text-xs uppercase font-bold tracking-wider px-2 py-0.5 ml-2 rounded-full bg-[#E8F0FE] text-[#1A73E8]">GFiber Concept</span>
+        </div>
+      </div>
+
+      <!-- Controls: Theme toggle + speed simulation profile -->
+      <div class="flex items-center gap-3 text-sm">
+        <div class="hidden sm:flex items-center bg-[#F1F3F4] p-1 rounded-full text-xs font-semibold">
+          <button id="theme-gfiber-btn" onclick="setTheme('gfiber')" class="px-3 py-1.5 rounded-full bg-white text-[#1F1F1F] shadow-sm transition-all">
+            GFiber Teal
+          </button>
+          <button id="theme-signallq-btn" onclick="setTheme('signallq')" class="px-3 py-1.5 rounded-full text-[#5F6368] hover:text-[#1F1F1F] transition-all">
+            SignallQ Roxo
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 bg-[#F1F3F4] px-3 py-1.5 rounded-full text-xs text-[#444746]">
+          <span class="font-medium">Perfil:</span>
+          <select id="profile-select" class="bg-transparent font-bold text-[#1F1F1F] outline-none cursor-pointer">
+            <option value="fiber500">Fibra 500 Mbps</option>
+            <option value="fiber1000">Fibra 1 Gbps</option>
+            <option value="fiber100">Banda Larga 100 Mbps</option>
+            <option value="wifiInstavel">Wi-Fi com Oscilação</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Speedtest Stage -->
+  <main class="max-w-4xl w-full mx-auto px-4 py-8 md:py-12 flex-1 flex flex-col justify-center">
+
+    <!-- Card Container -->
+    <div class="bg-white rounded-[32px] border border-[#E8EAED] shadow-[0_12px_40px_-15px_rgba(0,0,0,0.07)] p-6 md:p-10 relative overflow-hidden transition-all duration-300">
+      
+      <!-- Top Metrics Dashboard Bar (GFiber Style) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+        
+        <!-- PING -->
+        <div id="tile-ping" class="p-4 rounded-2xl bg-[#F8F9FA] border border-[#E8EAED] transition-all duration-300">
+          <div class="flex items-center justify-between text-xs font-semibold text-[#5F6368] mb-1">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              LATÊNCIA
+            </span>
+            <span id="badge-ping" class="hidden w-2 h-2 rounded-full bg-[#008064] animate-ping"></span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="val-ping" class="font-mono-num text-2xl md:text-3xl font-extrabold text-[#1F1F1F]">—</span>
+            <span class="text-xs font-medium text-[#5F6368]">ms</span>
+          </div>
+        </div>
+
+        <!-- JITTER -->
+        <div id="tile-jitter" class="p-4 rounded-2xl bg-[#F8F9FA] border border-[#E8EAED] transition-all duration-300">
+          <div class="flex items-center justify-between text-xs font-semibold text-[#5F6368] mb-1">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              JITTER
+            </span>
+            <span id="badge-jitter" class="hidden w-2 h-2 rounded-full bg-[#008064] animate-ping"></span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="val-jitter" class="font-mono-num text-2xl md:text-3xl font-extrabold text-[#1F1F1F]">—</span>
+            <span class="text-xs font-medium text-[#5F6368]">ms</span>
+          </div>
+        </div>
+
+        <!-- DOWNLOAD -->
+        <div id="tile-download" class="p-4 rounded-2xl bg-[#F8F9FA] border border-[#E8EAED] transition-all duration-300">
+          <div class="flex items-center justify-between text-xs font-semibold text-[#5F6368] mb-1">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              DOWNLOAD
+            </span>
+            <span id="badge-download" class="hidden w-2 h-2 rounded-full bg-[#008064] animate-ping"></span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="val-download" class="font-mono-num text-2xl md:text-3xl font-extrabold text-[#1F1F1F]">—</span>
+            <span class="text-xs font-medium text-[#5F6368]">Mbps</span>
+          </div>
+        </div>
+
+        <!-- UPLOAD -->
+        <div id="tile-upload" class="p-4 rounded-2xl bg-[#F8F9FA] border border-[#E8EAED] transition-all duration-300">
+          <div class="flex items-center justify-between text-xs font-semibold text-[#5F6368] mb-1">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              UPLOAD
+            </span>
+            <span id="badge-upload" class="hidden w-2 h-2 rounded-full bg-[#008064] animate-ping"></span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span id="val-upload" class="font-mono-num text-2xl md:text-3xl font-extrabold text-[#1F1F1F]">—</span>
+            <span class="text-xs font-medium text-[#5F6368]">Mbps</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Central Speedometer Gauge Area -->
+      <div class="relative flex flex-col items-center justify-center my-2 select-none">
+        
+        <div class="relative w-[340px] sm:w-[420px] h-[340px] sm:h-[420px] flex items-center justify-center">
+          
+          <!-- SVG Speedometer Arc & Ticks -->
+          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 400 400">
+            <defs>
+              <!-- Primary Brand Gradient (GFiber Teal) -->
+              <linearGradient id="gaugeGradientTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00D699"/>
+                <stop offset="100%" stop-color="#008064"/>
+              </linearGradient>
+              <!-- Purple Alternative Gradient -->
+              <linearGradient id="gaugeGradientPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8B5CF6"/>
+                <stop offset="100%" stop-color="#5B21D6"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Base Gauge Track Ring (240 degrees sweep) -->
+            <circle
+              cx="200"
+              cy="200"
+              r="156"
+              fill="none"
+              stroke="#E8EAED"
+              stroke-width="12"
+              stroke-linecap="round"
+              stroke-dasharray="653"
+              stroke-dashoffset="163"
+            />
+
+            <!-- Active Gauge Progress Arc -->
+            <circle
+              id="gauge-progress"
+              cx="200"
+              cy="200"
+              r="156"
+              fill="none"
+              stroke="url(#gaugeGradientTeal)"
+              stroke-width="14"
+              stroke-linecap="round"
+              stroke-dasharray="653"
+              stroke-dashoffset="653"
+              class="transition-all duration-100 ease-out"
+            />
+
+            <!-- Scale Tick Marks (0, 10, 50, 100, 250, 500, 1000) -->
+            <g id="scale-ticks" class="text-[#9AA0A6] transform rotate-90 origin-[200px_200px] text-[11px] font-semibold" fill="currentColor">
+              <!-- Generated via JS for exact radial coordinates -->
+            </g>
+
+            <!-- Sleek Tapered Needle (GFiber Style) -->
+            <g id="gauge-needle" class="needle transform rotate-[-120deg]">
+              <!-- Needle needle body -->
+              <polygon points="196,200 204,200 201,52 199,52" fill="#5F6368" opacity="0.85" />
+              <!-- Needle accent tip -->
+              <circle id="needle-tip" cx="200" cy="52" r="3.5" fill="#008064" />
+              <!-- Center Hub -->
+              <circle cx="200" cy="200" r="14" fill="#FFFFFF" stroke="#BDC1C6" stroke-width="3" />
+              <circle id="needle-core" cx="200" cy="200" r="6" fill="#008064" />
+            </g>
+          </svg>
+
+          <!-- Center Interactive Overlay -->
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            
+            <!-- 1. IDLE STATE: Centered "GO" / "INICIAR" Button -->
+            <div id="state-idle" class="pointer-events-auto flex flex-col items-center justify-center">
+              <div class="relative flex items-center justify-center">
+                <!-- Glowing Outer Pulse Ring -->
+                <div id="start-pulse" class="absolute w-36 h-36 rounded-full bg-[#008064] pulse-ring"></div>
+                <!-- Main Round Button -->
+                <button
+                  id="start-btn"
+                  onclick="startSpeedTest()"
+                  class="relative w-32 h-32 rounded-full bg-[#008064] text-white flex flex-col items-center justify-center font-bold tracking-wider text-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer teal-glow"
+                >
+                  <span class="text-2xl font-black tracking-widest">GO</span>
+                  <span class="text-[11px] font-medium tracking-normal text-white/80 mt-0.5">INICIAR</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. RUNNING STATE: Live Dynamic Speed Counter -->
+            <div id="state-running" class="hidden flex flex-col items-center justify-center text-center">
+              <span id="live-stage-badge" class="text-xs uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-[#E5FFF8] text-[#008064] mb-1">
+                DOWNLOAD
+              </span>
+              <div class="flex items-baseline justify-center">
+                <span id="live-speed" class="font-mono-num text-5xl sm:text-6xl font-extrabold text-[#1F1F1F] tracking-tight">
+                  0.0
+                </span>
+              </div>
+              <span id="live-unit" class="text-sm font-semibold text-[#5F6368] uppercase tracking-wider mt-0.5">
+                Mbps
+              </span>
+              <div class="mt-4 flex items-center gap-2">
+                <div class="w-16 h-1.5 rounded-full bg-[#E8EAED] overflow-hidden">
+                  <div id="stage-progress-bar" class="h-full bg-[#008064] w-0 transition-all duration-200"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. DONE STATE: Final Highlight Score & Re-run -->
+            <div id="state-done" class="hidden flex flex-col items-center justify-center text-center">
+              <span class="text-xs uppercase tracking-widest font-bold px-3 py-0.5 rounded-full bg-[#E8F0FE] text-[#1A73E8] mb-1">
+                CONCLUÍDO
+              </span>
+              <div class="flex items-baseline justify-center">
+                <span id="done-speed" class="font-mono-num text-5xl sm:text-6xl font-black text-[#1F1F1F] tracking-tight">
+                  485.2
+                </span>
+              </div>
+              <span class="text-xs font-semibold text-[#5F6368] uppercase tracking-wider">
+                Mbps Download
+              </span>
+              <button
+                onclick="resetTest()"
+                class="pointer-events-auto mt-4 px-5 py-2 rounded-full border border-[#DADCE0] hover:bg-[#F1F3F4] text-[#1F1F1F] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <svg class="w-3.5 h-3.5 text-[#5F6368]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Testar novamente
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Scale range label -->
+        <div class="text-xs text-[#5F6368] font-medium mt-[-20px] mb-4">
+          Escala automática até <span id="max-scale-label" class="font-bold text-[#1F1F1F]">1000 Mbps</span>
+        </div>
+
+      </div>
+
+      <!-- Bottom Connection Info Bar (ISP, Server, Client IP) -->
+      <div class="mt-4 pt-6 border-t border-[#E8EAED] grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-[#5F6368]">
+        
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-[#F1F3F4] flex items-center justify-center text-[#5F6368] shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7 7z"/></svg>
+          </div>
+          <div>
+            <div class="text-[#80868B] font-medium">Seu Provedor</div>
+            <div class="text-[#1F1F1F] font-bold text-sm">Claro Fibra (São Paulo, BR)</div>
+            <div class="text-[#80868B] text-[11px]">IPv4: 177.136.xxx.xxx</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-[#F1F3F4] flex items-center justify-center text-[#5F6368] shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          </div>
+          <div>
+            <div class="text-[#80868B] font-medium">Servidor de Teste</div>
+            <div class="text-[#1F1F1F] font-bold text-sm flex items-center gap-1.5">
+              <span>SignallQ Edge — São Paulo (SP)</span>
+              <span class="inline-block w-2 h-2 rounded-full bg-[#008064]"></span>
+            </div>
+            <div class="text-[#80868B] text-[11px]">Multi-thread Cloudflare HTTP/3</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- SignallQ Diagnostic Synthesis (The Value Added beyond raw numbers) -->
+    <div id="diagnostic-card" class="mt-8 bg-white rounded-3xl border border-[#E8EAED] p-6 shadow-sm transition-all duration-300">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#008064]"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#008064]">Veredito do Diagnóstico</span>
+          </div>
+          <h2 id="verdict-title" class="text-xl font-bold text-[#1F1F1F] mt-1">
+            Conexão Excelente para Streaming 4K e Jogos
+          </h2>
+          <p id="verdict-desc" class="text-sm text-[#5F6368] mt-1 max-w-xl">
+            Sua velocidade de download permite múltiplos streams 4K simultâneos sem travamentos. Latência ideal para jogos online e chamadas de vídeo.
+          </p>
+        </div>
+        <div class="shrink-0 flex items-center gap-2">
+          <a
+            href="#diagnosticar"
+            class="px-5 py-2.5 rounded-full bg-[#1F1F1F] hover:bg-[#333] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2"
+          >
+            <span>Ver diagnóstico completo</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Capability Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-[#F1F3F4] text-xs">
+        <div class="p-2.5 rounded-xl bg-[#F8F9FA]">
+          <div class="text-[#80868B]">Vídeo 4K/8K</div>
+          <div class="font-bold text-[#008064] mt-0.5">Perfeito (Sem buffer)</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#F8F9FA]">
+          <div class="text-[#80868B]">Jogos Online</div>
+          <div class="font-bold text-[#008064] mt-0.5">Excelente (< 20ms)</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#F8F9FA]">
+          <div class="text-[#80868B]">Home Office / Zoom</div>
+          <div class="font-bold text-[#008064] mt-0.5">Estável</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-[#F8F9FA]">
+          <div class="text-[#80868B]">Dispositivos Simultâneos</div>
+          <div class="font-bold text-[#1F1F1F] mt-0.5">15+ aparelhos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Differences / Notes Box for Luiz -->
+    <div class="mt-8 p-5 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E40AF] text-xs leading-relaxed">
+      <div class="font-bold text-sm mb-1 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Notas sobre a adaptação do GFiber para o SignallQ:
+      </div>
+      <ul class="list-disc list-inside space-y-1 text-[#1E3A8A] mt-2">
+        <li><strong>Botão GO central integrado ao velocímetro:</strong> Mantém o visual clássico do GFiber onde o dial acolhe o início e se transforma no medidor.</li>
+        <li><strong>Dashboard de 4 métricas (Ping, Jitter, Download, Upload):</strong> Destaque superior em cards limpos com estados ativos sincronizados.</li>
+        <li><strong>Ponteiro suave e escala progressiva:</strong> Resposta física ao throughput com interpolação de alta precisão.</li>
+        <li><strong>Identidade da Conexão:</strong> Mostra o provedor e o servidor local selecionado, reforçando transparência técnica.</li>
+        <li><strong>Diferencial SignallQ mantido:</strong> Enquanto o GFiber só exibe números brutos, o SignallQ contextualiza a qualidade real (capacidade de 4K, jogos e chamadas).</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[#E8EAED] bg-white py-6 text-center text-xs text-[#5F6368]">
+    SignallQ • Protótipo de Engenharia e UX de Teste de Velocidade
+  </footer>
+
+  <!-- Simulation & Animation Engine -->
+  <script>
+    // State
+    let currentTheme = 'gfiber';
+    let isRunning = false;
+    let animFrame = null;
+
+    const THEMES = {
+      gfiber: {
+        primary: '#008064',
+        accent: '#00D699',
+        glowClass: 'teal-glow',
+        bgLight: '#E5FFF8',
+        gradientId: 'gaugeGradientTeal'
+      },
+      signallq: {
+        primary: '#5B21D6',
+        accent: '#8B5CF6',
+        glowClass: 'purple-glow',
+        bgLight: '#F3EEFA',
+        gradientId: 'gaugeGradientPurple'
+      }
+    };
+
+    // Dial Configuration: 240 degrees sweep from -120 to +120
+    const DIAL_MIN_DEG = -120;
+    const DIAL_MAX_DEG = 120;
+    const TOTAL_SWEEP_DEG = DIAL_MAX_DEG - DIAL_MIN_DEG; // 240
+    const ARC_LENGTH = 653; // 2 * PI * 156 * (240 / 360) ≈ 653.4
+
+    // Non-linear scale mapping for speedometers (gives precision at low speeds while supporting gigabit)
+    // Marks: 0, 10, 50, 100, 250, 500, 1000
+    const SCALE_MARKS = [
+      { val: 0, label: '0' },
+      { val: 10, label: '10' },
+      { val: 50, label: '50' },
+      { val: 100, label: '100' },
+      { val: 250, label: '250' },
+      { val: 500, label: '500' },
+      { val: 1000, label: '1G' },
+    ];
+
+    function speedToFraction(speed) {
+      if (speed <= 0) return 0;
+      if (speed >= 1000) return 1;
+      // Logarithmic / piecewise ease curve
+      if (speed <= 10) return (speed / 10) * 0.16;
+      if (speed <= 50) return 0.16 + ((speed - 10) / 40) * 0.18;
+      if (speed <= 100) return 0.34 + ((speed - 50) / 50) * 0.18;
+      if (speed <= 250) return 0.52 + ((speed - 100) / 150) * 0.18;
+      if (speed <= 500) return 0.70 + ((speed - 250) / 250) * 0.15;
+      return 0.85 + ((speed - 500) / 500) * 0.15;
+    }
+
+    function renderScaleTicks() {
+      const g = document.getElementById('scale-ticks');
+      g.innerHTML = '';
+      SCALE_MARKS.forEach(mark => {
+        const frac = speedToFraction(mark.val);
+        const deg = DIAL_MIN_DEG + frac * TOTAL_SWEEP_DEG;
+        const rad = (deg - 90) * Math.PI / 180;
+        
+        // Tick mark line
+        const r1 = 168;
+        const r2 = 177;
+        const x1 = 200 + r1 * Math.cos(rad);
+        const y1 = 200 + r1 * Math.sin(rad);
+        const x2 = 200 + r2 * Math.cos(rad);
+        const y2 = 200 + r2 * Math.sin(rad);
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#BDC1C6');
+        line.setAttribute('stroke-width', '2');
+        g.appendChild(line);
+
+        // Label
+        const rt = 135;
+        const xt = 200 + rt * Math.cos(rad);
+        const yt = 200 + rt * Math.sin(rad);
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', xt);
+        text.setAttribute('y', yt + 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.textContent = mark.label;
+        g.appendChild(text);
+      });
+    }
+
+    function setGauge(speed) {
+      const frac = Math.max(0, Math.min(1, speedToFraction(speed)));
+      const deg = DIAL_MIN_DEG + frac * TOTAL_SWEEP_DEG;
+      
+      // Rotate needle
+      const needle = document.getElementById('gauge-needle');
+      needle.style.transform = `rotate(${deg}deg)`;
+
+      // Dash offset for arc progress
+      // dashoffset 653 = 0% filled; 0 = 100% filled
+      const progressCircle = document.getElementById('gauge-progress');
+      const offset = ARC_LENGTH * (1 - frac);
+      progressCircle.setAttribute('stroke-dashoffset', offset);
+    }
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      const t = THEMES[theme];
+
+      const btnG = document.getElementById('theme-gfiber-btn');
+      const btnS = document.getElementById('theme-signallq-btn');
+      const brandBadge = document.getElementById('brand-badge');
+      const startBtn = document.getElementById('start-btn');
+      const startPulse = document.getElementById('start-pulse');
+      const needleTip = document.getElementById('needle-tip');
+      const needleCore = document.getElementById('needle-core');
+      const gaugeProgress = document.getElementById('gauge-progress');
+      const liveBadge = document.getElementById('live-stage-badge');
+      const stageBar = document.getElementById('stage-progress-bar');
+
+      if (theme === 'gfiber') {
+        btnG.className = 'px-3 py-1.5 rounded-full bg-white text-[#1F1F1F] shadow-sm transition-all';
+        btnS.className = 'px-3 py-1.5 rounded-full text-[#5F6368] hover:text-[#1F1F1F] transition-all';
+        brandBadge.style.backgroundColor = t.primary;
+        startBtn.style.backgroundColor = t.primary;
+        startBtn.className = 'relative w-32 h-32 rounded-full text-white flex flex-col items-center justify-center font-bold tracking-wider text-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer teal-glow';
+        startPulse.style.backgroundColor = t.primary;
+        needleTip.setAttribute('fill', t.primary);
+        needleCore.setAttribute('fill', t.primary);
+        gaugeProgress.setAttribute('stroke', `url(#${t.gradientId})`);
+        liveBadge.style.backgroundColor = t.bgLight;
+        liveBadge.style.color = t.primary;
+        stageBar.style.backgroundColor = t.primary;
+      } else {
+        btnS.className = 'px-3 py-1.5 rounded-full bg-white text-[#1F1F1F] shadow-sm transition-all';
+        btnG.className = 'px-3 py-1.5 rounded-full text-[#5F6368] hover:text-[#1F1F1F] transition-all';
+        brandBadge.style.backgroundColor = t.primary;
+        startBtn.style.backgroundColor = t.primary;
+        startBtn.className = 'relative w-32 h-32 rounded-full text-white flex flex-col items-center justify-center font-bold tracking-wider text-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer purple-glow';
+        startPulse.style.backgroundColor = t.primary;
+        needleTip.setAttribute('fill', t.primary);
+        needleCore.setAttribute('fill', t.primary);
+        gaugeProgress.setAttribute('stroke', `url(#${t.gradientId})`);
+        liveBadge.style.backgroundColor = t.bgLight;
+        liveBadge.style.color = t.primary;
+        stageBar.style.backgroundColor = t.primary;
+      }
+    }
+
+    // Profile Targets
+    const PROFILES = {
+      fiber500: { ping: 9, jitter: 1.2, down: 486.4, up: 215.8 },
+      fiber1000: { ping: 6, jitter: 0.8, down: 942.1, up: 885.6 },
+      fiber100: { ping: 18, jitter: 3.5, down: 104.2, up: 52.4 },
+      wifiInstavel: { ping: 38, jitter: 14.8, down: 64.2, up: 18.5 }
+    };
+
+    function startSpeedTest() {
+      if (isRunning) return;
+      isRunning = true;
+
+      const profileKey = document.getElementById('profile-select').value;
+      const target = PROFILES[profileKey];
+
+      // UI Switch to Running
+      document.getElementById('state-idle').classList.add('hidden');
+      document.getElementById('state-running').classList.remove('hidden');
+      document.getElementById('state-done').classList.add('hidden');
+
+      // Clear values
+      document.getElementById('val-ping').textContent = '—';
+      document.getElementById('val-jitter').textContent = '—';
+      document.getElementById('val-download').textContent = '—';
+      document.getElementById('val-upload').textContent = '—';
+
+      // Stage 1: Ping & Jitter (1.8s)
+      highlightTile('ping');
+      document.getElementById('live-stage-badge').textContent = 'LATÊNCIA / PING';
+      document.getElementById('live-unit').textContent = 'ms';
+
+      let start = performance.now();
+      function stepPing(now) {
+        const elapsed = now - start;
+        const p = Math.min(1, elapsed / 1800);
+        
+        // Jitter needle slightly
+        const jitterVal = Math.random() * 25 + 5;
+        setGauge(jitterVal);
+        document.getElementById('live-speed').textContent = Math.round(jitterVal);
+        document.getElementById('stage-progress-bar').style.width = `${p * 100}%`;
+
+        if (p < 1) {
+          animFrame = requestAnimationFrame(stepPing);
+        } else {
+          // Ping done
+          document.getElementById('val-ping').textContent = target.ping;
+          document.getElementById('val-jitter').textContent = target.jitter;
+          unhighlightTile('ping');
+          startDownloadStage(target);
+        }
+      }
+      animFrame = requestAnimationFrame(stepPing);
+    }
+
+    function startDownloadStage(target) {
+      highlightTile('download');
+      document.getElementById('live-stage-badge').textContent = 'DOWNLOAD';
+      document.getElementById('live-unit').textContent = 'Mbps';
+
+      let start = performance.now();
+      const duration = 4500; // 4.5s
+      function stepDown(now) {
+        const elapsed = now - start;
+        const p = Math.min(1, elapsed / duration);
+        // Easing curve with natural fluctuations
+        const ease = 1 - Math.pow(1 - p, 3);
+        const noise = (Math.sin(elapsed / 120) * 0.04 + (Math.random() - 0.5) * 0.03) * target.down;
+        const currentSpeed = Math.max(0, ease * target.down + (p < 0.95 ? noise : 0));
+
+        setGauge(currentSpeed);
+        document.getElementById('live-speed').textContent = currentSpeed.toFixed(1);
+        document.getElementById('val-download').textContent = currentSpeed.toFixed(1);
+        document.getElementById('stage-progress-bar').style.width = `${p * 100}%`;
+
+        if (p < 1) {
+          animFrame = requestAnimationFrame(stepDown);
+        } else {
+          document.getElementById('val-download').textContent = target.down.toFixed(1);
+          unhighlightTile('download');
+          startUploadStage(target);
+        }
+      }
+      animFrame = requestAnimationFrame(stepDown);
+    }
+
+    function startUploadStage(target) {
+      highlightTile('upload');
+      document.getElementById('live-stage-badge').textContent = 'UPLOAD';
+      document.getElementById('live-unit').textContent = 'Mbps';
+
+      let start = performance.now();
+      const duration = 3800; // 3.8s
+      function stepUp(now) {
+        const elapsed = now - start;
+        const p = Math.min(1, elapsed / duration);
+        const ease = 1 - Math.pow(1 - p, 2.5);
+        const noise = (Math.sin(elapsed / 140) * 0.035 + (Math.random() - 0.5) * 0.03) * target.up;
+        const currentSpeed = Math.max(0, ease * target.up + (p < 0.95 ? noise : 0));
+
+        setGauge(currentSpeed);
+        document.getElementById('live-speed').textContent = currentSpeed.toFixed(1);
+        document.getElementById('val-upload').textContent = currentSpeed.toFixed(1);
+        document.getElementById('stage-progress-bar').style.width = `${p * 100}%`;
+
+        if (p < 1) {
+          animFrame = requestAnimationFrame(stepUp);
+        } else {
+          document.getElementById('val-upload').textContent = target.up.toFixed(1);
+          unhighlightTile('upload');
+          finishTest(target);
+        }
+      }
+      animFrame = requestAnimationFrame(stepUp);
+    }
+
+    function finishTest(target) {
+      isRunning = false;
+      document.getElementById('state-running').classList.add('hidden');
+      document.getElementById('state-done').classList.remove('hidden');
+      document.getElementById('done-speed').textContent = target.down.toFixed(1);
+      
+      // Needle smoothly settles at final download speed
+      setGauge(target.down);
+
+      // Update diagnostic verdict dynamically
+      const title = document.getElementById('verdict-title');
+      const desc = document.getElementById('verdict-desc');
+      if (target.down >= 400) {
+        title.textContent = 'Conexão Excelente para Streaming 4K e Jogos';
+        desc.textContent = `Sua taxa de download de ${target.down.toFixed(1)} Mbps e latência de ${target.ping} ms oferecem qualidade máxima para residências com múltiplos aparelhos ativos.`;
+      } else if (target.down >= 100) {
+        title.textContent = 'Boa Conexão para Trabalho e Streaming';
+        desc.textContent = `Velocidade estável para streaming Full HD/4K e trabalho remoto com vídeo conferências sem interrupções.`;
+      } else {
+        title.textContent = 'Atenção: Conexão Abaixo do Ideal ou com Oscilação';
+        desc.textContent = `Identificamos taxa reduzida (${target.down.toFixed(1)} Mbps). Recomendamos verificar a proximidade do roteador ou interferência no canal Wi-Fi.`;
+      }
+    }
+
+    function resetTest() {
+      if (animFrame) cancelAnimationFrame(animFrame);
+      isRunning = false;
+      document.getElementById('state-done').classList.add('hidden');
+      document.getElementById('state-running').classList.add('hidden');
+      document.getElementById('state-idle').classList.remove('hidden');
+      setGauge(0);
+      document.getElementById('val-ping').textContent = '—';
+      document.getElementById('val-jitter').textContent = '—';
+      document.getElementById('val-download').textContent = '—';
+      document.getElementById('val-upload').textContent = '—';
+      ['ping', 'jitter', 'download', 'upload'].forEach(unhighlightTile);
+    }
+
+    function highlightTile(id) {
+      const tile = document.getElementById(`tile-${id}`);
+      const badge = document.getElementById(`badge-${id}`);
+      if (tile) {
+        tile.classList.add('border-[#008064]', 'bg-white', 'shadow-sm');
+        tile.classList.remove('bg-[#F8F9FA]', 'border-[#E8EAED]');
+      }
+      if (badge) badge.classList.remove('hidden');
+    }
+
+    function unhighlightTile(id) {
+      const tile = document.getElementById(`tile-${id}`);
+      const badge = document.getElementById(`badge-${id}`);
+      if (tile) {
+        tile.classList.remove('border-[#008064]', 'bg-white', 'shadow-sm');
+        tile.classList.add('bg-[#F8F9FA]', 'border-[#E8EAED]');
+      }
+      if (badge) badge.classList.add('hidden');
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      renderScaleTicks();
+      setGauge(0);
+      setTheme('gfiber');
+    });
+  </script>
+</body>
+</html>

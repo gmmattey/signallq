@@ -33,18 +33,18 @@ export function SpeedTestContent() {
     <div className="bg-white font-sans leading-[normal] text-[#1C1B1F]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
 
-      <section className="mx-auto grid max-w-[1168px] grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-center gap-14 px-6 pb-20 pt-[72px]">
-        <div>
-          <div className="text-[14px] font-medium text-[#5B21D6]">Teste de velocidade</div>
-          <h1 className="m-0 mt-4 text-balance text-[clamp(38px,5.2vw,60px)] font-bold leading-[1.05] tracking-[-1.4px]">
-            Quão rápida está sua internet agora?
-          </h1>
-          <p className="mt-6 max-w-[30em] text-pretty text-[20px] leading-[30px] text-[#49454F]">
-            Leva cerca de 20 segundos. Você vê o resultado em palavras, não só em números.
-          </p>
+      <section className="mx-auto max-w-[840px] px-4 sm:px-6 pb-24 pt-10 md:pt-14 text-center">
+        <div className="text-[13px] font-bold uppercase tracking-wider text-[#5B21D6]">
+          Teste de velocidade
         </div>
+        <h1 className="m-0 mt-3 text-balance text-[clamp(32px,4.5vw,48px)] font-bold leading-[1.1] tracking-[-1.2px] text-[#1C1B1F]">
+          Quão rápida está sua internet agora?
+        </h1>
+        <p className="mx-auto mt-3.5 max-w-[28em] text-pretty text-[17px] sm:text-[19px] leading-[26px] sm:leading-[28px] text-[#49454F]">
+          Mede latência, download e upload em tempo real. Você vê o resultado em palavras, não só em números.
+        </p>
 
-        <div className="w-full rounded-[28px] border border-[#E7E0EC] bg-white p-7 shadow-[0_30px_60px_-28px_rgba(33,10,92,0.35)] sm:p-8">
+        <div className="mt-8 w-full rounded-[32px] border border-[#E7E0EC] bg-white p-5 sm:p-8 md:p-10 shadow-[0_20px_50px_-20px_rgba(33,10,92,0.2)]">
           {state.phase === 'idle' && <SpeedTestIdle onStart={handleStart} />}
           {state.phase === 'running' && <SpeedTestRunning state={state} onCancel={cancel} />}
           {state.phase === 'done' && <SpeedTestResult state={state} onRetry={handleStart} />}

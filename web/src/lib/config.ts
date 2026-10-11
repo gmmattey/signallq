@@ -25,4 +25,6 @@ export const SPEEDTEST_DOWNLOAD_URL: string =
   process.env.NEXT_PUBLIC_SPEEDTEST_DOWNLOAD_URL || 'https://speed.cloudflare.com/__down'
 export const SPEEDTEST_UPLOAD_URL: string =
   process.env.NEXT_PUBLIC_SPEEDTEST_UPLOAD_URL || 'https://speed.cloudflare.com/__up'
+export const SPEEDTEST_META_URL: string =
+  process.env.NEXT_PUBLIC_SPEEDTEST_META_URL || 'https://speed.cloudflare.com/meta'
 

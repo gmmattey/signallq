@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import ModoGamerPage from './page'
 
 describe('modo-gamer', () => {
-  it('renders Modo Gamer page with title, catalog, devices and FAQ', () => {
+  it('renders Modo Gamer page with title, catalog, devices, FAQ and gamer stability test section', () => {
     const markup = renderToStaticMarkup(<ModoGamerPage />)
     expect(markup).toContain('Sua internet está pronta para o ranked?')
     expect(markup).toContain('Modo Jogos · no app SignallQ')
@@ -11,6 +11,9 @@ describe('modo-gamer', () => {
     expect(markup).toContain('Fortnite')
     expect(markup).toContain('PlayStation')
     expect(markup).toContain('Rota de referência em servidores da AWS')
-    expect(markup).toContain('Veja a estabilidade da sua conexão agora.')
+    expect(markup).toContain('Veja a estabilidade da sua conexão agora')
+    expect(markup).toContain('Teste de estabilidade gamer')
+    expect(markup).toContain('Bufferbloat')
+    expect(markup).toContain('Iniciar teste de conexão')
   })
 })

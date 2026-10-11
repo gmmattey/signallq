@@ -1,74 +1,148 @@
-import Link from 'next/link'
-import { Speedometer } from '@/components/Speedometer'
-import { formatMetric, getUsageLevels, getVerdict } from './speedTestVerdict'
-import type { SpeedTestState } from './useSpeedTestEngine'
+"use client";
 
-function Metric({ label, value, unit, text }: { label: string; value: string; unit: string; text: string }) {
-  return (
-    <div>
-      <div className="text-[13px] font-medium text-[#49454F]">{label}</div>
-      <div className="mt-[6px] text-[32px] font-bold tracking-[-1px]">
-        {value}
-        <span className="text-[14px] font-medium tracking-normal text-[#49454F]"> {unit}</span>
-      </div>
-      <div className="mt-[6px] text-[13px] leading-5 text-[#49454F]">{text}</div>
-    </div>
-  )
-}
+import Link from 'next/link'
+import { GFiberGauge } from './GFiberGauge'
+import { SpeedTestMetricsBar } from './SpeedTestMetricsBar'
+import {
+  formatMetric,
+  getBufferbloatStatus,
+  getPingStatus,
+  getUsageLevels,
+  getVerdict,
+} from './speedTestVerdict'
+import type { SpeedTestState } from './useSpeedTestEngine'
 
 export function SpeedTestResult({ state, onRetry }: { state: SpeedTestState; onRetry: () => void }) {
   const verdict = getVerdict(state.download)
-  const usage = getUsageLevels(state.download, state.upload, state.ping)
+  const usage = getUsageLevels(state.download, state.upload, state.ping, state.bufferbloat)
   const dl = state.download ?? 0
-  const tone = dl >= 100 ? 'green' : dl >= 25 ? 'purple' : dl >= 8 ? 'amber' : 'red'
+  const pingStatus = getPingStatus(state.ping)
+  const bufferbloatStatus = getBufferbloatStatus(state.bufferbloat)
 
   return (
-    <div>
-      <div className="flex justify-center pb-2">
-        <Speedometer
-          value={dl}
-          unit="Mbps"
-          mode="settled"
-          size={240}
-          tone={tone}
-          metricLabel="Download"
-        />
-      </div>
-      <div className="text-[13px] font-medium text-[#49454F]">Resultado</div>
-      <div className="mt-2 text-balance text-[clamp(28px,3.8vw,38px)] font-bold leading-[1.1] tracking-[-1px] text-[#1C1B1F]">
-        {verdict.title}
-      </div>
-      <p className="mt-3 text-pretty text-[16px] leading-6 text-[#49454F]">{verdict.subtitle}</p>
+    <div className="text-center">
+      {/* 1. Dashboard Superior com 4 Métricas Reais Consolidadas */}
+      <SpeedTestMetricsBar
+        ping={state.ping}
+        download={state.download}
+        upload={state.upload}
+        bufferbloat={state.bufferbloat}
+      />
 
-      <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[#E7E0EC] pt-6">
-        <Metric label="Download" value={formatMetric(state.download)} unit="Mbps" text="Velocidade para baixar arquivos." />
-        <Metric label="Upload" value={formatMetric(state.upload)} unit="Mbps" text="Velocidade para chamadas e envio." />
-        <Metric label="Latência" value={state.ping == null ? '—' : String(state.ping)} unit="ms" text="Tempo de resposta." />
-      </div>
+      {/* 2. Velocímetro Central com o resultado consolidado */}
+      <div className="my-6">
+        <GFiberGauge value={dl} unit="Mbps" size={380}>
+          <div className="flex flex-col items-center justify-center text-center">
+            <span className="text-[11px] uppercase tracking-wider font-bold px-3 py-1 rounded-full bg-[#E8F0FE] text-[#1A73E8] mb-1">
+              Download
+            </span>
+            <div className="font-mono-num text-6xl sm:text-7xl font-black text-[#1C1B1F] tracking-tight leading-none my-1">
+              {formatMetric(state.download)}
+            </div>
+            <span className="text-sm font-bold text-[#49454F] uppercase tracking-wider">
+              Mbps
+            </span>
 
-      <div className="mt-8">
-        <div className="mb-1 text-[13px] font-semibold text-[#49454F]">Com essa conexão</div>
-        {usage.map((u) => (
-          <div key={u.n} className="flex justify-between gap-4 border-b border-[#F3EEFA] py-3 text-[15px]">
-            <span>{u.n}</span>
-            <b style={{ color: u.c }}>{u.s}</b>
+            {/* Ação de repetir o teste com espaçamento adequado */}
+            <button
+              type="button"
+              onClick={onRetry}
+              className="pointer-events-auto mt-3 px-5 py-2 rounded-full border border-[#E7E0EC] bg-white hover:bg-[#F3EEFA] text-[#5B21D6] font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Testar de novo
+            </button>
           </div>
-        ))}
+        </GFiberGauge>
       </div>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-3xl bg-[#EAE0FF] p-6">
-        <div className="max-w-[20em]">
-          <div className="text-[18px] font-semibold text-[#210A5C]">Algo não parece certo?</div>
-          <div className="mt-1 text-[14px] leading-5 text-[#210A5C]">O app descobre a causa e diz o que fazer.</div>
+      {/* 3. Veredito Humano de Diagnóstico (Diferencial SignallQ) */}
+      <div className="mt-8 pt-8 border-t border-[#E7E0EC] text-left">
+        <div className="text-[12px] font-bold uppercase tracking-wider text-[#5B21D6]">
+          Diagnóstico da Conexão
         </div>
-        <Link href="/#baixar" className="rounded-full bg-[#5B21D6] px-6 py-3 text-[14px] font-medium text-white no-underline">
-          Diagnosticar no app
-        </Link>
-      </div>
+        <h2 className="mt-1 text-balance text-[clamp(24px,3.2vw,32px)] font-bold leading-[1.15] tracking-[-0.8px] text-[#1C1B1F]">
+          {verdict.title}
+        </h2>
+        <p className="mt-2 text-pretty text-[15px] sm:text-[16px] leading-6 text-[#49454F]">
+          {verdict.subtitle}
+        </p>
 
-      <button type="button" onClick={onRetry} className="mt-6 cursor-pointer border-0 bg-transparent px-0 py-2 text-[15px] font-semibold text-[#5B21D6]">
-        Testar de novo
-      </button>
+        {/* Detalhes de Latência: Ping e Bufferbloat */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-[#F8F9FA] border border-[#E7E0EC] p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold text-[#79747E] uppercase tracking-wider">Tempo de resposta (Ping)</div>
+              <div className="text-xl font-extrabold text-[#1C1B1F] mt-0.5">
+                {state.ping != null ? `${state.ping} ms` : '—'}
+              </div>
+            </div>
+            <span
+              className="text-xs font-bold px-2.5 py-1 rounded-full bg-white border border-[#E7E0EC]"
+              style={{ color: pingStatus.color }}
+            >
+              {pingStatus.label}
+            </span>
+          </div>
+
+          <div className="rounded-2xl bg-[#F8F9FA] border border-[#E7E0EC] p-4 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold text-[#79747E] uppercase tracking-wider">Lentidão sob carga (Bufferbloat)</div>
+              <div className="text-xl font-extrabold text-[#1C1B1F] mt-0.5">
+                {state.bufferbloat != null ? `+${state.bufferbloat} ms` : '—'}
+              </div>
+            </div>
+            <span
+              className="text-xs font-bold px-2.5 py-1 rounded-full bg-white border border-[#E7E0EC]"
+              style={{ color: bufferbloatStatus.color }}
+            >
+              {bufferbloatStatus.label}
+            </span>
+          </div>
+        </div>
+
+        {/* "Como sua internet deve funcionar" (Padrão Android) */}
+        <div className="mt-6 rounded-2xl bg-[#F8F9FA] border border-[#E7E0EC] p-4 sm:p-5">
+          <div className="mb-2 text-[12px] font-bold uppercase tracking-wider text-[#49454F]">
+            Como sua internet deve funcionar
+          </div>
+          <div className="divide-y divide-[#E7E0EC]">
+            {usage.map((u) => (
+              <div key={u.n} className="flex items-center justify-between py-2.5 text-[14px]">
+                <span className="text-[#1C1B1F] font-medium">{u.n}</span>
+                <span className="font-bold text-[13px]" style={{ color: u.c }}>
+                  {u.s}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card de CTA para o App SignallQ */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-[#F3EEFA] border border-[#E7E0EC] p-5 sm:p-6">
+          <div className="max-w-[24em]">
+            <div className="text-[17px] font-bold text-[#210A5C]">
+              Algo parece lento ou instável?
+            </div>
+            <div className="mt-0.5 text-[13px] leading-5 text-[#49454F]">
+              O app Android analisa canais Wi-Fi, DNS, perdas e problemas do roteador com IA.
+            </div>
+          </div>
+          <Link
+            href="/#baixar"
+            className="rounded-full bg-[#5B21D6] hover:bg-[#6D28D9] px-6 py-3 text-[14px] font-semibold text-white no-underline transition-all shadow-[0_4px_14px_-3px_rgba(91,33,214,0.4)]"
+          >
+            Diagnosticar no app
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
