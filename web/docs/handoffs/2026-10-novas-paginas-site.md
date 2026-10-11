@@ -28,7 +28,7 @@ Fonte: `SignallQ - Prototipos.zip` (Claude Design, local do Luiz, não versionad
 
 - Páginas **1:1 com o protótipo**, validadas lado a lado (mesmo navegador e largura) na Home, Como funciona, Dúvidas, guia, Teste, Privacidade e Termos. Tema claro fixo; medidas copiadas do protótipo (largura de content-box, `line-height: normal`, fonte sem ajuste óptico automático).
 - Home sem "Diferenciais" e sem galeria (decisão do Luiz); hero com a captura real do app (nome do Wi-Fi e da operadora borrados, status bar cortada).
-- Privacidade/Termos: **layout** do protótipo com o **texto atual auditado** (decisão do Luiz). Os Termos atuais definem "Buildea" como titular em todo o site e aplicativo.
+- Privacidade/Termos: **layout** do protótipo com o **texto atual auditado** (decisão do Luiz). Os Termos atuais definem "SignallQ" como titular em todo o site e aplicativo.
 - Em produção em `signallq.com` e `speedtest.signallq.com` (Vercel `signallq-web`); DNS do subdomínio na Hostinger.
 - Telemetria funcionando de ponta a ponta (`SITE_INGEST_KEY` criada nos dois lados; `/api/track` → `signallq-admin.gmmattey.workers.dev`). Informe diário no Discord ativo (cron 09:00 BRT).
 

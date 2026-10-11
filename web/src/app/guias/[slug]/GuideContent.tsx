@@ -14,7 +14,7 @@ export default function GuideContent({ guide }: { guide: Guide }) {
     datePublished: '2026-10-10',
     dateModified: '2026-10-10',
     author: { '@type': 'Organization', name: 'SignallQ' },
-    publisher: { '@type': 'Organization', name: 'Buildea', url: SITE_ORIGIN },
+    publisher: { '@type': 'Organization', name: 'SignallQ', url: SITE_ORIGIN },
   }
 
   return (

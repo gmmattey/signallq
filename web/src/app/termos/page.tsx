@@ -32,15 +32,15 @@ const SECTIONS = [
   },
   {
     t: '7. Propriedade intelectual',
-    ps: ['O SignallQ, incluindo código, design, marca e conteúdo, é propriedade da Buildea. Todos os direitos reservados.'],
+    ps: ['O SignallQ, incluindo código, design, marca e conteúdo, é propriedade exclusiva do SignallQ. Todos os direitos reservados.'],
   },
   {
     t: '8. Limitação de responsabilidade',
-    ps: ['A Buildea não se responsabiliza por danos decorrentes do uso do aplicativo, de decisões tomadas com base nos resultados ou de indisponibilidade temporária.'],
+    ps: ['O SignallQ não se responsabiliza por danos decorrentes do uso do aplicativo, de decisões tomadas com base nos resultados ou de indisponibilidade temporária.'],
   },
   {
     t: '9. Alterações nos termos',
-    ps: ['A Buildea pode atualizar estes Termos a qualquer momento. O uso continuado após alterações implica aceitação.'],
+    ps: ['O SignallQ pode atualizar estes Termos a qualquer momento. O uso continuado após alterações implica aceitação.'],
   },
   {
     t: '10. Legislação aplicável',
@@ -48,7 +48,7 @@ const SECTIONS = [
   },
   {
     t: '11. Contato',
-    ps: ['Para dúvidas sobre estes Termos: suporte@signallq.com (Buildea).'],
+    ps: ['Para dúvidas sobre estes Termos: suporte@signallq.com.'],
   },
 ]
 

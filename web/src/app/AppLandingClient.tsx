@@ -22,7 +22,7 @@ const HOME_JSON_LD = {
   description: 'Diagnóstico de conectividade: analisa Wi-Fi, velocidade e DNS, explica o problema e orienta a solução.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
   inLanguage: 'pt-BR',
-  publisher: { '@type': 'Organization', name: 'Buildea', url: 'https://signallq.com' },
+  publisher: { '@type': 'Organization', name: 'SignallQ', url: 'https://signallq.com' },
 }
 
 export function AppLandingClient() {
