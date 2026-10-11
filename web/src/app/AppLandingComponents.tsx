@@ -1,5 +1,6 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import { AppScreenshot } from '@/components/AppScreenshot'
+import { APPROVED_SCREENSHOTS } from '@/lib/approvedScreenshotsManifest'
 import { SIGNALLQ_PLAY_STORE_URL } from '@/lib/config'
 
 const PRIMARY = 'rounded-full bg-[#5B21D6] font-medium text-white no-underline hover:bg-[#4A18B0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B21D6]'
@@ -42,16 +43,11 @@ export function AppLandingHero({ onBaixar }: { onBaixar: () => void }) {
         </div>
       </div>
       <div className="flex justify-center">
-        <div className="w-[300px] rounded-[40px] bg-black p-[10px] shadow-[0_30px_60px_-20px_rgba(33,10,92,0.35)]">
-          <Image
-            src="/assets/playstore/09-inicio-conexao-excelente.jpg"
-            alt="Tela Início do SignallQ mostrando o diagnóstico Conexão excelente"
-            width={280}
-            height={572}
-            priority
-            className="block h-[572px] w-full rounded-[32px] object-cover object-bottom"
-          />
-        </div>
+        <AppScreenshot
+          screenshot={APPROVED_SCREENSHOTS.homeDiagnostico}
+          priority
+          maxWidth={310}
+        />
       </div>
     </section>
   )

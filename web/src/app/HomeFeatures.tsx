@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AppScreenshot } from "@/components/AppScreenshot";
+import { APPROVED_SCREENSHOTS } from "@/lib/approvedScreenshotsManifest";
 
 interface FeatureCard {
   t: string;
@@ -15,12 +17,6 @@ const APP_EXCLUSIVES: FeatureCard[] = [
     badge: "Wi-Fi e Rádio",
   },
   {
-    t: "Relatório em PDF",
-    d: "Histórico auditado com dados mascarados pronto para protocolar chamado na operadora.",
-    href: "/relatorio-pdf",
-    badge: "Operadora",
-  },
-  {
     t: "Sinal Wi-Fi em dBm",
     d: "Leitura de potência real de rádio cômodo por cômodo, sem depender de barrinhas genéricas.",
     href: "/sinal-wifi",
@@ -28,15 +24,9 @@ const APP_EXCLUSIVES: FeatureCard[] = [
   },
   {
     t: "Dispositivos na rede",
-    d: "Identifica todos os aparelhos conectados ao seu roteador e detecta conexões não autorizadas.",
+    d: "Identifica aparelhos visíveis conectados ao roteador e detecta potenciais intrusos.",
     href: "/quem-esta-na-minha-rede",
     badge: "Rede Local",
-  },
-  {
-    t: "Mapa de calor do Wi-Fi",
-    d: "Mapeie visualmente os pontos cegos da sua casa e compare antes e depois de mudar o roteador.",
-    href: "/mapa-de-calor-wifi",
-    badge: "Cobertura",
   },
   {
     t: "Sinal 4G e 5G",
@@ -44,12 +34,25 @@ const APP_EXCLUSIVES: FeatureCard[] = [
     href: "/sinal-4g-5g",
     badge: "Rede Móvel",
   },
+  {
+    t: "Mapa de calor do Wi-Fi",
+    d: "Mapeie visualmente os pontos cegos da sua casa e compare antes e depois de mudar o roteador.",
+    href: "/mapa-de-calor-wifi",
+    badge: "WiFi Casa",
+  },
+  {
+    t: "Relatório em PDF",
+    d: "Histórico auditado com dados mascarados pronto para protocolar chamado na operadora.",
+    href: "/relatorio-pdf",
+    badge: "Operadora",
+  },
 ];
 
 export function HomeFeatures() {
   return (
     <section id="funcionalidades" className="scroll-mt-20 border-t border-[#F3EEFA] bg-white px-6 py-24">
       <div className="mx-auto w-full max-w-[1168px]">
+        {/* Cabeçalho da seção */}
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
           <div className="max-w-[36em]">
             <div className="text-[14px] font-semibold uppercase tracking-wider text-[#5B21D6]">
@@ -70,6 +73,7 @@ export function HomeFeatures() {
           </Link>
         </div>
 
+        {/* Grade de funcionalidades exclusivas */}
         <div className="mt-12 grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6">
           {APP_EXCLUSIVES.map((c) => (
             <Link
@@ -94,8 +98,72 @@ export function HomeFeatures() {
             </Link>
           ))}
         </div>
+
+        {/* Demonstração visual com capturas reais do app */}
+        <div className="mt-20 pt-16 border-t border-[#F3EEFA]">
+          <div className="text-center max-w-[34em] mx-auto mb-14">
+            <span className="text-[13px] font-bold uppercase tracking-wider text-[#5B21D6]">
+              Evidências do Aplicativo
+            </span>
+            <h3 className="mt-2 text-[28px] sm:text-[34px] font-bold text-[#1C1B1F] tracking-tight">
+              Acompanhamento contínuo da sua rede.
+            </h3>
+            <p className="mt-2.5 text-[16px] text-[#49454F] leading-relaxed">
+              O SignallQ acompanha o desempenho da sua conexão com histórico detalhado, monitoramento passivo e leitura de equipamentos.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {/* 1. Histórico de medições */}
+            <div className="flex flex-col items-center text-center">
+              <AppScreenshot
+                screenshot={APPROVED_SCREENSHOTS.historicoMedicoes}
+                maxWidth={280}
+                showBadge={false}
+                showCaption={false}
+              />
+              <div className="mt-5 font-bold text-[18px] text-[#1C1B1F]">
+                Histórico e Médias
+              </div>
+              <p className="mt-1 text-[14px] text-[#49454F] max-w-[20em] leading-relaxed">
+                Acompanhe o histórico de velocidade e latência ao longo das semanas para comprovar instabilidades.
+              </p>
+            </div>
+
+            {/* 2. Monitoramento passivo */}
+            <div className="flex flex-col items-center text-center">
+              <AppScreenshot
+                screenshot={APPROVED_SCREENSHOTS.monitoramentoPassivo}
+                maxWidth={280}
+                showBadge={false}
+                showCaption={false}
+              />
+              <div className="mt-5 font-bold text-[18px] text-[#1C1B1F]">
+                Alertas em Segundo Plano
+              </div>
+              <p className="mt-1 text-[14px] text-[#49454F] max-w-[20em] leading-relaxed">
+                Verificações automáticas que avisam quando a rede começa a degradar antes da partida cair.
+              </p>
+            </div>
+
+            {/* 3. Equipamento da operadora */}
+            <div className="flex flex-col items-center text-center">
+              <AppScreenshot
+                screenshot={APPROVED_SCREENSHOTS.equipamentoOnt}
+                maxWidth={280}
+                showBadge={false}
+                showCaption={false}
+              />
+              <div className="mt-5 font-bold text-[18px] text-[#1C1B1F]">
+                Diagnóstico de Modem e ONT
+              </div>
+              <p className="mt-1 text-[14px] text-[#49454F] max-w-[20em] leading-relaxed">
+                Leitura do estado do sinal óptico e conexão PON em equipamentos compatíveis da operadora.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-

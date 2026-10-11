@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { type GameGenre } from "./modoGamerEngine";
 import { ModoGamerTestSection } from "./ModoGamerTestSection";
-import { ModoGamerDemoCard } from "./ModoGamerDemoCard";
+import { AppScreenshot } from "@/components/AppScreenshot";
+import { APPROVED_SCREENSHOTS } from "@/lib/approvedScreenshotsManifest";
 import { SIGNALLQ_PLAY_STORE_URL } from "@/lib/config";
 import { FEATURE_DOWNLOAD_APP_CLICADO, trackFeatureUsed } from "@/lib/telemetry";
 
@@ -25,7 +26,6 @@ export default function ModoGamerContent() {
     selectedGame === 'Meu jogo não está na lista'
       ? customGenre
       : (selectedGameEntry?.genre || 'FPS');
-  const activeGameImg = selectedGameEntry?.img ?? '/assets/games/fortnite.jpg';
 
   return (
     <div className="bg-[#0B0D10] font-sans leading-[normal] text-[#F5F2F7]">
@@ -41,15 +41,15 @@ export default function ModoGamerContent() {
 
           <div className="mt-7 flex h-[30px] w-fit items-center gap-2 rounded-full border border-[#3A3446] px-3.5 text-[13px] font-semibold text-[#C9B6FF]">
             <span className="h-2 w-2 rounded-full bg-[#7DDB92]" />
-            Modo Jogos · no app SignallQ
+            Modo Jogos · Exclusivo no app SignallQ
           </div>
 
-          <h1 className="m-0 mt-5 text-balance text-[clamp(42px,6vw,72px)] font-bold leading-none tracking-[-2px]">
-            Sua internet está pronta para o ranked?
+          <h1 className="m-0 mt-5 text-balance text-[clamp(40px,5.6vw,68px)] font-bold leading-tight tracking-[-1.8px]">
+            Sua conexão está adequada para jogar?
           </h1>
 
-          <p className="mt-6 max-w-[28em] text-pretty text-[20px] leading-[30px] text-[#CAC4D0]">
-            Velocidade não diz se a partida vai travar. O teste web afere latência, oscilação de rota e inchaço de fila (bufferbloat) sob carga para o gênero do seu jogo. No app Android, o diagnóstico inclui perda de pacotes UDP e Wi-Fi local.
+          <p className="mt-6 max-w-[30em] text-pretty text-[18px] sm:text-[20px] leading-[30px] text-[#CAC4D0]">
+            Velocidade alta não evita lag e travamentos. O SignallQ avalia os indicadores essenciais da sua conexão — latência, jitter, perda de pacotes e estabilidade sob carga — e estima a adequação ao perfil de cada jogo.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -58,29 +58,34 @@ export default function ModoGamerContent() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
-              className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors"
+              className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors shadow-[0_4px_16px_rgba(234,224,255,0.3)]"
             >
               Baixar no Google Play
             </a>
             <a
               href="#teste"
-              className="rounded-full border border-[#4A4458] px-7 py-4 text-[17px] font-medium text-[#F5F2F7] no-underline hover:border-[#C9B6FF]"
+              className="rounded-full border border-[#4A4458] px-7 py-4 text-[17px] font-medium text-[#F5F2F7] no-underline hover:border-[#C9B6FF] transition-colors"
             >
-              Testar aqui, sem baixar
+              Simular teste na web
             </a>
           </div>
 
-
-          <div className="mt-5 text-[14px] text-[#A9A3B5]">
-            Grátis · Sem cadastro · Para PlayStation, Xbox, PC, Switch, iPhone e TV
+          <div className="mt-5 text-[13px] text-[#A9A3B5] leading-relaxed">
+            Grátis · Sem cadastro · Precisa de diagnóstico profundo de rotas de PC?{" "}
+            <Link href="/#outras-solucoes" className="text-[#C9B6FF] underline font-medium">
+              Conheça o Lagcheck
+            </Link>
           </div>
         </div>
 
-        {/* Demo card */}
-        <ModoGamerDemoCard
-          selectedGame={selectedGame}
-          activeGameImg={activeGameImg}
-        />
+        {/* Captura real do app com resultado de Dead by Daylight */}
+        <div className="flex justify-center">
+          <AppScreenshot
+            screenshot={APPROVED_SCREENSHOTS.modoGamer}
+            priority
+            maxWidth={320}
+          />
+        </div>
       </section>
 
       {/* Catalog */}

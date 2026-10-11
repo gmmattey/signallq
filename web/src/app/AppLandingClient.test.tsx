@@ -18,7 +18,7 @@ describe('página / — AppLandingClient (home com hierarquia comercial e ecossi
     expect(screen.getByRole('heading', { level: 1, name: 'Descubra por que sua internet está ruim.' })).toBeInTheDocument()
     expect(screen.getByText('Diagnóstico de internet para Android')).toBeInTheDocument()
     expect(screen.getByText('Grátis · Sem cadastro para começar')).toBeInTheDocument()
-    expect(screen.getByAltText(/Tela Início do SignallQ mostrando o diagnóstico Conexão excelente/)).toBeInTheDocument()
+    expect(screen.getByAltText(/Tela Início do aplicativo SignallQ para Android exibindo o diagnóstico Conexão estável/)).toBeInTheDocument()
   })
 
   it('segue a nova hierarquia comercial definida', () => {
@@ -73,7 +73,7 @@ describe('página / — AppLandingClient (home com hierarquia comercial e ecossi
     expect(screen.getByRole('heading', { level: 2, name: 'Outras soluções SignallQ' })).toBeInTheDocument()
     expect(screen.getByText('Lagcheck')).toBeInTheDocument()
     expect(screen.getByText('Linka')).toBeInTheDocument()
-    expect(screen.getByText('WiFi Casa')).toBeInTheDocument()
+    expect(screen.getAllByText('WiFi Casa').length).toBeGreaterThanOrEqual(1)
   })
 })
 

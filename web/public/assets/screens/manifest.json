@@ -1,0 +1,96 @@
+{
+  "versao": "2026-10-11",
+  "descricao": "Capturas reais do aplicativo SignallQ para Android com anonimização física de dados pessoais nos pixels e corte de barras de sistema.",
+  "total_publicadas": 13,
+  "total_pendentes": 2,
+  "capturas": [
+    {
+      "arquivo": "11-home-diagnostico.webp",
+      "destino": "Homepage e /como-funciona",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas. SSID pessoal e operadora local anonimizados."
+    },
+    {
+      "arquivo": "12-inicio-teste-velocidade.webp",
+      "destino": "/teste-de-velocidade (marketing secundário)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "05-teste-tempo-resposta.webp",
+      "destino": "/teste-de-ping (marketing secundário)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "06-comparacao-dns.webp",
+      "destino": "/teste-de-dns (marketing secundário)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas. IP local mascarado."
+    },
+    {
+      "arquivo": "08-canais-wifi.webp",
+      "destino": "/canais-wifi",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "09-sinal-wifi.webp",
+      "destino": "/sinal-wifi",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas. SSIDs pessoais anonimizados fisicamente."
+    },
+    {
+      "arquivo": "10-sinal-movel.webp",
+      "destino": "/sinal-4g-5g",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "07-dispositivos-conectados.webp",
+      "destino": "/quem-esta-na-minha-rede",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas. Hostnames e IPs locais mascarados."
+    },
+    {
+      "arquivo": "03-modo-jogos-resultado.webp",
+      "destino": "/modo-gamer",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "04-equipamento-operadora-ont.webp",
+      "destino": "Homepage e /funcionalidades (área de equipamentos)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "13-historico-medicoes.webp",
+      "destino": "Homepage e /funcionalidades (área de histórico)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "01-monitoramento-passivo.webp",
+      "destino": "Homepage e /funcionalidades (área de monitoramento)",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    },
+    {
+      "arquivo": "14-menu-ferramentas.webp",
+      "destino": "/funcionalidades e Homepage",
+      "resolucao": "738x1496",
+      "anonimizacao": "Status bar e navbar removidas."
+    }
+  ],
+  "pendencias": [
+    {
+      "arquivo": "02-relatorio-diagnostico-indisponivel.jpg",
+      "motivo": "Contém erro 'Diagnóstico não disponível'. Não publicado como material promocional."
+    },
+    {
+      "arquivo": "mapa-de-calor-wifi",
+      "motivo": "Nenhuma captura real de WiFi Casa / mapa de calor presente nesta remessa."
+    }
+  ]
+}

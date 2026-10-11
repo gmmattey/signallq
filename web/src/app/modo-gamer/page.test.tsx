@@ -5,8 +5,8 @@ import ModoGamerPage from './page'
 describe('modo-gamer', () => {
   it('renders Modo Gamer page with title, catalog, devices, FAQ and gamer stability test section', () => {
     const markup = renderToStaticMarkup(<ModoGamerPage />)
-    expect(markup).toContain('Sua internet está pronta para o ranked?')
-    expect(markup).toContain('Modo Jogos · no app SignallQ')
+    expect(markup).toContain('Sua conexão está adequada para jogar?')
+    expect(markup).toContain('Modo Jogos · Exclusivo no app SignallQ')
     expect(markup).toContain('Comece pelo jogo que você vai abrir.')
     expect(markup).toContain('Fortnite')
     expect(markup).toContain('PlayStation')
