@@ -3,6 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { type FeatureData, getRelatedFeatures } from "@/lib/featuresData";
+import { SIGNALLQ_PLAY_STORE_URL } from "@/lib/config";
+import {
+  FEATURE_DOWNLOAD_APP_CLICADO,
+  FEATURE_TESTE_DNS_CONCLUIDO,
+  FEATURE_TESTE_DNS_ERRO,
+  FEATURE_TESTE_DNS_INICIADO,
+  FEATURE_TESTE_JITTER_CONCLUIDO,
+  FEATURE_TESTE_JITTER_ERRO,
+  FEATURE_TESTE_JITTER_INICIADO,
+  FEATURE_TESTE_PING_CONCLUIDO,
+  FEATURE_TESTE_PING_ERRO,
+  FEATURE_TESTE_PING_INICIADO,
+  FEATURE_TESTE_VELOCIDADE_CONCLUIDO,
+  FEATURE_TESTE_VELOCIDADE_ERRO,
+  FEATURE_TESTE_VELOCIDADE_INICIADO,
+  trackFeatureUsed,
+} from "@/lib/telemetry";
 
 const BASE = "https://speed.cloudflare.com";
 
@@ -23,14 +40,38 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [verdict, setVerdict] = useState("");
   const [sub, setSub] = useState("");
+  const [limitationNotice, setLimitationNotice] = useState("");
   const [barVisible, setBarVisible] = useState(false);
   const [tick, setTick] = useState(0);
 
   const runRef = useRef(0);
 
-  // Animated tick for visualizers
+  // Animação de tick respeitando prefers-reduced-motion e visibilitychange
   useEffect(() => {
-    const timer = setInterval(() => setTick((t) => t + 1), 70);
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const startTimer = () => {
+      if (!timer) timer = setInterval(() => setTick((t) => t + 1), 120);
+    };
+    const stopTimer = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const handleVisibility = () => {
+      if (typeof document !== "undefined" && document.hidden) stopTimer();
+      else startTimer();
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibility);
+      if (!document.hidden) startTimer();
+    }
+
     const onScroll = () => {
       const y = window.scrollY;
       const h = document.documentElement.scrollHeight - window.innerHeight;
@@ -38,7 +79,10 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      clearInterval(timer);
+      stopTimer();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibility);
+      }
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
@@ -66,19 +110,26 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
     const id = ++runRef.current;
     const ok = () => runRef.current === id;
 
+    // Dispara telemetria de início
+    if (f.tool === "ping") trackFeatureUsed(FEATURE_TESTE_PING_INICIADO);
+    else if (f.tool === "jitter") trackFeatureUsed(FEATURE_TESTE_JITTER_INICIADO);
+    else if (f.tool === "speed") trackFeatureUsed(FEATURE_TESTE_VELOCIDADE_INICIADO);
+    else if (f.tool === "dns") trackFeatureUsed(FEATURE_TESTE_DNS_INICIADO);
+
     setPhase("running");
     setLive(0);
     setPct(3);
     setUnit("ms");
     setMetrics([]);
     setLabel("Medindo…");
+    setLimitationNotice("");
 
     try {
       if (f.tool === "ping" || f.tool === "jitter") {
         const n = f.tool === "ping" ? 10 : 20;
         const s: number[] = [];
         let lost = 0;
-        setLabel(f.tool === "ping" ? "Medindo latência…" : "Medindo estabilidade…");
+        setLabel(f.tool === "ping" ? "Medindo latência HTTP…" : "Medindo estabilidade…");
 
         for (let i = 0; i < n; i++) {
           const v = await ping1(f.tool === "ping" ? 4000 : 1500);
@@ -98,37 +149,45 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
         if (f.tool === "ping") {
           const v =
             avg < 30
-              ? ["Seu ping está ótimo.", "Resposta rápida. Sem atraso perceptível em jogos e chamadas."]
+              ? ["Seu tempo de resposta HTTP está ótimo.", "Resposta ágil até a borda regional. Sem atraso perceptível."]
               : avg < 60
-              ? ["Seu ping está bom.", "Serve para quase tudo, inclusive jogos."]
+              ? ["Seu tempo de resposta HTTP está bom.", "Atende a maioria das atividades cotidianas."]
               : avg < 100
-              ? ["Seu ping está razoável.", "Jogos rápidos e chamadas podem sentir atraso."]
-              : ["Seu ping está alto.", "Atraso visível. Tente cabo ou chegue mais perto do roteador."];
+              ? ["Seu tempo de resposta HTTP está moderado.", "Jogos competitivos e chamadas podem sentir pequenos atrasos."]
+              : ["Tempo de resposta HTTP alto.", "Atraso perceptível. Pode indicar rota congestionada ou Wi-Fi distante."];
           setVerdict(v[0]);
           setSub(v[1]);
           setMetrics([
             { l: "Média", v: Math.round(avg), u: "ms" },
             { l: "Menor", v: Math.round(min), u: "ms" },
-            { l: "Pior", v: Math.round(max), u: "ms" },
+            { l: "Maior", v: Math.round(max), u: "ms" },
           ]);
+          setLimitationNotice(
+            "Limitação da medição web: este teste mede a latência de requisições HTTP até a borda CDN regional. Não equivale a um comando ping ICMP de baixo nível. Para isolar se o atraso se origina no canal Wi-Fi do roteador ou na operadora, utilize o SignallQ para Android."
+          );
+          trackFeatureUsed(FEATURE_TESTE_PING_CONCLUIDO);
         } else {
           let j = 0;
           for (let i = 1; i < s.length; i++) j += Math.abs(s[i] - s[i - 1]);
           j = s.length > 1 ? j / (s.length - 1) : 0;
-          const loss = Math.round((lost / n) * 100);
+          const timeoutRate = Math.round((lost / n) * 100);
           const v =
-            j < 10 && loss === 0
-              ? ["Conexão estável.", "Pouca oscilação e nenhuma perda. Bom para chamadas e jogos."]
-              : j < 30 && loss <= 2
-              ? ["Estabilidade aceitável.", "Há alguma oscilação. Chamadas longas podem engasgar."]
-              : ["Conexão instável.", "Oscilação ou perda altas. Áudio picotado e saltos nos jogos são esperados."];
+            j < 10 && timeoutRate === 0
+              ? ["Conexão estável.", "Pouca variação no tempo de resposta e sem timeouts. Bom para chamadas e jogos."]
+              : j < 30 && timeoutRate <= 5
+              ? ["Estabilidade aceitável.", "Há alguma oscilação no tempo de resposta. Reuniões longas podem ter pequenas travadas."]
+              : ["Conexão com oscilação relevante.", "Variação perceptível no tempo de resposta ou timeouts detectados."];
           setVerdict(v[0]);
           setSub(v[1]);
           setMetrics([
             { l: "Latência média", v: Math.round(avg), u: "ms" },
             { l: "Jitter", v: fmt(j), u: "ms" },
-            { l: "Perda de pacotes", v: loss, u: "%" },
+            { l: "Timeouts HTTP", v: timeoutRate, u: "%" },
           ]);
+          setLimitationNotice(
+            "Limitação da medição web: falhas de requisição HTTP indicam timeouts ou instabilidade temporária na camada web, mas não equivalem a perda física de pacotes UDP/ICMP. A perda de pacotes e o diagnóstico de canais do roteador são medidos pelo app Android."
+          );
+          trackFeatureUsed(FEATURE_TESTE_JITTER_CONCLUIDO);
         }
         setPhase("done");
       } else if (f.tool === "speed") {
@@ -228,12 +287,12 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
 
         const v =
           dl >= 100
-            ? ["Sua internet está ótima.", "Rápida o bastante para vários aparelhos ao mesmo tempo."]
+            ? ["Sua velocidade está ótima.", "Capacidade suficiente para múltiplos aparelhos simultâneos e streaming 4K."]
             : dl >= 25
-            ? ["Sua internet está boa.", "Atende bem o dia a dia: vídeo, trabalho e redes sociais."]
+            ? ["Sua velocidade está boa.", "Atende bem o uso diário: vídeos em HD, chamadas e redes sociais."]
             : dl >= 8
-            ? ["Sua internet dá para o básico.", "Funciona para o essencial, mas pode ficar apertada."]
-            : ["Internet lenta.", "Dá para mensagens e páginas simples. Vídeos e chamadas podem travar."];
+            ? ["Velocidade básica.", "Adequada para mensagens e páginas simples. Downloads pesados demoram."]
+            : ["Velocidade reduzida.", "Pode causar travamentos frequentes em vídeos e chamadas."];
 
         setVerdict(v[0]);
         setSub(v[1]);
@@ -243,12 +302,16 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
           { l: "Upload", v: fmt(ul), u: "Mbps" },
           { l: "Latência", v: Math.round(Math.min(...t)), u: "ms" },
         ]);
+        setLimitationNotice(
+          "Limitação da medição web: velocidade adequada não elimina travamentos causados por interferência de Wi-Fi, sinal fraco ou bufferbloat no roteador. O app Android analisa todas as variáveis em conjunto."
+        );
+        trackFeatureUsed(FEATURE_TESTE_VELOCIDADE_CONCLUIDO);
         setPhase("done");
       } else if (f.tool === "dns") {
         const rs = [
-          ["Cloudflare 1.1.1.1", "https://cloudflare-dns.com/dns-query?name=google.com&type=A"],
-          ["Google 8.8.8.8", "https://dns.google/resolve?name=google.com&type=A"],
-          ["Quad9 9.9.9.9", "https://dns.quad9.net:5053/dns-query?name=google.com&type=A"],
+          ["Cloudflare (1.1.1.1)", "https://cloudflare-dns.com/dns-query?name=google.com&type=A"],
+          ["Google (8.8.8.8)", "https://dns.google/resolve?name=google.com&type=A"],
+          ["Quad9 (9.9.9.9)", "https://dns.quad9.net:5053/dns-query?name=google.com&type=A"],
         ];
         setLabel("Consultando servidores de DNS…");
         const out: { l: string; n: number | null }[] = [];
@@ -280,35 +343,48 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
         const good = out.filter((o) => o.n != null).sort((a, b) => (a.n as number) - (b.n as number));
         if (!good.length) throw new Error("DNS queries failed");
 
-        setVerdict(`${good[0].l.split(" ")[0]} respondeu mais rápido.`);
+        setVerdict(`${good[0].l.split(" ")[0]} respondeu mais rápido via DoH.`);
         setSub(
           (good[0].n as number) < 50
-            ? "Tempo bom. Trocar o DNS traria pouca diferença."
-            : "Se as páginas demoram a abrir, trocar o DNS pode ajudar."
+            ? "Tempo de resolução ágil. Trocar o DNS traria pouca diferença no carregamento inicial."
+            : "Se as páginas demoram a começar a carregar, configurar um DNS mais ágil pode melhorar a resposta."
         );
         setMetrics(out.map((o) => ({ l: o.l, v: o.n == null ? "—" : Math.round(o.n), u: o.n == null ? "" : "ms" })));
+        setLimitationNotice(
+          "Limitação da medição web: este teste compara o tempo de resolução via DNS-over-HTTPS (DoH) dos resolvedores públicos a partir do navegador. Não mede diretamente o servidor DNS local configurado no seu roteador (o app Android analisa a configuração DNS do aparelho e da rede)."
+        );
+        trackFeatureUsed(FEATURE_TESTE_DNS_CONCLUIDO);
         setPhase("done");
       } else if (f.tool === "mobile") {
         const nav = typeof navigator !== "undefined" ? (navigator as unknown as { connection?: { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean } }) : {};
         const c = nav.connection;
         if (!c) {
           setVerdict("Seu navegador não informa a rede.");
-          setSub("Chrome no Android mostra uma estimativa. Para ler o sinal real em dBm, use o app.");
+          setSub("Esta informação depende do suporte da Network Information API do navegador. Para ler o sinal real em dBm da torre celular, use o app Android.");
           setMetrics([]);
         } else {
           const tp: Record<string, string> = { "slow-2g": "2G lento", "2g": "2G", "3g": "3G", "4g": "4G ou melhor" };
-          setVerdict(`Tipo de conexão: ${tp[c.effectiveType || ""] || c.effectiveType || "desconhecido"}.`);
-          setSub("Estimativa feita pelo navegador. Não é o sinal em dBm da torre.");
+          setVerdict(`Tipo de conexão estimado: ${tp[c.effectiveType || ""] || c.effectiveType || "desconhecido"}.`);
+          setSub("Estimativa aproximada gerada pelo navegador. Não substitui a leitura de potência e banda pelo modem do celular.");
           setMetrics([
             { l: "Velocidade estimada", v: c.downlink != null ? c.downlink : "—", u: "Mbps" },
             { l: "Tempo de resposta", v: c.rtt != null ? c.rtt : "—", u: "ms" },
             { l: "Economia de dados", v: c.saveData ? "Ligada" : "Desligada", u: "" },
           ]);
         }
+        setLimitationNotice(
+          "Limitação da medição web: o navegador não tem acesso às informações de rádio do chip SIM ou das antenas. A potência do sinal (dBm) e a tecnologia real da operadora são lidas exclusivamente no app Android."
+        );
         setPhase("done");
       }
     } catch {
-      if (ok()) setPhase("error");
+      if (ok()) {
+        if (f.tool === "ping") trackFeatureUsed(FEATURE_TESTE_PING_ERRO);
+        else if (f.tool === "jitter") trackFeatureUsed(FEATURE_TESTE_JITTER_ERRO);
+        else if (f.tool === "speed") trackFeatureUsed(FEATURE_TESTE_VELOCIDADE_ERRO);
+        else if (f.tool === "dns") trackFeatureUsed(FEATURE_TESTE_DNS_ERRO);
+        setPhase("error");
+      }
     }
   };
 
@@ -329,6 +405,7 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
 
   const related = getRelatedFeatures(f.slug);
 
+
   const steps = !isApp
     ? [
         { n: "1", t: "Toque em iniciar", d: "Sem instalar nada. Roda no navegador." },
@@ -341,17 +418,8 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
         { n: "3", t: "Veja a resposta", d: "A conclusão vem primeiro, e o passo seguinte logo depois." },
       ];
 
-  // Visualizer calculations based on tick
+  // Visualizer calculations based on tick (used by app-exclusive illustrations)
   const sn = Math.sin;
-  const noisy = f.slug === "jitter";
-  const bars = Array.from({ length: 28 }, (_, i) => ({
-    h: Math.round(18 + 62 * (0.5 + 0.5 * sn(i * 0.45 + tick * 0.14)) * (noisy ? 0.55 + 0.45 * Math.abs(sn(i * 7.3 + tick * 0.35)) : 1)),
-  }));
-  const msNum = Math.round(26 + 12 * sn(tick * 0.09) + (noisy ? 6 * sn(tick * 1.3) : 0));
-  const dnsRows = ["Cloudflare", "Google", "Quad9"].map((n, k) => {
-    const ms = Math.round(18 + 14 * (0.5 + 0.5 * sn(tick * 0.07 + k * 2.1)) + k * 4);
-    return { n, ms, w: Math.round((ms / 48) * 100) };
-  });
   const nSig = 1 + Math.floor(((sn(tick * 0.05) + 1) / 2) * 3.99);
   const sigBars = [1, 2, 3, 4, 5].map((i) => ({ h: 20 + i * 16, c: i <= nSig ? "#5B21D6" : "#E7E0EC" }));
   const sigDb = [-86, -76, -66, -58, -50][nSig - 1];
@@ -427,12 +495,15 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
 
             {isApp && (
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/#baixar"
-                  className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white"
+                <a
+                  href={SIGNALLQ_PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+                  className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors"
                 >
                   Baixar no Google Play
-                </Link>
+                </a>
               </div>
             )}
 
@@ -454,49 +525,55 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
           >
             {/* Visualizer Header */}
             {(!isApp ? phase === "idle" : true) && (
-              <div className="mb-8">
-                {/* Ping / Jitter bars */}
-                {(f.slug === "ping" || f.slug === "jitter") && (
-                  <div>
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="font-mono text-[72px] font-bold leading-none tracking-[-3px]">{msNum}</span>
-                      <span className="text-[18px] font-medium text-[#49454F]">ms</span>
-                    </div>
-                    <div className="mt-5 flex h-[90px] items-end gap-1">
-                      {bars.map((b, i) => (
-                        <div key={i} style={{ height: `${b.h}%` }} className="flex-1 rounded bg-[#5B21D6] opacity-85" />
-                      ))}
-                    </div>
+              <div className="mb-6">
+                {/* Identificação explícita para ferramentas exclusivas do app */}
+                {isApp && (
+                  <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#F3EEFA] px-3.5 py-1 text-[12px] font-semibold text-[#5B21D6]">
+                    <span aria-hidden="true">📱</span> Demonstração ilustrativa (recurso do app)
                   </div>
                 )}
 
-                {/* DNS */}
-                {f.slug === "dns" && (
-                  <div className="flex flex-col gap-4">
-                    {dnsRows.map((r) => (
-                      <div key={r.n}>
-                        <div className="flex justify-between text-[15px] font-medium">
-                          <span>{r.n}</span>
-                          <span className="font-mono">{r.ms} ms</span>
-                        </div>
-                        <div className="mt-[6px] h-[10px] overflow-hidden rounded-full bg-[#F3EEFA]">
-                          <div style={{ width: `${r.w}%` }} className="h-full rounded-full bg-[#5B21D6]" />
-                        </div>
+                {/* Placeholders neutros no estado idle para ferramentas web */}
+                {!isApp && (f.slug === "ping" || f.slug === "jitter") && (
+                  <div className="text-center">
+                    <div className="text-[12px] font-semibold uppercase tracking-wider text-[#79747E]">
+                      Aguardando medição
+                    </div>
+                    <div className="mt-2 flex items-baseline justify-center gap-2">
+                      <span className="font-mono text-[64px] font-bold leading-none text-[#CAC4D0] tracking-[-2px]">—</span>
+                      <span className="text-[18px] font-medium text-[#79747E]">ms</span>
+                    </div>
+                    <p className="mt-2.5 text-[14px] text-[#49454F]">
+                      {f.slug === "ping"
+                        ? "Mede o tempo real de resposta da sua conexão via HTTP."
+                        : "Calcula a oscilação real (jitter) através de medições consecutivas."}
+                    </p>
+                  </div>
+                )}
+
+                {!isApp && f.slug === "dns" && (
+                  <div className="flex flex-col gap-2.5">
+                    <div className="text-[12px] font-semibold uppercase tracking-wider text-[#79747E] text-center mb-1">
+                      Resolvedores para comparação DoH
+                    </div>
+                    {["Cloudflare (1.1.1.1)", "Google (8.8.8.8)", "Quad9 (9.9.9.9)"].map((n) => (
+                      <div key={n} className="flex justify-between items-center rounded-xl bg-[#F8F5FB] px-4 py-2.5 text-[14px] font-medium text-[#49454F]">
+                        <span>{n}</span>
+                        <span className="font-mono font-bold text-[#79747E]">— ms</span>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Speedometer gauge for velocidade */}
-                {f.slug === "velocidade" && (
-                  <div className="flex flex-col items-center">
-                    <div className="font-mono text-[64px] font-bold leading-none tracking-[-2px] text-[#5B21D6]">
-                      {Math.round(4 + ((sn(tick * 0.06) + 1) / 2) * 56)}
-                    </div>
-                    <div className="mt-1 text-[16px] font-semibold text-[#49454F]">Mbps · Download</div>
+                {!isApp && f.slug === "velocidade" && (
+                  <div className="flex flex-col items-center text-center">
+                    <div className="text-[12px] font-semibold uppercase tracking-wider text-[#79747E]">Aguardando início</div>
+                    <div className="mt-2 font-mono text-[64px] font-bold leading-none text-[#CAC4D0]">—</div>
+                    <div className="mt-1 text-[15px] font-medium text-[#79747E]">Mbps · Download e Upload</div>
                   </div>
                 )}
 
+                {/* Demonstrações das ferramentas do App */}
                 {/* Wi-Fi Signal dBm */}
                 {f.slug === "wifi" && (
                   <div className="text-center">
@@ -641,7 +718,7 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
 
                 {phase === "done" && (
                   <div>
-                    <div className="text-[12px] font-medium text-[#49454F]">Resultado</div>
+                    <div className="text-[12px] font-medium text-[#49454F]">Resultado da medição</div>
                     <div className="mt-2 text-[26px] font-bold leading-8 tracking-[-0.5px]">{verdict}</div>
                     <p className="mt-2 text-[15px] leading-[22px] text-[#49454F]">{sub}</p>
 
@@ -659,16 +736,30 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
                       </div>
                     )}
 
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#EAE0FF] p-4">
-                      <span className="max-w-[15em] text-[15px] leading-[22px] text-[#210A5C]">
-                        Quer saber a causa e o que fazer?
-                      </span>
-                      <Link
-                        href="/#baixar"
-                        className="rounded-full bg-[#5B21D6] px-5 py-2.5 text-[14px] font-medium text-white no-underline"
+                    {limitationNotice && (
+                      <div className="mt-4 rounded-xl bg-[#F8F9FA] border border-[#E7E0EC] p-3 text-left text-[12px] leading-5 text-[#79747E]">
+                        <strong className="text-[#49454F]">Nota técnica:</strong> {limitationNotice}
+                      </div>
+                    )}
+
+                    <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-[#EAE0FF] p-4 text-left">
+                      <div>
+                        <div className="text-[15px] font-bold text-[#210A5C]">
+                          Quer descobrir a causa e o que fazer?
+                        </div>
+                        <div className="text-[13px] text-[#49454F] mt-0.5">
+                          O app Android analisa canais Wi-Fi, DNS local e perdas de pacotes.
+                        </div>
+                      </div>
+                      <a
+                        href={SIGNALLQ_PLAY_STORE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+                        className="rounded-full bg-[#5B21D6] px-5 py-2.5 text-[14px] font-medium text-white no-underline hover:bg-[#4A18B0] text-center transition-colors shrink-0"
                       >
                         Baixar o app
-                      </Link>
+                      </a>
                     </div>
 
                     <button
@@ -700,17 +791,21 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
             ) : (
               <div className="mt-3 text-center">
                 <div className="text-[12px] text-[#49454F]">Exemplo ilustrativo do que o app mostra</div>
-                <Link
-                  href="/#baixar"
-                  className="mt-4 block rounded-full bg-[#5B21D6] px-7 py-3.5 text-[15px] font-medium text-white no-underline hover:bg-[#4416A8]"
+                <a
+                  href={SIGNALLQ_PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+                  className="mt-4 block rounded-full bg-[#5B21D6] px-7 py-3.5 text-[15px] font-medium text-white no-underline hover:bg-[#4416A8] transition-colors"
                 >
                   Ver no meu celular
-                </Link>
+                </a>
               </div>
             )}
           </div>
         </section>
       </div>
+
 
       {/* Steps Section */}
       <section className="bg-[#F8F5FB] px-6 py-20">
@@ -778,17 +873,20 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
             {!isApp ? "Isso é só uma amostra. O app vai até a causa." : "Veja isso acontecendo na sua casa."}
           </h2>
           <div>
-            <p className="m-0 text-[19px] leading-[29px] text-[#CAC4D0]">{f.app}</p>
-            <Link
-              href="/#baixar"
-              className="mt-7 inline-block rounded-full bg-[#EAE0FF] px-8 py-[18px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white"
+            <a
+              href={SIGNALLQ_PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+              className="mt-7 inline-block rounded-full bg-[#EAE0FF] px-8 py-[18px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors"
             >
               Baixar grátis no Google Play
-            </Link>
+            </a>
             <div className="mt-3.5 text-[14px] text-[#CAC4D0]">Sem cadastro para começar</div>
           </div>
         </div>
       </section>
+
 
       {/* FAQ */}
       <section className="mx-auto max-w-[768px] px-6 pb-16 pt-24">

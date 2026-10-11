@@ -6,6 +6,8 @@ import Image from "next/image";
 import { type GameGenre } from "./modoGamerEngine";
 import { ModoGamerTestSection } from "./ModoGamerTestSection";
 import { ModoGamerDemoCard } from "./ModoGamerDemoCard";
+import { SIGNALLQ_PLAY_STORE_URL } from "@/lib/config";
+import { FEATURE_DOWNLOAD_APP_CLICADO, trackFeatureUsed } from "@/lib/telemetry";
 
 import { DEVICES, FAQ, GAMES_DATA, GENRES } from "./modoGamerData";
 
@@ -51,12 +53,15 @@ export default function ModoGamerContent() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/#baixar"
-              className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white"
+            <a
+              href={SIGNALLQ_PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+              className="rounded-full bg-[#EAE0FF] px-[30px] py-[17px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors"
             >
               Baixar no Google Play
-            </Link>
+            </a>
             <a
               href="#teste"
               className="rounded-full border border-[#4A4458] px-7 py-4 text-[17px] font-medium text-[#F5F2F7] no-underline hover:border-[#C9B6FF]"
@@ -64,6 +69,7 @@ export default function ModoGamerContent() {
               Testar aqui, sem baixar
             </a>
           </div>
+
 
           <div className="mt-5 text-[14px] text-[#A9A3B5]">
             Grátis · Sem cadastro · Para PlayStation, Xbox, PC, Switch, iPhone e TV
@@ -331,15 +337,15 @@ export default function ModoGamerContent() {
             Descubra antes da fila, não no meio da partida.
           </h2>
           <div>
-            <p className="m-0 text-[19px] leading-[29px] text-[#E7DEFF]">
-              Baixe o SignallQ, abra o Modo Jogos e faça o primeiro check em menos de um minuto.
-            </p>
-            <Link
-              href="/#baixar"
-              className="mt-7 inline-block rounded-full bg-[#EAE0FF] px-8 py-[18px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white"
+            <a
+              href={SIGNALLQ_PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO)}
+              className="mt-7 inline-block rounded-full bg-[#EAE0FF] px-8 py-[18px] text-[17px] font-semibold text-[#210A5C] no-underline hover:bg-white transition-colors"
             >
               Baixar grátis no Google Play
-            </Link>
+            </a>
             <div className="mt-3.5 text-[14px] text-[#E7DEFF]">Sem cadastro para começar</div>
           </div>
         </div>
@@ -347,3 +353,4 @@ export default function ModoGamerContent() {
     </div>
   );
 }
+

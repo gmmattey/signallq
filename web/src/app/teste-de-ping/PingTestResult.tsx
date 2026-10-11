@@ -131,24 +131,30 @@ export function PingTestResult({
           </div>
         </div>
 
+        {/* Nota técnica de transparência sobre latência HTTP */}
+        <div className="mt-5 rounded-xl bg-[#F8F9FA] border border-[#E7E0EC] px-4 py-3 text-[13px] leading-5 text-[#79747E]">
+          <strong className="text-[#49454F]">Limitação técnica da medição:</strong> A latência exibida é o tempo de ida e volta (RTT) de requisições HTTP até a borda CDN regional mais próxima. Não equivale a um ping ICMP de baixo nível. Para isolar se o atraso se origina no canal Wi-Fi do seu roteador, na rota da operadora ou no servidor DNS local, utilize o aplicativo SignallQ para Android.
+        </div>
+
         {/* Card de CTA para o App SignallQ */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-[#F3EEFA] border border-[#E7E0EC] p-5 sm:p-6">
-          <div className="max-w-[24em]">
+          <div className="max-w-[26em]">
             <div className="text-[17px] font-bold text-[#210A5C]">
               O ping está alto no Wi-Fi ou na operadora?
             </div>
-            <div className="mt-0.5 text-[13px] leading-5 text-[#49454F]">
-              O app SignallQ isola se a latência vem do sinal Wi-Fi, DNS ou rota do provedor.
+            <div className="mt-1 text-[13px] leading-5 text-[#49454F]">
+              O app SignallQ testa o sinal do roteador em dBm, identifica interferências de vizinhos e mostra exatamente onde o atraso está acontecendo.
             </div>
           </div>
           <Link
             href="/#baixar"
             className="rounded-full bg-[#5B21D6] hover:bg-[#6D28D9] px-6 py-3 text-[14px] font-semibold text-white no-underline transition-all shadow-[0_4px_14px_-3px_rgba(91,33,214,0.4)]"
           >
-            Diagnosticar no app
+            Diagnosticar no app grátis
           </Link>
         </div>
       </div>
     </div>
   )
 }
+

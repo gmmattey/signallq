@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useRef, useCallback } from 'react'
+import {
+  FEATURE_TESTE_PING_CONCLUIDO,
+  FEATURE_TESTE_PING_ERRO,
+  trackFeatureUsed,
+} from '@/lib/telemetry'
 
 export interface PingTestState {
   phase: 'idle' | 'running' | 'done' | 'error'
@@ -167,23 +172,28 @@ export function usePingTestEngine() {
       const finalBufferbloat =
         loadedPings.length > 0 ? Math.max(0, Math.round(median(loadedPings) - finalMin)) : 0
 
-      setState((s) => ({
-        ...s,
-        phase: 'done',
-        stage: '',
-        pct: 100,
-        live: finalAvg,
-        pingMin: finalMin,
-        pingAvg: finalAvg,
-        jitter: finalJitter,
-        bufferbloat: finalBufferbloat,
-      }))
+      if (current()) {
+        trackFeatureUsed(FEATURE_TESTE_PING_CONCLUIDO)
+        setState((s) => ({
+          ...s,
+          phase: 'done',
+          stage: '',
+          pct: 100,
+          live: finalAvg,
+          pingMin: finalMin,
+          pingAvg: finalAvg,
+          jitter: finalJitter,
+          bufferbloat: finalBufferbloat,
+        }))
+      }
     } catch {
       if (current()) {
+        trackFeatureUsed(FEATURE_TESTE_PING_ERRO)
         setState((s) => ({ ...s, phase: 'error' }))
       }
     }
   }, [])
+
 
   const cancel = useCallback(() => {
     runId.current++

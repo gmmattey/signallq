@@ -34,4 +34,24 @@ describe('SiteNav', () => {
     const labels = screen.getAllByRole('link').map((l) => l.textContent)
     expect(labels).toEqual(['SignallQ', 'Teste de velocidade', 'Funcionalidades', 'Como funciona', 'Guias', 'O resultado', 'Dúvidas', 'Baixar o app'])
   })
+
+  it('permite abrir e fechar o menu mobile acessível', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const user = userEvent.setup()
+    usePathnameMock.mockReturnValue('/')
+    render(<SiteNav />)
+
+    const toggleBtn = screen.getByRole('button', { name: 'Abrir menu de navegação' })
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(toggleBtn)
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('navigation', { name: 'Navegação mobile' })).toBeInTheDocument()
+
+    // Fecha com Escape
+    await user.keyboard('{Escape}')
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('navigation', { name: 'Navegação mobile' })).toBeNull()
+  })
 })
+

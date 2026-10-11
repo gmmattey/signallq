@@ -4,113 +4,98 @@ interface FeatureCard {
   t: string;
   d: string;
   href: string;
+  badge: string;
 }
 
-const STARS: FeatureCard[] = [
+const APP_EXCLUSIVES: FeatureCard[] = [
   {
-    t: "Modo Jogos",
-    d: "Veja se sua conexão serve para o seu jogo e aparelho.",
-    href: "/modo-gamer",
+    t: "Canais do Wi-Fi",
+    d: "Varredura das redes vizinhas para descobrir o canal menos congestionado para o seu roteador.",
+    href: "/canais-wifi",
+    badge: "Wi-Fi e Rádio",
   },
   {
     t: "Relatório em PDF",
-    d: "Relatório de diagnóstico e histórico para levar à operadora.",
+    d: "Histórico auditado com dados mascarados pronto para protocolar chamado na operadora.",
     href: "/relatorio-pdf",
+    badge: "Operadora",
   },
   {
-    t: "Canais do Wi-Fi",
-    d: "Descubra o canal mais livre para o seu roteador.",
-    href: "/canais-wifi",
-  },
-];
-
-const FEATS: FeatureCard[] = [
-  {
-    t: "Teste de ping",
-    d: "Quanto tempo sua conexão leva para responder.",
-    href: "/teste-de-ping",
-  },
-  {
-    t: "Download e upload",
-    d: "Quantos Mbps chegam para baixar e enviar.",
-    href: "/teste-de-download-e-upload",
-  },
-  {
-    t: "Teste de DNS",
-    d: "Qual DNS responde mais rápido para você.",
-    href: "/teste-de-dns",
-  },
-  {
-    t: "Sinal Wi-Fi",
-    d: "O que o dBm do sinal significa de verdade.",
+    t: "Sinal Wi-Fi em dBm",
+    d: "Leitura de potência real de rádio cômodo por cômodo, sem depender de barrinhas genéricas.",
     href: "/sinal-wifi",
+    badge: "Hardware",
   },
   {
     t: "Dispositivos na rede",
-    d: "Veja os aparelhos conectados ao seu Wi-Fi.",
+    d: "Identifica todos os aparelhos conectados ao seu roteador e detecta conexões não autorizadas.",
     href: "/quem-esta-na-minha-rede",
+    badge: "Rede Local",
   },
   {
     t: "Mapa de calor do Wi-Fi",
-    d: "O sinal do Wi-Fi em cada cômodo da casa.",
+    d: "Mapeie visualmente os pontos cegos da sua casa e compare antes e depois de mudar o roteador.",
     href: "/mapa-de-calor-wifi",
+    badge: "Cobertura",
   },
   {
     t: "Sinal 4G e 5G",
-    d: "Qualidade do sinal da rede móvel.",
+    d: "Diagnóstico da rede móvel e leitura da intensidade do sinal da torre da operadora celular.",
     href: "/sinal-4g-5g",
-  },
-  {
-    t: "Jitter e perda de pacotes",
-    d: "Oscilação da latência e perda de pacotes.",
-    href: "/teste-de-jitter",
+    badge: "Rede Móvel",
   },
 ];
 
 export function HomeFeatures() {
   return (
-    <section id="funcionalidades" className="mx-auto w-full max-w-[1168px] px-6 pb-24 pt-4">
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-        <h2 className="m-0 max-w-[16em] text-balance text-[clamp(30px,3.8vw,42px)] font-bold leading-[1.1] tracking-[-1px]">
-          O que só o app faz.
-        </h2>
-      </div>
-
-      <div className="mb-24 mt-10 grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
-        {STARS.map((c) => (
+    <section id="funcionalidades" className="scroll-mt-20 border-t border-[#F3EEFA] bg-white px-6 py-24">
+      <div className="mx-auto w-full max-w-[1168px]">
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+          <div className="max-w-[36em]">
+            <div className="text-[14px] font-semibold uppercase tracking-wider text-[#5B21D6]">
+              Exclusivo no Android
+            </div>
+            <h2 className="m-0 mt-2 text-balance text-[clamp(30px,3.8vw,42px)] font-bold leading-[1.1] tracking-[-1px] text-[#1C1B1F]">
+              O que só o app faz.
+            </h2>
+            <p className="mt-3 text-pretty text-[18px] leading-7 text-[#49454F]">
+              Por questões de segurança, navegadores web não têm acesso ao hardware do celular ou à interface de rádio. O aplicativo SignallQ realiza diagnósticos profundos que nenhum site consegue fazer.
+            </p>
+          </div>
           <Link
-            key={c.t}
-            href={c.href}
-            className="flex min-h-[220px] flex-col rounded-[28px] bg-[#210A5C] p-8 text-white no-underline transition-transform hover:-translate-y-1"
+            href="/funcionalidades"
+            className="text-[16px] font-semibold text-[#5B21D6] no-underline hover:text-[#4416A8] transition-colors"
           >
-            <div className="text-[26px] font-bold leading-8 tracking-[-0.4px]">{c.t}</div>
-            <p className="mt-3 text-[16px] leading-6 text-[#E7DEFF]">{c.d}</p>
-            <span className="mt-auto pt-6 text-[15px] font-semibold text-[#EAE0FF]">Saiba mais →</span>
+            Ver todos os recursos →
           </Link>
-        ))}
-      </div>
+        </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-        <h2 className="m-0 max-w-[16em] text-balance text-[clamp(30px,3.8vw,42px)] font-bold leading-[1.1] tracking-[-1px]">
-          Procurando algo específico? Teste agora.
-        </h2>
-        <Link href="/funcionalidades" className="text-[16px] font-semibold text-[#5B21D6] no-underline hover:text-[#4416A8]">
-          Ver todas →
-        </Link>
-      </div>
-
-      <div className="mt-12 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-x-10 gap-y-0">
-        {FEATS.map((c) => (
-          <Link
-            key={c.t}
-            href={c.href}
-            className="block border-t-2 border-[#1C1B1F] py-5 pb-8 text-[#1C1B1F] no-underline transition-colors hover:text-[#5B21D6]"
-          >
-            <div className="text-[20px] font-semibold leading-[26px]">{c.t}</div>
-            <p className="mt-2 text-[15px] leading-[22px] text-[#49454F]">{c.d}</p>
-          </Link>
-        ))}
+        <div className="mt-12 grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-6">
+          {APP_EXCLUSIVES.map((c) => (
+            <Link
+              key={c.t}
+              href={c.href}
+              className="group flex flex-col justify-between rounded-[28px] border border-[#E7E0EC] bg-[#FAF8FC] p-8 text-[#1C1B1F] no-underline transition-all hover:-translate-y-1 hover:border-[#D5C2FF] hover:bg-white hover:shadow-md"
+            >
+              <div>
+                <span className="rounded-full bg-[#EAE0FF] px-3 py-1 text-[11px] font-bold text-[#210A5C]">
+                  {c.badge}
+                </span>
+                <div className="mt-4 text-[22px] font-bold leading-7 text-[#1C1B1F] group-hover:text-[#5B21D6] transition-colors">
+                  {c.t}
+                </div>
+                <p className="mt-2.5 text-[15px] leading-6 text-[#49454F]">{c.d}</p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-[#F3EEFA]">
+                <span className="text-[14px] font-semibold text-[#5B21D6] group-hover:translate-x-1 inline-flex items-center gap-1 transition-transform">
+                  Saiba mais no app →
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
+

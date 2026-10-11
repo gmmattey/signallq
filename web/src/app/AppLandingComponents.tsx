@@ -1,14 +1,14 @@
-"use client";
 import Image from 'next/image'
 import Link from 'next/link'
+import { SIGNALLQ_PLAY_STORE_URL } from '@/lib/config'
 
-const PRIMARY = 'rounded-full bg-[#5B21D6] font-medium text-white no-underline'
+const PRIMARY = 'rounded-full bg-[#5B21D6] font-medium text-white no-underline hover:bg-[#4A18B0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B21D6]'
 
 export function AppLandingHero({ onBaixar }: { onBaixar: () => void }) {
   return (
     <section
       id="topo"
-      className="mx-auto grid w-full max-w-[1168px] grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-center gap-16 px-6 pb-[88px] pt-24"
+      className="mx-auto grid w-full max-w-[1168px] grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-center gap-16 px-6 pb-[88px] pt-20"
     >
       <div>
         <div className="mb-5 text-[14px] font-medium text-[#5B21D6]">Diagnóstico de internet para Android</div>
@@ -19,14 +19,27 @@ export function AppLandingHero({ onBaixar }: { onBaixar: () => void }) {
           O SignallQ analisa sua rede, mostra onde está o problema e diz o que fazer. Depois, confirma se resolveu.
         </p>
         <div className="mt-9 flex flex-wrap gap-3">
-          <button type="button" onClick={onBaixar} className={`${PRIMARY} cursor-pointer border-0 px-7 py-4 text-[16px]`}>
-            Baixar no Google Play
-          </button>
-          <Link href="/teste-de-velocidade" className="rounded-full bg-[#F3EEFA] px-7 py-4 text-[16px] font-medium text-[#210A5C] no-underline">
-            Fazer teste de velocidade
+          <a
+            href={SIGNALLQ_PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onBaixar}
+            className={`${PRIMARY} inline-flex items-center justify-center px-7 py-4 text-[16px] font-semibold shadow-[0_8px_20px_-6px_rgba(91,33,214,0.5)]`}
+          >
+            Baixar grátis no Google Play
+          </a>
+          <Link
+            href="/teste-de-velocidade"
+            className="rounded-full bg-[#F3EEFA] hover:bg-[#EAE0FF] px-7 py-4 text-[16px] font-medium text-[#210A5C] no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5B21D6]"
+          >
+            Testar minha internet
           </Link>
         </div>
-        <div className="mt-5 text-[14px] text-[#49454F]">Grátis · Sem cadastro para começar</div>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-[#49454F]">
+          <span>Grátis · Sem cadastro para começar</span>
+          <span>·</span>
+          <span>Usa iPhone? <a href="#outras-solucoes" className="text-[#5B21D6] font-medium underline">Conheça o Linka</a></span>
+        </div>
       </div>
       <div className="flex justify-center">
         <div className="w-[300px] rounded-[40px] bg-black p-[10px] shadow-[0_30px_60px_-20px_rgba(33,10,92,0.35)]">
@@ -51,10 +64,17 @@ export function AppLandingCTA({ onBaixar }: { onBaixar: () => void }) {
         <h2 className="mx-auto max-w-[14em] text-balance text-[clamp(30px,4vw,46px)] font-bold leading-[1.08] tracking-[-1px] text-[#210A5C]">
           Sua internet está ruim agora? Descubra em minutos.
         </h2>
-        <button type="button" onClick={onBaixar} className={`${PRIMARY} mt-8 inline-block cursor-pointer border-0 px-8 py-4 text-[16px]`}>
-          Baixar no Google Play
-        </button>
+        <a
+          href={SIGNALLQ_PLAY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onBaixar}
+          className={`${PRIMARY} mt-8 inline-block px-8 py-4 text-[16px] font-semibold shadow-[0_8px_20px_-6px_rgba(91,33,214,0.5)]`}
+        >
+          Baixar grátis no Google Play
+        </a>
       </div>
     </section>
   )
 }
+

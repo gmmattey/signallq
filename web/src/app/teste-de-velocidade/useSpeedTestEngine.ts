@@ -2,6 +2,11 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { SPEEDTEST_DOWNLOAD_URL, SPEEDTEST_UPLOAD_URL } from '@/lib/config'
+import {
+   FEATURE_TESTE_VELOCIDADE_CONCLUIDO,
+   FEATURE_TESTE_VELOCIDADE_ERRO,
+   trackFeatureUsed,
+ } from '@/lib/telemetry'
 
 export type SpeedTestPhase = 'idle' | 'running' | 'done' | 'error'
 export type SpeedTestStage = 'ping' | 'down' | 'up' | ''
@@ -244,15 +249,21 @@ export function useSpeedTestEngine() {
           ? Math.max(0, Math.round(median(loadedPings) - ping))
           : 0
 
-      setState((s) => ({
-        ...s,
-        upload,
-        bufferbloat: finalBufferbloat,
-        phase: 'done',
-        pct: 100,
-      }))
+      if (current()) {
+        trackFeatureUsed(FEATURE_TESTE_VELOCIDADE_CONCLUIDO)
+        setState((s) => ({
+          ...s,
+          upload,
+          bufferbloat: finalBufferbloat,
+          phase: 'done',
+          pct: 100,
+        }))
+      }
     } catch {
-      if (current()) setState((s) => ({ ...s, phase: 'error' }))
+      if (current()) {
+        trackFeatureUsed(FEATURE_TESTE_VELOCIDADE_ERRO)
+        setState((s) => ({ ...s, phase: 'error' }))
+      }
     }
   }, [])
 
