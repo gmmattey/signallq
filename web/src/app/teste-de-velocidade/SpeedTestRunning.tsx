@@ -12,7 +12,7 @@ export function SpeedTestRunning({ state, onCancel }: { state: SpeedTestState; o
   const liveUnit = state.stage === 'ping' ? 'ms' : 'Mbps'
 
   return (
-    <div className="text-center">
+    <div className="text-center" aria-live="polite">
       <div className="text-[16px] font-medium text-[#49454F]">{STAGE_LABELS[state.stage] ?? ''}</div>
       <div className="mt-3 flex justify-center">
         <Speedometer

@@ -53,8 +53,8 @@ export function useSpeedTestEngine() {
       setState((s) => ({ ...s, ping, stage: 'down', live: 0, pct: 15 }))
 
       // 2. Fase de Download — ~8 a 10 segundos
-      // Baixa streams contínuos com paralelismo moderado (2 conexões simultâneas)
-      // para saturar a banda sem engasgos de conexão única, descartando warmup inicial (primeiros 1.5s).
+      // Baixa streams contínuos sequenciais progressivos saturando a conexão via ReadableStream,
+      // descartando warmup inicial de TCP slow-start (primeiros 1.5s).
       const dlTargetDurationSec = 9
       const dlStartTime = performance.now()
       let totalDlBytes = 0
@@ -63,8 +63,8 @@ export function useSpeedTestEngine() {
       let hasWarmedUp = false
       let liveDlSmoothed = 0
 
-      // Chunks progressivos (5MB, 10MB, 25MB, 50MB)
-      const dlChunkSizes = [5e6, 10e6, 25e6, 25e6, 50e6]
+      // Chunks progressivos (5MB, 10MB, 25MB - tamanhos oficiais suportados pelo speed.cloudflare.com)
+      const dlChunkSizes = [5e6, 10e6, 25e6, 25e6]
       let dlChunkIdx = 0
 
       while ((performance.now() - dlStartTime) / 1000 < dlTargetDurationSec && current()) {
