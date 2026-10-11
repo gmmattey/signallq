@@ -25,6 +25,8 @@ describe('página / — AppLandingClient (home, 1:1 com o protótipo)', () => {
     render(<AppLandingClient />)
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
     expect(headings).toEqual([
+      'O que só o app faz.',
+      'Procurando algo específico? Teste agora.',
       'Quatro perguntas. Uma resposta de cada vez.',
       'Primeiro a conclusão. Os números vêm depois.',
       'Sem achismo. Sem jargão.',

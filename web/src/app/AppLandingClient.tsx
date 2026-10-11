@@ -1,6 +1,7 @@
 "use client";
 import { useAppLanding } from './useAppLanding'
 import { AppLandingHero, AppLandingCTA } from './AppLandingComponents'
+import { HomeFeatures } from './HomeFeatures'
 import { HowItWorksSteps } from './HowItWorksSteps'
 import { ResultOrder } from './ResultOrder'
 import { TrustPromises } from './TrustPromises'
@@ -25,6 +26,7 @@ export function AppLandingClient() {
     <div className="flex w-full flex-col bg-white font-sans leading-[normal] text-[#1C1B1F]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(HOME_JSON_LD) }} />
       <AppLandingHero onBaixar={baixarNaPlayStore} />
+      <HomeFeatures />
       <HowItWorksSteps />
       <ResultOrder />
       <TrustPromises />

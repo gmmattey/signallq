@@ -40,6 +40,66 @@ export const PAGE_META: Record<string, PageMeta> = {
     description: 'Guias simples para entender e resolver problemas de internet lenta, Wi-Fi fraco, latência e velocidade.',
     path: '/guias',
   },
+  '/funcionalidades': {
+    title: 'Funcionalidades | SignallQ',
+    description: 'Teste de ping, velocidade, DNS, jitter, sinal Wi-Fi, dispositivos na rede, mapa de calor e sinal 4G/5G.',
+    path: '/funcionalidades',
+  },
+  '/modo-gamer': {
+    title: 'Sua internet está pronta para o ranked? Modo Jogos | SignallQ',
+    description: 'O Modo Jogos do SignallQ mede ping, jitter e perda e diz se sua conexão aguenta o seu jogo e o seu aparelho. Faça um teste rápido aqui e veja o veredito completo no app.',
+    path: '/modo-gamer',
+  },
+  '/teste-de-ping': {
+    title: 'Teste de ping e latência da internet | SignallQ',
+    description: 'Meça o ping da sua internet em segundos e entenda se a latência é boa para jogos, chamadas e navegação.',
+    path: '/teste-de-ping',
+  },
+  '/teste-de-download-e-upload': {
+    title: 'Teste de download e upload | SignallQ',
+    description: 'Meça a velocidade de download e upload da sua internet e veja o que ela aguenta: vídeo, 4K, chamadas e jogos.',
+    path: '/teste-de-download-e-upload',
+  },
+  '/teste-de-dns': {
+    title: 'Teste de DNS: qual DNS usar? | SignallQ',
+    description: 'Compare o tempo de resposta de DNS populares e aprenda a trocar o DNS no Android para abrir páginas mais rápido.',
+    path: '/teste-de-dns',
+  },
+  '/teste-de-jitter': {
+    title: 'Teste de jitter e perda de pacotes | SignallQ',
+    description: 'Meça jitter e perda de pacotes e entenda por que chamadas e jogos travam mesmo com internet rápida.',
+    path: '/teste-de-jitter',
+  },
+  '/canais-wifi': {
+    title: 'Melhor canal de Wi-Fi: como escolher | SignallQ',
+    description: 'Veja como saber se o canal do seu Wi-Fi está congestionado e qual canal usar. O app mostra a ocupação dos canais ao seu redor.',
+    path: '/canais-wifi',
+  },
+  '/relatorio-pdf': {
+    title: 'Relatório da sua internet em PDF para a operadora | SignallQ',
+    description: 'Gere um relatório de diagnóstico em PDF e exporte o histórico de medições em CSV ou PDF para abrir um chamado com a operadora.',
+    path: '/relatorio-pdf',
+  },
+  '/sinal-wifi': {
+    title: 'Intensidade do sinal Wi-Fi: o que significa dBm | SignallQ',
+    description: 'Entenda a intensidade do sinal Wi-Fi em dBm, o que é bom ou fraco e como melhorar o sinal em cada cômodo.',
+    path: '/sinal-wifi',
+  },
+  '/quem-esta-na-minha-rede': {
+    title: 'Quem está na minha rede Wi-Fi? | SignallQ',
+    description: 'Descubra quais aparelhos estão conectados ao seu Wi-Fi, como identificar desconhecidos e o que fazer.',
+    path: '/quem-esta-na-minha-rede',
+  },
+  '/mapa-de-calor-wifi': {
+    title: 'Mapa de calor do Wi-Fi: sinal em cada cômodo | SignallQ',
+    description: 'Veja como um mapa de calor mostra onde o Wi-Fi da sua casa é forte ou fraco e onde colocar o roteador.',
+    path: '/mapa-de-calor-wifi',
+  },
+  '/sinal-4g-5g': {
+    title: 'Sinal 4G e 5G: como saber se está bom | SignallQ',
+    description: 'Veja o que seu navegador informa sobre a rede e entenda os níveis de sinal 4G e 5G em dBm.',
+    path: '/sinal-4g-5g',
+  },
   '/guias/por-que-minha-internet-esta-lenta': {
     title: 'Por que minha internet está lenta? Causas e o que fazer | SignallQ',
     description: 'Wi-Fi, roteador, operadora ou DNS: aprenda a descobrir a causa da internet lenta e como resolver.',

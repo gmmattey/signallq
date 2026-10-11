@@ -17,10 +17,10 @@ describe('SiteNav', () => {
     expect(screen.getByRole('link', { name: 'Baixar o app' })).toHaveAttribute('href', '/#baixar')
   })
 
-  it('mostra os quatro links nas páginas internas e marca a rota atual (aria-current)', () => {
+  it('mostra os cinco links nas páginas internas e marca a rota atual (aria-current)', () => {
     usePathnameMock.mockReturnValue('/guias/por-que-minha-internet-esta-lenta')
     render(<SiteNav />)
-    for (const label of ['Teste de velocidade', 'Guias', 'Como funciona', 'Dúvidas']) {
+    for (const label of ['Teste de velocidade', 'Funcionalidades', 'Guias', 'Como funciona', 'Dúvidas']) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument()
     }
     expect(screen.queryByRole('link', { name: 'O resultado' })).toBeNull()
@@ -32,6 +32,6 @@ describe('SiteNav', () => {
     usePathnameMock.mockReturnValue('/')
     render(<SiteNav />)
     const labels = screen.getAllByRole('link').map((l) => l.textContent)
-    expect(labels).toEqual(['SignallQ', 'Teste de velocidade', 'Como funciona', 'Guias', 'O resultado', 'Dúvidas', 'Baixar o app'])
+    expect(labels).toEqual(['SignallQ', 'Teste de velocidade', 'Funcionalidades', 'Como funciona', 'Guias', 'O resultado', 'Dúvidas', 'Baixar o app'])
   })
 })

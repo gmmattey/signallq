@@ -4,17 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// O protótipo não destaca "Teste de velocidade" na própria página (SiteHeader sem `active`).
+// O protótipo destaca a página ativa com pill roxo suave (#EAE0FF).
 const LINKS: { href: string; label: string; neverActive?: boolean }[] = [
   { href: "/teste-de-velocidade", label: "Teste de velocidade", neverActive: true },
+  { href: "/funcionalidades", label: "Funcionalidades" },
   { href: "/guias", label: "Guias" },
   { href: "/como-funciona", label: "Como funciona" },
   { href: "/duvidas", label: "Dúvidas" },
 ];
 
-// Na home o protótipo usa outra ordem e um atalho para a seção "O resultado".
+// Na home o protótipo inclui atalho para a seção "O resultado".
 const HOME_LINKS: { href: string; label: string; neverActive?: boolean }[] = [
   { href: "/teste-de-velocidade", label: "Teste de velocidade" },
+  { href: "/funcionalidades", label: "Funcionalidades" },
   { href: "/como-funciona", label: "Como funciona" },
   { href: "/guias", label: "Guias" },
   { href: "#resultado", label: "O resultado" },
@@ -37,7 +39,7 @@ export function SiteNav() {
           SignallQ
         </Link>
 
-        <nav className="ml-auto hidden gap-7 text-[14px] sm:flex" aria-label="Navegação principal">
+        <nav className="ml-auto hidden items-center gap-1 text-[14px] sm:flex" aria-label="Navegação principal">
           {links.map((link) => {
             const active = !link.neverActive && !link.href.startsWith("#") && (pathname === link.href || pathname.startsWith(`${link.href}/`));
             return (
@@ -45,7 +47,11 @@ export function SiteNav() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`no-underline ${active ? "font-bold text-[#5B21D6]" : "font-medium text-[#49454F]"}`}
+                className={`rounded-full px-3 py-2 no-underline transition-colors ${
+                  active
+                    ? "bg-[#EAE0FF] font-semibold text-[#210A5C]"
+                    : "font-medium text-[#49454F] hover:text-[#210A5C]"
+                }`}
               >
                 {link.label}
               </Link>

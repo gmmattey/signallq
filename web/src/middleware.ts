@@ -9,6 +9,18 @@ const validPaths = new Set([
   '/duvidas',
   '/teste-de-velocidade',
   '/guias',
+  '/funcionalidades',
+  '/modo-gamer',
+  '/teste-de-ping',
+  '/teste-de-download-e-upload',
+  '/teste-de-dns',
+  '/teste-de-jitter',
+  '/canais-wifi',
+  '/relatorio-pdf',
+  '/sinal-wifi',
+  '/quem-esta-na-minha-rede',
+  '/mapa-de-calor-wifi',
+  '/sinal-4g-5g',
 ]);
 
 function isValidPath(pathname: string): boolean {
