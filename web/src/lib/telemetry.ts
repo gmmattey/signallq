@@ -100,3 +100,36 @@ export function initTelemetryDeferred() {
 // Feature ID do CTA de download da landing (dentro do mesmo evento
 // feature_used já whitelistado no admin-worker — nenhuma mudança de schema).
 export const FEATURE_DOWNLOAD_APP_CLICADO = 'download_app_clicado'
+
+// Hero Carousel e CTAs da Home
+export const FEATURE_HERO_SLIDE_MANUAL = 'hero_slide_manual'
+export const FEATURE_HERO_RECURSO_CLICADO = 'hero_recurso_clicado'
+export const FEATURE_HERO_TESTAR_INTERNET_CLICADO = 'hero_testar_internet_clicado'
+
+// Testes e ferramentas
+export const FEATURE_TESTE_VELOCIDADE_INICIADO = 'teste_velocidade_iniciado'
+export const FEATURE_TESTE_VELOCIDADE_CONCLUIDO = 'teste_velocidade_concluido'
+export const FEATURE_TESTE_VELOCIDADE_ERRO = 'teste_velocidade_erro'
+
+export const FEATURE_TESTE_PING_INICIADO = 'teste_ping_iniciado'
+export const FEATURE_TESTE_PING_CONCLUIDO = 'teste_ping_concluido'
+export const FEATURE_TESTE_PING_ERRO = 'teste_ping_erro'
+
+export const FEATURE_TESTE_DNS_INICIADO = 'teste_dns_iniciado'
+export const FEATURE_TESTE_DNS_CONCLUIDO = 'teste_dns_concluido'
+export const FEATURE_TESTE_DNS_ERRO = 'teste_dns_erro'
+
+export const FEATURE_TESTE_JITTER_INICIADO = 'teste_jitter_iniciado'
+export const FEATURE_TESTE_JITTER_CONCLUIDO = 'teste_jitter_concluido'
+export const FEATURE_TESTE_JITTER_ERRO = 'teste_jitter_erro'
+
+// Teste Gamer
+export const FEATURE_TESTE_GAMER_JOGO_SELECIONADO = 'teste_gamer_jogo_selecionado'
+export const FEATURE_TESTE_GAMER_INICIADO = 'teste_gamer_iniciado'
+export const FEATURE_TESTE_GAMER_CONCLUIDO = 'teste_gamer_concluido'
+export const FEATURE_TESTE_GAMER_ERRO = 'teste_gamer_erro'
+
+// Descoberta do ecossistema
+export const FEATURE_ECOSSISTEMA_LAGCHECK_CLICADO = 'ecossistema_lagcheck_clicado'
+export const FEATURE_ECOSSISTEMA_LINKA_CLICADO = 'ecossistema_linka_clicado'
+export const FEATURE_ECOSSISTEMA_WIFICASA_CLICADO = 'ecossistema_wificasa_clicado'

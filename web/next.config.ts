@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
         destination: 'https://signallq.com/:path*',
         permanent: true,
       },
+      // Redirecionamentos permanentes (308) de URLs legadas com tráfego e impressões de busca
+      {
+        source: '/ping',
+        destination: '/teste-de-ping',
+        permanent: true,
+      },
+      {
+        source: '/lag-em-jogos-online',
+        destination: '/modo-gamer',
+        permanent: true,
+      },
+      {
+        source: '/internet-para-jogos',
+        destination: '/modo-gamer',
+        permanent: true,
+      },
     ];
   },
 };

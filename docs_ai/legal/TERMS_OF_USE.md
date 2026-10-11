@@ -52,11 +52,11 @@ Para problemas persistentes, entre em contato com sua operadora ou provedor de i
 
 ## 5. Gratuidade
 
-O SignallQ é oferecido gratuitamente, sem assinaturas e sem compras dentro do app. O app exibe anúncios do Google AdMob. A 7Agents reserva-se o direito de introduzir funcionalidades premium no futuro, mas as funcionalidades atuais permanecerão gratuitas.
+O SignallQ é oferecido gratuitamente, sem assinaturas e sem compras dentro do app. O app exibe anúncios do Google AdMob. O SignallQ reserva-se o direito de introduzir funcionalidades premium no futuro, mas as funcionalidades atuais permanecerão gratuitas.
 
 ## 6. Disponibilidade
 
-O serviço é fornecido "como está" (as is). A 7Agents não garante:
+O serviço é fornecido "como está" (as is). O SignallQ não garante:
 - Disponibilidade ininterrupta do App ou dos serviços de diagnóstico IA
 - Precisão absoluta das medições de velocidade
 - Que o diagnóstico resolverá todos os problemas de conectividade
@@ -69,11 +69,11 @@ O tratamento dos seus dados é regido pela nossa Política de Privacidade, dispo
 
 ## 8. Propriedade Intelectual
 
-O SignallQ, incluindo seu código, design, marca e conteúdo, é propriedade da 7Agents Tecnologia. Todos os direitos reservados.
+O SignallQ, incluindo seu código, design, marca e conteúdo, é propriedade exclusiva do SignallQ. Todos os direitos reservados.
 
 ## 9. Limitação de Responsabilidade
 
-A 7Agents não se responsabiliza por:
+O SignallQ não se responsabiliza por:
 - Danos diretos ou indiretos decorrentes do uso do App
 - Decisões tomadas com base nos diagnósticos gerados
 - Perda de dados armazenados localmente no dispositivo
@@ -81,7 +81,7 @@ A 7Agents não se responsabiliza por:
 
 ## 10. Alterações nos Termos
 
-A 7Agents pode atualizar estes Termos a qualquer momento. Alterações significativas serão comunicadas via atualização do App. O uso continuado após alterações implica aceitação dos novos termos.
+O SignallQ pode atualizar estes Termos a qualquer momento. Alterações significativas serão comunicadas via atualização do App. O uso continuado após alterações implica aceitação dos novos termos.
 
 ## 11. Legislação Aplicável
 
@@ -91,8 +91,8 @@ Estes Termos são regidos pelas leis da República Federativa do Brasil, em conf
 
 Para dúvidas sobre estes Termos:
 - Email: suporte@signallq.com
-- Desenvolvedor: 7Agents Tecnologia
+- Desenvolvedor: SignallQ
 
 ---
 
-*7Agents Tecnologia — São Paulo, Brasil*
+*SignallQ — São Paulo, Brasil*

@@ -79,6 +79,8 @@ export function bandOf(score: number): ScoreBand {
 
 export type DiagnosticCulprit = 'none' | 'home_wifi' | 'line_bufferbloat' | 'line_upload' | 'isp_route' | 'packet_loss'
 
+export type GamerVerdictStatus = 'adequate' | 'warning' | 'unstable' | 'inconclusive'
+
 export interface EvaluatedMetrics {
   pingScore: number
   jitScore: number
@@ -89,6 +91,10 @@ export interface EvaluatedMetrics {
   grade: ScoreBand
   weakestLink: 'ping' | 'jitter' | 'bloat' | 'upload' | 'loss'
   culprit: DiagnosticCulprit
+  verdictStatus: GamerVerdictStatus
+  verdict: string
+  primaryFactor: string
+  culpritHypothesis: string
   headline: string
   detail: string
   actions: string[]
@@ -186,6 +192,49 @@ export function evaluateGameConnection(input: RawMetricsInput): EvaluatedMetrics
     isPartial,
   )
 
+  let verdictStatus: GamerVerdictStatus = 'adequate'
+  let verdict = 'Sua conexão parece adequada para jogar.'
+  if (overallScore >= 78) {
+    verdictStatus = 'adequate'
+    verdict = 'Sua conexão parece adequada para jogar.'
+  } else if (overallScore >= 68) {
+    verdictStatus = 'warning'
+    verdict = 'Sua conexão pode apresentar atrasos.'
+  } else {
+    verdictStatus = 'unstable'
+    verdict = 'Encontramos sinais de instabilidade.'
+  }
+
+  let primaryFactor = ''
+  let culpritHypothesis = ''
+  switch (culprit) {
+    case 'none':
+      primaryFactor = `Tempo de resposta (${input.ping} ms) e oscilação (${input.jit} ms) consistentes.`
+      culpritHypothesis = 'Nenhum gargalo identificado nos elos medidos.'
+      break
+    case 'home_wifi':
+      primaryFactor = `Oscilação de latência (${input.jit} ms de jitter).`
+      culpritHypothesis = 'Possível interferência de sinal Wi-Fi ou oscilação na rota local.'
+      break
+    case 'line_bufferbloat':
+      primaryFactor = `Atraso sob carga (${input.bloat != null ? `+${input.bloat} ms` : 'fila inflada'}).`
+      culpritHypothesis = 'Inchaço na fila do roteador ou da operadora sob tráfego concorrente.'
+      break
+    case 'line_upload':
+      primaryFactor = `Vazão de upload limitada (${input.upload != null ? `${input.upload} Mbps` : 'baixa'}).`
+      culpritHypothesis = 'Capacidade de subida reduzida para voz e tráfego simultâneo.'
+      break
+    case 'packet_loss':
+      primaryFactor = 'Descarte ou perda de pacotes detectada.'
+      culpritHypothesis = 'Possível falha de cabeamento ou perda física no trajeto.'
+      break
+    case 'isp_route':
+    default:
+      primaryFactor = `Tempo de resposta elevado (${input.ping} ms de ping).`
+      culpritHypothesis = 'Distância física ou rota mais extensa até o servidor regional de referência.'
+      break
+  }
+
   const unmeasuredGaps: string[] = []
   if (uploadScore == null || bloatScore == null) {
     unmeasuredGaps.push(
@@ -214,6 +263,10 @@ export function evaluateGameConnection(input: RawMetricsInput): EvaluatedMetrics
     grade,
     weakestLink: weakest.link,
     culprit,
+    verdictStatus,
+    verdict,
+    primaryFactor,
+    culpritHypothesis,
     headline,
     detail,
     actions,

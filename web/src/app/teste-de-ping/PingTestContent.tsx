@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link'
+import { AppDownloadCTA } from '@/components/AppDownloadCTA'
 import { trackFeatureUsed } from '@/lib/telemetry'
 import { SITE_ORIGIN } from '@/lib/routeMetadata'
 import { usePingTestEngine } from './usePingTestEngine'
@@ -180,6 +181,9 @@ export function PingTestContent() {
           </div>
         </div>
       </section>
+
+      {/* Banner de download do app */}
+      <AppDownloadCTA />
     </div>
   )
 }

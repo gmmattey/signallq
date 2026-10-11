@@ -2,18 +2,21 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import ModoGamerPage from './page'
 
-describe('modo-gamer', () => {
-  it('renders Modo Gamer page with title, catalog, devices, FAQ and gamer stability test section', () => {
+describe('modo-gamer (página comercial)', () => {
+  it('renders commercial Modo Gamer page with headline, benefits, android screenshot and link to web test', () => {
     const markup = renderToStaticMarkup(<ModoGamerPage />)
-    expect(markup).toContain('Sua internet está pronta para o ranked?')
-    expect(markup).toContain('Modo Jogos · no app SignallQ')
-    expect(markup).toContain('Comece pelo jogo que você vai abrir.')
-    expect(markup).toContain('Fortnite')
-    expect(markup).toContain('PlayStation')
-    expect(markup).toContain('Rota de referência em servidores da AWS')
-    expect(markup).toContain('Veja a estabilidade da sua conexão agora')
-    expect(markup).toContain('Teste de estabilidade gamer')
-    expect(markup).toContain('Bufferbloat')
-    expect(markup).toContain('Iniciar teste de conexão')
+    expect(markup).toContain('Seu jogo trava mesmo com internet rápida?')
+    expect(markup).toContain('Modo Jogos · Exclusivo no app SignallQ')
+    expect(markup).toContain('Analise sua conexão para jogar')
+    expect(markup).toContain('Entenda o resultado')
+    expect(markup).toContain('Saiba o que melhorar')
+    expect(markup).toContain('Baixar SignallQ grátis')
+    expect(markup).toContain('Testar conexão no navegador')
+    expect(markup).toContain('/teste-gamer')
+    expect(markup).toContain('Exemplo de análise do SignallQ Android')
+    expect(markup).toContain('Perguntas frequentes sobre o Modo Jogos')
+
+    // Garantir que a ferramenta executora e seletores fictícios foram retirados
+    expect(markup).not.toContain('Iniciar teste de conexão')
   })
 })

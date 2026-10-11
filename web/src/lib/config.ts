@@ -28,3 +28,11 @@ export const SPEEDTEST_UPLOAD_URL: string =
 export const SPEEDTEST_META_URL: string =
   process.env.NEXT_PUBLIC_SPEEDTEST_META_URL || 'https://speed.cloudflare.com/meta'
 
+// Produtos do ecossistema SignallQ (configuráveis de forma centralizada)
+export const LAGCHECK_URL: string =
+  process.env.NEXT_PUBLIC_LAGCHECK_URL || 'https://lagcheck.signallq.com'
+export const LINKA_URL: string =
+  process.env.NEXT_PUBLIC_LINKA_URL || 'https://linka.signallq.com'
+export const WIFICASA_URL: string =
+  process.env.NEXT_PUBLIC_WIFICASA_URL || '/mapa-de-calor-wifi'
+

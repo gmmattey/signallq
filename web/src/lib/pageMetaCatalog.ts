@@ -46,9 +46,14 @@ export const PAGE_META: Record<string, PageMeta> = {
     path: '/funcionalidades',
   },
   '/modo-gamer': {
-    title: 'Sua internet está pronta para o ranked? Modo Jogos | SignallQ',
-    description: 'O Modo Jogos do SignallQ mede ping, jitter e perda e diz se sua conexão aguenta o seu jogo e o seu aparelho. Faça um teste rápido aqui e veja o veredito completo no app.',
+    title: 'Internet boa para jogar online e evitar lag | Modo Jogos SignallQ',
+    description: 'Descubra se sua conexão está adequada para games online. O app SignallQ analisa ping, jitter e estabilidade para indicar se a internet aguenta suas partidas sem travamentos.',
     path: '/modo-gamer',
+  },
+  '/teste-gamer': {
+    title: 'Teste de ping e conexão para jogos online | Teste Gamer SignallQ',
+    description: 'Teste de estabilidade gamer no navegador: meça latência, jitter e bufferbloat sob carga e veja se sua conexão está pronta para o seu jogo sem instalar nada.',
+    path: '/teste-gamer',
   },
   '/teste-de-ping': {
     title: 'Teste de ping e latência da internet | SignallQ',

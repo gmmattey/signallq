@@ -28,7 +28,7 @@ Fonte: `SignallQ - Prototipos.zip` (Claude Design, local do Luiz, não versionad
 
 - Páginas **1:1 com o protótipo**, validadas lado a lado (mesmo navegador e largura) na Home, Como funciona, Dúvidas, guia, Teste, Privacidade e Termos. Tema claro fixo; medidas copiadas do protótipo (largura de content-box, `line-height: normal`, fonte sem ajuste óptico automático).
 - Home sem "Diferenciais" e sem galeria (decisão do Luiz); hero com a captura real do app (nome do Wi-Fi e da operadora borrados, status bar cortada).
-- Privacidade/Termos: **layout** do protótipo com o **texto atual auditado** (decisão do Luiz). O texto do protótipo difere (cita IA, AdMob, "7Agents Tecnologia"); os Termos atuais dizem "Buildea" como titular — **inconsistência com o rodapé ("7Agents Tecnologia") a decidir**.
+- Privacidade/Termos: **layout** do protótipo com o **texto atual auditado** (decisão do Luiz). Os Termos atuais definem "SignallQ" como titular em todo o site e aplicativo.
 - Em produção em `signallq.com` e `speedtest.signallq.com` (Vercel `signallq-web`); DNS do subdomínio na Hostinger.
 - Telemetria funcionando de ponta a ponta (`SITE_INGEST_KEY` criada nos dois lados; `/api/track` → `signallq-admin.gmmattey.workers.dev`). Informe diário no Discord ativo (cron 09:00 BRT).
 
@@ -46,7 +46,7 @@ Fonte: `SignallQ - Prototipos.zip` (Claude Design, local do Luiz, não versionad
 | Dono | Item |
 |---|---|
 | Luiz | Cadastrar `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` e `VERCEL_TOKEN` como secrets do repositório `signallq` (hoje o deploy sai pela CLI) e rodar um `preview` pelo workflow |
-| Luiz | Decidir a titularidade nos textos legais (Buildea x 7Agents) e se o texto de Privacidade/Termos do protótipo substitui o atual |
+| Luiz | Confirmar se o texto de Privacidade/Termos do protótipo substitui o atual auditado |
 | Luiz | Variáveis de produção na Vercel sem uso no código: `NEXT_PUBLIC_ADSENSE_PUBLISHER_ID`, `SIGNALLQ_PLANS_API_URL` (podem ser removidas) |
 | Caio | Revisão independente das rotas novas e da chamada do navegador a `speed.cloudflare.com` |
 | Renan | Indexação das rotas novas; `middleware.ts` usa convenção depreciada no Next 16 (`proxy`) |

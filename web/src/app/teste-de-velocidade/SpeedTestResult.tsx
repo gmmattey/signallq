@@ -1,6 +1,8 @@
 "use client";
 
 import Link from 'next/link'
+import { AppScreenshot } from '@/components/AppScreenshot'
+import { APPROVED_SCREENSHOTS } from '@/lib/approvedScreenshotsManifest'
 import { GFiberGauge } from './GFiberGauge'
 import { SpeedTestMetricsBar } from './SpeedTestMetricsBar'
 import {
@@ -125,24 +127,51 @@ export function SpeedTestResult({ state, onRetry }: { state: SpeedTestState; onR
           </div>
         </div>
 
-        {/* Card de CTA para o App SignallQ */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-[#F3EEFA] border border-[#E7E0EC] p-5 sm:p-6">
-          <div className="max-w-[24em]">
-            <div className="text-[17px] font-bold text-[#210A5C]">
-              Algo parece lento ou instável?
+        {/* Nota técnica sobre as limitações do teste via navegador */}
+        <div className="mt-5 rounded-xl bg-[#F8F9FA] border border-[#E7E0EC] px-4 py-3 text-[13px] leading-5 text-[#79747E]">
+          <strong className="text-[#49454F]">Limitação da medição web:</strong> Este teste mede a vazão de download e upload e a latência HTTP com servidores de teste no navegador. Velocidade alta não garante ausência de oscilação: interferências de sinal Wi-Fi, saturação de canais de rádio e perdas reais de pacotes só são diagnosticados diretamente no sistema operacional pelo aplicativo Android.
+        </div>
+
+        {/* Card de Marketing Secundário para o App SignallQ com Captura Real */}
+        <div className="mt-8 rounded-3xl bg-[#FAF8FC] border border-[#E7E0EC] p-6 sm:p-8 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-[1.2fr,0.8fr] gap-6 items-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAE0FF] px-3 py-1 text-[12px] font-bold text-[#210A5C]">
+                <span>📱</span> Exclusivo no Android
+              </span>
+              <h3 className="mt-3 text-[20px] sm:text-[22px] font-bold text-[#1C1B1F]">
+                Sua velocidade é só uma parte da história.
+              </h3>
+              <p className="mt-2 text-[14px] sm:text-[15px] leading-6 text-[#49454F]">
+                O SignallQ Android também analisa aspectos do Wi-Fi, DNS e equipamentos compatíveis para ajudar você a entender possíveis causas de problemas.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/#baixar"
+                  className="rounded-full bg-[#5B21D6] hover:bg-[#6D28D9] px-6 py-3 text-[14px] font-semibold text-white no-underline transition-all shadow-[0_4px_14px_-3px_rgba(91,33,214,0.4)]"
+                >
+                  Conhecer o diagnóstico completo
+                </Link>
+                <Link
+                  href="/como-funciona"
+                  className="text-[13px] font-semibold text-[#5B21D6] hover:underline"
+                >
+                  Como funciona →
+                </Link>
+              </div>
             </div>
-            <div className="mt-0.5 text-[13px] leading-5 text-[#49454F]">
-              O app Android analisa canais Wi-Fi, DNS, perdas e problemas do roteador com IA.
+
+            <div className="flex justify-center">
+              <AppScreenshot
+                screenshot={APPROVED_SCREENSHOTS.inicioVelocidade}
+                maxWidth={220}
+                showCaption={false}
+              />
             </div>
           </div>
-          <Link
-            href="/#baixar"
-            className="rounded-full bg-[#5B21D6] hover:bg-[#6D28D9] px-6 py-3 text-[14px] font-semibold text-white no-underline transition-all shadow-[0_4px_14px_-3px_rgba(91,33,214,0.4)]"
-          >
-            Diagnosticar no app
-          </Link>
         </div>
       </div>
     </div>
   )
 }
+

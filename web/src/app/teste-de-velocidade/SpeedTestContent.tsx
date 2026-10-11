@@ -2,6 +2,8 @@
 
 import { trackFeatureUsed } from '@/lib/telemetry'
 import { SITE_ORIGIN } from '@/lib/routeMetadata'
+import { FaqList } from '@/components/FaqList'
+import { AppDownloadCTA } from '@/components/AppDownloadCTA'
 import { useSpeedTestEngine } from './useSpeedTestEngine'
 import { SpeedTestIdle } from './SpeedTestIdle'
 import { SpeedTestRunning } from './SpeedTestRunning'
@@ -50,7 +52,77 @@ export function SpeedTestContent() {
           {state.phase === 'done' && <SpeedTestResult state={state} onRetry={handleStart} />}
           {state.phase === 'error' && <SpeedTestError onRetry={handleStart} />}
         </div>
+
+        {/* Guia Técnico de Referência */}
+        <div className="mt-16 text-left border-t border-[#E7E0EC] pt-12">
+          <div className="text-[12px] font-bold uppercase tracking-wider text-[#5B21D6]">
+            Guia de Velocidade
+          </div>
+          <h2 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1B1F]">
+            Quantos Mbps você realmente precisa?
+          </h2>
+          <p className="mt-2 text-[16px] leading-6 text-[#49454F]">
+            A velocidade necessária varia com a quantidade de pessoas e as atividades simultâneas na residência:
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className="rounded-2xl border border-[#E7E0EC] bg-[#F8F9FA] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#79747E]">Até 50 Mbps</div>
+              <div className="mt-1 font-mono-num font-black text-xl text-[#1C1B1F]">Uso básico</div>
+              <p className="mt-2 text-xs text-[#49454F] leading-5">
+                Ideal para 1 a 2 pessoas navegando, assistindo a vídeos em Full HD e enviando mensagens.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[#E7E0EC] bg-[#F8F9FA] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#79747E]">100 a 300 Mbps</div>
+              <div className="mt-1 font-mono-num font-black text-xl text-[#1C1B1F]">Família conectada</div>
+              <p className="mt-2 text-xs text-[#49454F] leading-5">
+                Suporta streaming em 4K em mais de uma TV, chamadas de vídeo em home office e jogos online estáveis.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[#E7E0EC] bg-[#F8F9FA] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#79747E]">Acima de 500 Mbps</div>
+              <div className="mt-1 font-mono-num font-black text-xl text-[#1C1B1F]">Alta demanda</div>
+              <p className="mt-2 text-xs text-[#49454F] leading-5">
+                Downloads rápidos de jogos pesados (50 GB+), múltiplos criadores de conteúdo e casas inteligentes com dezenas de aparelhos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="mt-16 text-left border-t border-[#E7E0EC] pt-12">
+          <div className="text-[12px] font-bold uppercase tracking-wider text-[#5B21D6]">
+            Perguntas Frequentes
+          </div>
+          <h2 className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-[#1C1B1F] mb-6">
+            Dúvidas sobre o teste de velocidade
+          </h2>
+          <FaqList
+            items={[
+              [
+                "Por que o teste web pode dar diferente do plano contratado?",
+                "O teste no navegador mede a velocidade que chega ao seu dispositivo pelo Wi-Fi no momento. Interferências no ar, paredes, distância do roteador e capacidade da placa de rede do celular limitam a velocidade antes do limite do cabo da operadora.",
+              ],
+              [
+                "Qual a diferença entre velocidade de download e upload?",
+                "Download é a velocidade para puxar dados da internet (carregar páginas, vídeos e baixar arquivos). Upload é a velocidade para enviar seus dados (enviar vídeos, fazer backups e transmitir sua câmera em chamadas).",
+              ],
+              [
+                "O que é Bufferbloat no resultado?",
+                "Bufferbloat é o aumento da latência quando a conexão está sob carga pesada de download ou upload. Quando o roteador enche seus buffers internos de memória, pacotes essenciais de chamadas e jogos sofrem atrasos.",
+              ],
+              [
+                "Como o aplicativo SignallQ complementa este teste?",
+                "Enquanto a ferramenta web mede apenas vazão pontual no navegador, o aplicativo SignallQ para Android analisa canais Wi-Fi, intensidade em dBm, rotas de rede, DNS e equipamentos compatíveis para diagnosticar a causa real dos travamentos.",
+              ],
+            ]}
+          />
+        </div>
       </section>
+
+      {/* Banner de download do app */}
+      <AppDownloadCTA />
     </div>
   )
 }

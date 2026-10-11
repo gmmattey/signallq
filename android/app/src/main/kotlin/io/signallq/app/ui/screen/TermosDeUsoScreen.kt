@@ -146,7 +146,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                     titulo = "5. Gratuidade",
                     corpo =
                         "O SignallQ é oferecido gratuitamente, sem assinaturas e sem compras " +
-                            "dentro do app. O app exibe anúncios do Google AdMob. A 7Agents reserva-se o direito de introduzir funcionalidades premium " +
+                            "dentro do app. O app exibe anúncios do Google AdMob. O SignallQ reserva-se o direito de introduzir funcionalidades premium " +
                             "no futuro, mas as funcionalidades atuais permanecerão gratuitas.",
                     c = c,
                 )
@@ -155,7 +155,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                 TermosSection(
                     titulo = "6. Disponibilidade",
                     corpo =
-                        "O serviço é fornecido \"como está\" (as is). A 7Agents não garante:\n" +
+                        "O serviço é fornecido \"como está\" (as is). O SignallQ não garante:\n" +
                             "• Disponibilidade ininterrupta do App ou dos serviços de diagnóstico IA\n" +
                             "• Precisão absoluta das medições de velocidade\n" +
                             "• Que o diagnóstico resolverá todos os problemas de conectividade\n\n" +
@@ -177,8 +177,8 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                 TermosSection(
                     titulo = "8. Propriedade Intelectual",
                     corpo =
-                        "O SignallQ, incluindo seu código, design, marca e conteúdo, é propriedade da 7Agents " +
-                            "Tecnologia. Todos os direitos reservados.",
+                        "O SignallQ, incluindo seu código, design, marca e conteúdo, é propriedade exclusiva do SignallQ. " +
+                            "Todos os direitos reservados.",
                     c = c,
                 )
             }
@@ -186,7 +186,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                 TermosSection(
                     titulo = "9. Limitação de Responsabilidade",
                     corpo =
-                        "A 7Agents não se responsabiliza por:\n" +
+                        "O SignallQ não se responsabiliza por:\n" +
                             "• Danos diretos ou indiretos decorrentes do uso do App\n" +
                             "• Decisões tomadas com base nos diagnósticos gerados\n" +
                             "• Perda de dados armazenados localmente no dispositivo\n" +
@@ -198,7 +198,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                 TermosSection(
                     titulo = "10. Alterações nos Termos",
                     corpo =
-                        "A 7Agents pode atualizar estes Termos a qualquer momento. Alterações significativas " +
+                        "O SignallQ pode atualizar estes Termos a qualquer momento. Alterações significativas " +
                             "serão comunicadas via atualização do App. O uso continuado após alterações implica " +
                             "aceitação dos novos termos.",
                     c = c,
@@ -220,7 +220,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
                     corpo =
                         "Para dúvidas sobre estes Termos:\n" +
                             "• Email: suporte@signallq.com\n" +
-                            "• Desenvolvedor: 7Agents Tecnologia",
+                            "• Desenvolvedor: SignallQ",
                     c = c,
                 )
             }
@@ -229,7 +229,7 @@ fun TermosDeUsoScreen(onVoltar: () -> Unit) {
 
             item {
                 Text(
-                    text = "7Agents Tecnologia — São Paulo, Brasil",
+                    text = "SignallQ — São Paulo, Brasil",
                     style = MaterialTheme.typography.bodySmall,
                     color = c.textTertiary,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = LkSpacing.lg),
