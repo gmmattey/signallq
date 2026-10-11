@@ -180,10 +180,9 @@ export function Speedometer({
       style={{ width: `${size}px`, height: `${vh}px` }}
       className="relative flex flex-shrink-0 items-center justify-center"
       role="img"
-      aria-label={`Velocímetro medindo ${displayVal} ${unit}`}
+      aria-label={`Velocímetro: ${displayVal} ${unit}`}
     >
       <svg width={size} height={vh} viewBox="0 0 300 200" className="absolute inset-0 overflow-visible" aria-hidden="true">
-        <title>{`Velocímetro: ${displayVal} ${unit}`}</title>
         <path d={trackPath} fill="none" stroke={trackColor} strokeWidth={strokeWidth} strokeLinecap="round" />
         <path
           d={activePath}
