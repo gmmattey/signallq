@@ -39,17 +39,39 @@ export const GAMES_DATA: GameEntry[] = [
 export const DEVICES = ['PlayStation', 'Xbox', 'PC', 'Android', 'iPhone', 'Switch', 'TV / cloud'];
 export const GENRES = ['Todos', 'Battle royale', 'FPS', 'MOBA', 'Esportes', 'Casual'];
 
-export const FAQ = [
+export const POPULAR_GAMES = [
+  'Valorant',
+  'Counter-Strike 2',
+  'EA Sports FC',
+  'Fortnite',
+  'League of Legends',
+  'Roblox',
+  'Free Fire',
+  'Warzone',
+];
+
+export const MODO_GAMER_COMMERCIAL_FAQ = [
   {
-    q: 'O app mostra o ping do meu servidor de jogo?',
-    a: 'Não. Ele mede uma rota regional de referência e avalia a conexão para o tipo de jogo. Não mede o servidor do jogo, por isso nunca promete “o ping do seu jogo”.',
+    q: 'O SignallQ mostra o ping exato do servidor do meu jogo?',
+    a: 'Não. O aplicativo utiliza sondas em rotas de referência para estimar a estabilidade da conexão segundo os requisitos do jogo selecionado. Nenhum app externo mede o servidor privado de cada partida sem estar integrado ao próprio jogo.',
   },
   {
-    q: 'Meu jogo não está na lista. E agora?',
-    a: 'Escolha “Meu jogo não está na lista” e uma das 5 categorias genéricas. O veredito continua calibrado para as exigências desse gênero.',
+    q: 'O Modo Gamer melhora ou acelera a internet?',
+    a: 'Não. O SignallQ é uma ferramenta de diagnóstico e orientação, não um acelerador de conexão ou serviço de VPN. Ele identifica onde está a oscilação para que você saiba o que ajustar.',
   },
   {
-    q: 'Preciso de Android para usar?',
-    a: 'O app é para Android, mas você pode avaliar a conexão para jogar em PlayStation, Xbox, PC, Switch, iPhone ou TV.',
+    q: 'O que o aplicativo Android analisa a mais que o teste no navegador?',
+    a: 'No Android, o SignallQ tem acesso direto a métricas nativas do sistema: perda física de pacotes via UDP, intensidade de sinal Wi-Fi (dBm), congestionamento de canais vizinhos e parâmetros de rádio móvel.',
+  },
+  {
+    q: 'Posso usar o aplicativo para avaliar conexões de PC ou console?',
+    a: 'Sim. Ao conectar o celular na mesma rede Wi-Fi do seu console ou computador, o aplicativo diagnostica a estabilidade do link de internet que alimenta seus aparelhos.',
+  },
+  {
+    q: 'Meu jogo não está no catálogo. Ainda posso avaliar?',
+    a: 'Sim. Você pode selecionar a categoria equivalente (como FPS, MOBA, Battle Royale, Esportes ou Casual) e o aplicativo calibrará a avaliação para a sensibilidade desse gênero.',
   },
 ];
+
+export const FAQ = MODO_GAMER_COMMERCIAL_FAQ;
+

@@ -31,6 +31,11 @@ const TOOLS = [
     d: 'Oscilação da latência e consistência da resposta.',
     href: '/teste-de-jitter',
   },
+  {
+    t: 'Teste de conexão gamer',
+    d: 'Latência, jitter e bufferbloat calibrados para o perfil do seu jogo.',
+    href: '/teste-gamer',
+  },
 ]
 
 const APPS = [
@@ -80,7 +85,7 @@ export default function FuncionalidadesContent() {
           Tudo o que o SignallQ analisa na sua conexão.
         </h1>
         <p className="mt-6 max-w-[30em] text-pretty text-[20px] leading-[30px] text-[#49454F]">
-          Cinco ferramentas executam medições reais aqui mesmo no navegador. Os diagnósticos avançados de hardware e rádio funcionam dentro do aplicativo Android.
+          Ferramentas executam medições reais aqui mesmo no navegador. Os diagnósticos avançados de hardware e rádio funcionam dentro do aplicativo Android.
         </p>
       </section>
 

@@ -118,6 +118,12 @@ export const FEATURE_TESTE_JITTER_INICIADO = 'teste_jitter_iniciado'
 export const FEATURE_TESTE_JITTER_CONCLUIDO = 'teste_jitter_concluido'
 export const FEATURE_TESTE_JITTER_ERRO = 'teste_jitter_erro'
 
+// Teste Gamer
+export const FEATURE_TESTE_GAMER_JOGO_SELECIONADO = 'teste_gamer_jogo_selecionado'
+export const FEATURE_TESTE_GAMER_INICIADO = 'teste_gamer_iniciado'
+export const FEATURE_TESTE_GAMER_CONCLUIDO = 'teste_gamer_concluido'
+export const FEATURE_TESTE_GAMER_ERRO = 'teste_gamer_erro'
+
 // Descoberta do ecossistema
 export const FEATURE_ECOSSISTEMA_LAGCHECK_CLICADO = 'ecossistema_lagcheck_clicado'
 export const FEATURE_ECOSSISTEMA_LINKA_CLICADO = 'ecossistema_linka_clicado'

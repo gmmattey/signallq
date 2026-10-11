@@ -11,6 +11,7 @@ const validPaths = new Set([
   '/guias',
   '/funcionalidades',
   '/modo-gamer',
+  '/teste-gamer',
   '/teste-de-ping',
   '/teste-de-download-e-upload',
   '/teste-de-dns',

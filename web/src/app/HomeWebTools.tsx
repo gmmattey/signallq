@@ -28,12 +28,12 @@ export function HomeWebTools() {
       diferencialApp: "No app: isola a latência do roteador e o ping por salto de rede.",
     },
     {
-      titulo: "Modo Jogos (Ranked)",
-      descricao: "Check de conectividade calibrado por gênero de jogo (FPS, MOBA, Battle Royale).",
-      href: "/modo-gamer",
-      metrica: "Catálogo de 25 jogos",
+      titulo: "Teste gamer de estabilidade",
+      descricao: "Check de conectividade calibrado por perfil de jogo (FPS, MOBA, Battle Royale).",
+      href: "/teste-gamer",
+      metrica: "Ping · Jitter · Fila",
       badge: "Gamer",
-      diferencialApp: "No app: inclui sonda UDP e teste de perda física de pacotes.",
+      diferencialApp: "No app: inclui sonda UDP nativa e varredura de rádio Wi-Fi.",
     },
     {
       titulo: "Teste de DNS",
