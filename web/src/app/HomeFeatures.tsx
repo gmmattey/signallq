@@ -11,6 +11,12 @@ interface FeatureCard {
 
 const APP_EXCLUSIVES: FeatureCard[] = [
   {
+    t: "SignallQ Gamer",
+    d: "Avalia a estabilidade para seus jogos online e identifica oscilações de latência e perda que afetam suas partidas.",
+    href: "/modo-gamer",
+    badge: "Jogos Online",
+  },
+  {
     t: "Canais do Wi-Fi",
     d: "Varredura das redes vizinhas para descobrir o canal menos congestionado para o seu roteador.",
     href: "/canais-wifi",
@@ -100,14 +106,14 @@ export function HomeFeatures() {
         </div>
 
         {/* Demonstração visual com capturas reais do app */}
-        <div className="mt-20 pt-16 border-t border-[#F3EEFA]">
+        <div id="monitoramento-historico" className="scroll-mt-20 mt-20 pt-16 border-t border-[#F3EEFA]">
           <div className="text-center max-w-[34em] mx-auto mb-14">
             <span className="text-[13px] font-bold uppercase tracking-wider text-[#5B21D6]">
               Evidências do Aplicativo
             </span>
-            <h3 className="mt-2 text-[28px] sm:text-[34px] font-bold text-[#1C1B1F] tracking-tight">
+            <h2 className="mt-2 text-[28px] sm:text-[34px] font-bold text-[#1C1B1F] tracking-tight">
               Acompanhamento contínuo da sua rede.
-            </h3>
+            </h2>
             <p className="mt-2.5 text-[16px] text-[#49454F] leading-relaxed">
               O SignallQ acompanha o desempenho da sua conexão com histórico detalhado, monitoramento passivo e leitura de equipamentos.
             </p>

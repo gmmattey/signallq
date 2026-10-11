@@ -2,7 +2,6 @@
 import { useEffect } from 'react'
 import { useAppLanding } from './useAppLanding'
 import { AppLandingHero, AppLandingCTA } from './AppLandingComponents'
-import { HomeBenefits } from './HomeBenefits'
 import { HomeWebTools } from './HomeWebTools'
 import { HowItWorksSteps } from './HowItWorksSteps'
 import { ResultOrder } from './ResultOrder'
@@ -35,28 +34,27 @@ export function AppLandingClient() {
   return (
     <div className="flex w-full flex-col bg-white font-sans leading-[normal] text-[#1C1B1F]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(HOME_JSON_LD) }} />
-      {/* 1. Hero comercial do SignallQ */}
+      {/* 1. Hero dinâmico do SignallQ */}
       <AppLandingHero onBaixar={baixarNaPlayStore} />
 
-      {/* 2. Benefícios concretos do aplicativo e demonstração do diagnóstico */}
-      <HomeBenefits />
-
-      {/* 3. Ferramentas gratuitas que funcionam no navegador */}
+      {/* 2. Ferramentas gratuitas que funcionam no navegador */}
       <HomeWebTools />
 
-      {/* 4. Explicação da jornada: problema → medição → recomendação → verificação */}
+      {/* 3. Como funciona o diagnóstico: jornada em 4 etapas e ordem dos resultados */}
       <HowItWorksSteps />
       <ResultOrder />
 
-      {/* 5. Diferenciais do aplicativo Android em relação ao navegador */}
+      {/* 4 e 5. Benefícios exclusivos do Android e monitoramento contínuo/histórico */}
       <HomeFeatures />
 
-      {/* 6. Seção "Outras soluções SignallQ" */}
+      {/* 6. Outros aplicativos de conectividade SignallQ */}
       <OutrasSolucoesSection />
 
-      {/* 7. Guias, dúvidas frequentes e CTA final */}
+      {/* 7. Guias práticos e perguntas frequentes */}
       <HomeGuidesSection />
       <LandingFaq />
+
+      {/* 8. Compromissos e CTA final */}
       <TrustPromises />
       <AppLandingCTA onBaixar={baixarNaPlayStore} />
     </div>

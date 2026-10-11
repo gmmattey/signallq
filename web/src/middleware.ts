@@ -24,6 +24,12 @@ const validPaths = new Set([
   '/sinal-4g-5g',
 ]);
 
+const legacyRedirects: Record<string, string> = {
+  '/ping': '/teste-de-ping',
+  '/lag-em-jogos-online': '/modo-gamer',
+  '/internet-para-jogos': '/modo-gamer',
+};
+
 function isValidPath(pathname: string): boolean {
   return validPaths.has(pathname) || pathname.startsWith('/guias/');
 }
@@ -51,8 +57,9 @@ export function middleware(request: NextRequest) {
     url.port = '';
     url.protocol = 'https:';
 
-    // Se for uma rota que não é equivalente a uma das válidas conhecidas
-    if (!isValidPath(url.pathname)) {
+    if (legacyRedirects[url.pathname]) {
+      url.pathname = legacyRedirects[url.pathname];
+    } else if (!isValidPath(url.pathname)) {
       url.pathname = '/';
     }
 

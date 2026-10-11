@@ -101,6 +101,11 @@ export function initTelemetryDeferred() {
 // feature_used já whitelistado no admin-worker — nenhuma mudança de schema).
 export const FEATURE_DOWNLOAD_APP_CLICADO = 'download_app_clicado'
 
+// Hero Carousel e CTAs da Home
+export const FEATURE_HERO_SLIDE_MANUAL = 'hero_slide_manual'
+export const FEATURE_HERO_RECURSO_CLICADO = 'hero_recurso_clicado'
+export const FEATURE_HERO_TESTAR_INTERNET_CLICADO = 'hero_testar_internet_clicado'
+
 // Testes e ferramentas
 export const FEATURE_TESTE_VELOCIDADE_INICIADO = 'teste_velocidade_iniciado'
 export const FEATURE_TESTE_VELOCIDADE_CONCLUIDO = 'teste_velocidade_concluido'
