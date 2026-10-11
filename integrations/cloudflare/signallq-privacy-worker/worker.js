@@ -112,12 +112,12 @@ const HTML = `<!DOCTYPE html>
   <h2>9. Contato</h2>
   <p>Dúvidas, solicitações ou outros assuntos relacionados à privacidade:<br>
   <strong>E-mail:</strong> <a href="mailto:giammattey.luiz@gmail.com">giammattey.luiz@gmail.com</a><br>
-  <strong>Desenvolvedor:</strong> Luiz Giammattey &mdash; 7Agents</p>
+  <strong>Desenvolvedor:</strong> Luiz Giammattey &mdash; SignallQ</p>
 
   <h2>10. Alterações nesta política</h2>
   <p>Esta política pode ser atualizada periodicamente. A data de última atualização está indicada no topo do documento. O uso continuado do app após uma alteração implica aceitação da nova versão.</p>
 
-  <footer>SignallQ &mdash; Desenvolvido por Luiz Giammattey &mdash; 7Agents &mdash; <a href="mailto:giammattey.luiz@gmail.com">giammattey.luiz@gmail.com</a></footer>
+  <footer>SignallQ &mdash; Desenvolvido por Luiz Giammattey &mdash; <a href="mailto:giammattey.luiz@gmail.com">giammattey.luiz@gmail.com</a></footer>
 </body>
 </html>`;
 

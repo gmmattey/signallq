@@ -116,9 +116,7 @@ O pacote canônico em `brand/favicon/` foi regenerado em 2026-08-15. Cópias em 
 Admin ou outros consumidores não são atualizadas automaticamente e devem ser sincronizadas em
 tarefa própria.
 
-**Pendente:** a landing page pública (`https://7agentsstudio.github.io/signallq/`) fica em
-repositório separado (`7agentsstudio` no GitHub, fora deste monorepo) — não verificado/atualizado
-nesta rodada. Aplicar o mesmo conjunto lá quando houver acesso ao repo.
+**Nota:** a landing page pública do SignallQ vive neste repositório em `web/` (`signallq.com`).
 
 > Marca anterior ("linka") é histórica e **não deve ser usada** em nenhum material novo.
 

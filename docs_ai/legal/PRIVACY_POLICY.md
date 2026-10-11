@@ -140,7 +140,7 @@ O SignallQ não é direcionado a menores de 13 anos e não coleta conscientement
 Dúvidas, solicitações ou outros assuntos relacionados à privacidade:
 
 **E-mail:** giammattey.luiz@gmail.com
-**Desenvolvedor:** Luiz Giammattey — 7Agents
+**Desenvolvedor:** Luiz Giammattey — SignallQ
 
 ---
 

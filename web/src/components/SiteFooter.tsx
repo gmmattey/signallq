@@ -26,7 +26,7 @@ export function SiteFooter() {
           <Link href="/privacidade" className={LINK}>Privacidade</Link>
           <Link href="/termos" className={LINK}>Termos</Link>
           <a href="mailto:suporte@signallq.com" className={LINK}>suporte@signallq.com</a>
-          <span className="ml-auto text-[13px] text-[#79747E]">© 2026 SignallQ · 7Agents Tecnologia</span>
+          <span className="ml-auto text-[13px] text-[#79747E]">© 2026 SignallQ · Buildea</span>
         </div>
       </div>
     </footer>
