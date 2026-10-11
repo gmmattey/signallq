@@ -134,10 +134,11 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
       } else if (f.tool === "speed") {
         setLabel("Medindo latência…");
         const t: number[] = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 8; i++) {
           const v = await ping1(2000);
           if (!ok()) return;
           if (v != null) t.push(v);
+          await new Promise((r) => setTimeout(r, 100));
         }
         if (!t.length) throw new Error("Latency failed");
 
@@ -146,45 +147,83 @@ export function FeatureBody({ feature }: { feature: FeatureData }) {
         setLive(0);
         setPct(15);
 
+        const dlDuration = 8;
         const t0 = performance.now();
         let bytes = 0;
+        let warmUpBytes = 0;
+        let warmUpTime = 0;
+        let warmedUp = false;
         let dl = 0;
-        for (const sz of [2e6, 8e6, 20e6]) {
+        const szs = [5e6, 10e6, 25e6, 25e6];
+        let szIdx = 0;
+
+        while ((performance.now() - t0) / 1000 < dlDuration && ok()) {
+          const sz = szs[Math.min(szIdx++, szs.length - 1)];
           const r = await fetch(`${BASE}/__down?bytes=${sz}&r=${Math.random()}`, { cache: "no-store" });
           const rd = r.body?.getReader();
-          if (rd) {
-            for (;;) {
-              const { done, value } = await rd.read();
-              if (done) break;
-              bytes += value.length;
-              const el = (performance.now() - t0) / 1000;
-              dl = (bytes * 8) / el / 1e6;
-              if (!ok()) {
-                rd.cancel();
-                return;
-              }
-              setLive(dl);
-              setPct(15 + Math.min(45, el * 8));
+          if (!rd) break;
+          let streamDone = false;
+          while (!streamDone && ok()) {
+            const { done, value } = await rd.read();
+            if (done) {
+              streamDone = true;
+              break;
+            }
+            bytes += value.length;
+            const el = (performance.now() - t0) / 1000;
+            if (!warmedUp && el >= 1.2) {
+              warmedUp = true;
+              warmUpBytes = bytes;
+              warmUpTime = el;
+            }
+            if (warmedUp && el > warmUpTime) {
+              dl = ((bytes - warmUpBytes) * 8) / (el - warmUpTime) / 1e6;
+            } else {
+              dl = (bytes * 8) / Math.max(0.1, el) / 1e6;
+            }
+            if (!ok()) {
+              rd.cancel();
+              return;
+            }
+            setLive(dl);
+            setPct(15 + Math.min(45, (el / dlDuration) * 45));
+            if (el >= dlDuration) {
+              rd.cancel();
+              break;
             }
           }
-          if ((performance.now() - t0) / 1000 > 5) break;
         }
 
         setLabel("Medindo upload…");
         setLive(0);
-        setPct(65);
+        setPct(60);
         const blob = new Uint8Array(2e6);
+        for (let b = 0; b < blob.length; b += 1024) blob[b] = (b + Math.floor(Math.random() * 255)) & 0xff;
         const u0 = performance.now();
+        const upDuration = 6;
         let ub = 0;
+        let upWarmBytes = 0;
+        let upWarmTime = 0;
+        let upWarmed = false;
         let ul = 0;
-        for (let i = 0; i < 5; i++) {
+
+        while ((performance.now() - u0) / 1000 < upDuration && ok()) {
           await fetch(`${BASE}/__up`, { method: "POST", body: blob, cache: "no-store" });
           ub += blob.length;
-          ul = (ub * 8) / ((performance.now() - u0) / 1000) / 1e6;
+          const uel = (performance.now() - u0) / 1000;
+          if (!upWarmed && uel >= 1.0) {
+            upWarmed = true;
+            upWarmBytes = ub;
+            upWarmTime = uel;
+          }
+          if (upWarmed && uel > upWarmTime) {
+            ul = ((ub - upWarmBytes) * 8) / (uel - upWarmTime) / 1e6;
+          } else {
+            ul = (ub * 8) / Math.max(0.1, uel) / 1e6;
+          }
           if (!ok()) return;
           setLive(ul);
-          setPct(65 + (i + 1) * 7);
-          if ((performance.now() - u0) / 1000 > 5) break;
+          setPct(60 + Math.min(38, (uel / upDuration) * 38));
         }
 
         const v =
