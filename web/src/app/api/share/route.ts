@@ -2,18 +2,17 @@ import { NextResponse } from 'next/server'
 import { toShareQuery, validateSharePayload } from '@/lib/share/payload'
 import { SITE_ORIGIN } from '@/lib/routeMetadata'
 
-function getOrigin(request: Request): string {
-  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host')
-  const proto = request.headers.get('x-forwarded-proto') ?? 'https'
-  if (host) {
-    return `${proto}://${host}`
-  }
+function getShareOrigin(request: Request): string {
   try {
-    const u = new URL(request.url)
-    if (u.origin && u.origin !== 'null') return u.origin
+    const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? ''
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      const proto = request.headers.get('x-forwarded-proto') ?? 'http'
+      return `${proto}://${host}`
+    }
   } catch {}
-  return process.env.NEXT_PUBLIC_SITE_URL || SITE_ORIGIN
+  return SITE_ORIGIN
 }
+
 
 export async function POST(request: Request) {
   const secret = process.env.SHARE_SIGNING_KEY
@@ -39,7 +38,8 @@ export async function POST(request: Request) {
   }
 
   const query = await toShareQuery(secret, payload)
-  const origin = getOrigin(request)
+  const origin = getShareOrigin(request)
   return NextResponse.json({ ok: true, url: `${origin}/r/?${query}` })
 }
+
 

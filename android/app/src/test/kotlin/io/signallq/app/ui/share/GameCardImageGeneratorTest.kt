@@ -41,5 +41,26 @@ class GameCardImageGeneratorTest {
         assertEquals(null, jitter)
         assertEquals(null, bloat)
     }
+
+    @Test
+    fun `resolverVeredito mapeia status inconclusivo como neutro e nao instavel`() {
+
+        val (label, color, bg) = GameCardImageGenerator.resolverVeredito(io.signallq.app.core.diagnostico.DiagnosticStatus.inconclusive)
+        assertEquals("INCONCLUSIVO", label)
+        assertEquals(CardDesignTokens.TAG_NEUTRAL_COLOR, color)
+        assertEquals(CardDesignTokens.TAG_NEUTRAL_BG, bg)
+
+        val titulo = GameCardImageGenerator.resolverTitulo(io.signallq.app.core.diagnostico.DiagnosticStatus.inconclusive, "Fortnite", null)
+        assertEquals("Sem dados suficientes para avaliar Fortnite.", titulo)
+    }
+
+    @Test
+    fun `resolverVeredito mapeia status critical como instavel`() {
+        val (label, color, bg) = GameCardImageGenerator.resolverVeredito(io.signallq.app.core.diagnostico.DiagnosticStatus.critical)
+        assertEquals("INSTÁVEL", label)
+        assertEquals(CardDesignTokens.TAG_BAD_COLOR, color)
+        assertEquals(CardDesignTokens.TAG_BAD_BG, bg)
+    }
 }
+
 

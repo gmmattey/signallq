@@ -38,6 +38,9 @@ object CardDesignTokens {
     const val TAG_WARN_BG = 0xFF3B2610.toInt()
     const val TAG_BAD_COLOR = 0xFFFFB4AB.toInt()
     const val TAG_BAD_BG = 0xFF4A1B17.toInt()
+    const val TAG_NEUTRAL_COLOR = 0xFFC9C3D3.toInt()
+    const val TAG_NEUTRAL_BG = 0xFF2A2833.toInt()
+
 
     const val PREVIEW_W = 1200
     const val PREVIEW_H = 630

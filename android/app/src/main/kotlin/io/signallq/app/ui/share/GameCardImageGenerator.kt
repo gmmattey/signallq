@@ -32,7 +32,10 @@ import io.signallq.app.ui.share.CardDesignTokens.STORY_H
 import io.signallq.app.ui.share.CardDesignTokens.STORY_W
 import io.signallq.app.ui.share.CardDesignTokens.TAG_BAD_BG
 import io.signallq.app.ui.share.CardDesignTokens.TAG_BAD_COLOR
+import io.signallq.app.ui.share.CardDesignTokens.TAG_NEUTRAL_BG
+import io.signallq.app.ui.share.CardDesignTokens.TAG_NEUTRAL_COLOR
 import io.signallq.app.ui.share.CardDesignTokens.TAG_OK_BG
+
 import io.signallq.app.ui.share.CardDesignTokens.TAG_OK_COLOR
 import io.signallq.app.ui.share.CardDesignTokens.TAG_WARN_BG
 import io.signallq.app.ui.share.CardDesignTokens.TAG_WARN_COLOR
@@ -148,24 +151,28 @@ object GameCardImageGenerator {
         return Triple(tfSemibold, tfMedium, tfMono)
     }
 
-    private fun resolverVeredito(status: DiagnosticStatus): Triple<String, Int, Int> =
+    fun resolverVeredito(status: DiagnosticStatus): Triple<String, Int, Int> =
         when (status) {
             DiagnosticStatus.ok, DiagnosticStatus.info ->
                 Triple("ESTÁVEL", TAG_OK_COLOR, TAG_OK_BG)
             DiagnosticStatus.attention ->
                 Triple("ATENÇÃO", TAG_WARN_COLOR, TAG_WARN_BG)
-            else ->
+            DiagnosticStatus.inconclusive ->
+                Triple("INCONCLUSIVO", TAG_NEUTRAL_COLOR, TAG_NEUTRAL_BG)
+            DiagnosticStatus.critical ->
                 Triple("INSTÁVEL", TAG_BAD_COLOR, TAG_BAD_BG)
         }
 
-    private fun resolverTitulo(status: DiagnosticStatus, gameName: String, custom: String?): String {
+    fun resolverTitulo(status: DiagnosticStatus, gameName: String, custom: String?): String {
         if (!custom.isNullOrBlank()) return custom
         return when (status) {
             DiagnosticStatus.ok, DiagnosticStatus.info -> "Boa para jogar."
             DiagnosticStatus.attention -> "Dá para jogar, com atrasos ocasionais."
-            else -> "Instável para $gameName."
+            DiagnosticStatus.inconclusive -> "Sem dados suficientes para avaliar $gameName."
+            DiagnosticStatus.critical -> "Instável para $gameName."
         }
     }
+
 
     fun resolverCapaJogo(context: Context, gameId: String): Bitmap? {
         val resId = when (gameId.lowercase().replace("-", "_").trim()) {
@@ -640,11 +647,15 @@ object GameCardImageGenerator {
                 }
                 canvas.drawCircle(12f, 17.5f, 1.2f, dotPaint)
             }
-            else -> {
+            DiagnosticStatus.inconclusive -> {
+                canvas.drawLine(7f, 12f, 17f, 12f, paint)
+            }
+            DiagnosticStatus.critical -> {
                 canvas.drawLine(6.5f, 6.5f, 17.5f, 17.5f, paint)
                 canvas.drawLine(17.5f, 6.5f, 6.5f, 17.5f, paint)
             }
         }
         canvas.restore()
+
     }
 }
