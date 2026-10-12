@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CardDesignTokensTest {
-
     @Test
     fun `cardHeadline retorna faixas corretas de velocidade`() {
         assertEquals("Internet ótima.", CardDesignTokens.cardHeadline(150.0))

@@ -6,15 +6,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class GameCardImageGeneratorTest {
-
     @Test
     fun `extrairMetricasGamer extrai ping, jitter e bufferbloat corretamente`() {
-        val evidencias = listOf(
-            EvidenciaDiagnostico("Tempo de resposta medido agora", "18 ms", MetricStatus.bom),
-            EvidenciaDiagnostico("Variação do tempo de resposta", "3 ms", MetricStatus.bom),
-            EvidenciaDiagnostico("Sobrecarga na rede (bufferbloat)", "+12 ms", MetricStatus.regular),
-            EvidenciaDiagnostico("Aparelho analisado", "PlayStation 5", MetricStatus.inconclusivo),
-        )
+        val evidencias =
+            listOf(
+                EvidenciaDiagnostico("Tempo de resposta medido agora", "18 ms", MetricStatus.bom),
+                EvidenciaDiagnostico("Variação do tempo de resposta", "3 ms", MetricStatus.bom),
+                EvidenciaDiagnostico("Sobrecarga na rede (bufferbloat)", "+12 ms", MetricStatus.regular),
+                EvidenciaDiagnostico("Aparelho analisado", "PlayStation 5", MetricStatus.inconclusivo),
+            )
 
         val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(evidencias)
         assertEquals(18, ping)
@@ -32,10 +32,11 @@ class GameCardImageGeneratorTest {
 
     @Test
     fun `extrairMetricasGamer lida com jogo casual sem jitter sem inventar valores`() {
-        val evidencias = listOf(
-            EvidenciaDiagnostico("Tempo de resposta", "22 ms", MetricStatus.bom),
-            EvidenciaDiagnostico("Download", "150.0 Mbps", MetricStatus.bom),
-        )
+        val evidencias =
+            listOf(
+                EvidenciaDiagnostico("Tempo de resposta", "22 ms", MetricStatus.bom),
+                EvidenciaDiagnostico("Download", "150.0 Mbps", MetricStatus.bom),
+            )
         val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(evidencias)
         assertEquals(22, ping)
         assertEquals(null, jitter)
@@ -44,7 +45,6 @@ class GameCardImageGeneratorTest {
 
     @Test
     fun `resolverVeredito mapeia status inconclusivo como neutro e nao instavel`() {
-
         val (label, color, bg) = GameCardImageGenerator.resolverVeredito(io.signallq.app.core.diagnostico.DiagnosticStatus.inconclusive)
         assertEquals("INCONCLUSIVO", label)
         assertEquals(CardDesignTokens.TAG_NEUTRAL_COLOR, color)
@@ -62,5 +62,3 @@ class GameCardImageGeneratorTest {
         assertEquals(CardDesignTokens.TAG_BAD_BG, bg)
     }
 }
-
-

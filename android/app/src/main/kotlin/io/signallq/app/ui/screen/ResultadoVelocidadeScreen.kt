@@ -79,11 +79,6 @@ import io.signallq.app.ui.LkSpacing
 import io.signallq.app.ui.LkTokens
 import io.signallq.app.ui.LocalLkTokens
 import io.signallq.app.ui.ResultadoPdfGenerator
-import io.signallq.app.ui.share.CardShareFormat
-import io.signallq.app.ui.share.CompartilharSheet
-import io.signallq.app.ui.share.OpcaoCompartilhamento
-import io.signallq.app.ui.share.ResultadoCardImageGenerator
-import io.signallq.app.ui.share.SpeedtestShareData
 import io.signallq.app.ui.ads.NativeAdEligibility
 import io.signallq.app.ui.ads.NativeAdLoadState
 import io.signallq.app.ui.ads.rememberNativeAdState
@@ -101,6 +96,11 @@ import io.signallq.app.ui.component.classificarUploadLocal
 import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import io.signallq.app.ui.component.corSemantica
 import io.signallq.app.ui.component.labelPt
+import io.signallq.app.ui.share.CardShareFormat
+import io.signallq.app.ui.share.CompartilharSheet
+import io.signallq.app.ui.share.OpcaoCompartilhamento
+import io.signallq.app.ui.share.ResultadoCardImageGenerator
+import io.signallq.app.ui.share.SpeedtestShareData
 import kotlinx.coroutines.launch
 
 /**
@@ -695,22 +695,24 @@ fun ResultadoVelocidadeScreen(
                             OpcaoCompartilhamento.FEED -> {
                                 ResultadoCardImageGenerator.gerarECompartilhar(
                                     context = context,
-                                    data = SpeedtestShareData(
-                                        downloadMbps = resultado.downloadMbps,
-                                        uploadMbps = resultado.uploadMbps,
-                                        pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
-                                    ),
+                                    data =
+                                        SpeedtestShareData(
+                                            downloadMbps = resultado.downloadMbps,
+                                            uploadMbps = resultado.uploadMbps,
+                                            pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
+                                        ),
                                     format = CardShareFormat.FEED,
                                 )
                             }
                             OpcaoCompartilhamento.STORY -> {
                                 ResultadoCardImageGenerator.gerarECompartilhar(
                                     context = context,
-                                    data = SpeedtestShareData(
-                                        downloadMbps = resultado.downloadMbps,
-                                        uploadMbps = resultado.uploadMbps,
-                                        pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
-                                    ),
+                                    data =
+                                        SpeedtestShareData(
+                                            downloadMbps = resultado.downloadMbps,
+                                            uploadMbps = resultado.uploadMbps,
+                                            pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
+                                        ),
                                     format = CardShareFormat.STORY,
                                 )
                             }

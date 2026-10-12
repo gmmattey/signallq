@@ -6,11 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
@@ -35,14 +33,17 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
-enum class CardShareFormat(val label: String, val subtitulo: String) {
+enum class CardShareFormat(
+    val label: String,
+    val subtitulo: String,
+) {
     FEED(
         label = "Feed e Redes (1200×630)",
-        subtitulo = "Ideal para WhatsApp, Telegram e Twitter/X"
+        subtitulo = "Ideal para WhatsApp, Telegram e Twitter/X",
     ),
     STORY(
         label = "Stories e Status (1080×1920)",
-        subtitulo = "Formato vertical 9:16 para Instagram e TikTok"
+        subtitulo = "Formato vertical 9:16 para Instagram e TikTok",
     ),
 }
 
@@ -59,7 +60,6 @@ data class SpeedtestShareData(
  * despachando via Intent nativa com image/png.
  */
 object ResultadoCardImageGenerator {
-
     suspend fun gerarECompartilhar(
         context: Context,
         data: SpeedtestShareData,
@@ -83,17 +83,18 @@ object ResultadoCardImageGenerator {
                 "Teste sua rede no app: ${CardDesignTokens.PLAY_STORE_URL}"
 
         withContext(Dispatchers.Main) {
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "image/png"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_TEXT, textoCompartilhamento)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val intent =
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_TEXT, textoCompartilhamento)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
             context.startActivity(
                 Intent.createChooser(intent, "Compartilhar card de resultado").also {
                     it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
+                },
             )
         }
     }
@@ -102,12 +103,11 @@ object ResultadoCardImageGenerator {
         context: Context,
         data: SpeedtestShareData,
         format: CardShareFormat,
-    ): Bitmap {
-        return when (format) {
+    ): Bitmap =
+        when (format) {
             CardShareFormat.FEED -> renderizarFeed(context, data)
             CardShareFormat.STORY -> renderizarStory(context, data)
         }
-    }
 
     private fun carregarFontes(context: Context): Triple<Typeface, Typeface, Typeface> {
         val tfSemibold = ResourcesCompat.getFont(context, R.font.google_sans_flex_semibold) ?: Typeface.DEFAULT_BOLD
@@ -119,7 +119,10 @@ object ResultadoCardImageGenerator {
     /**
      * Template 1a: Link preview / Feed (1200x630).
      */
-    private fun renderizarFeed(context: Context, data: SpeedtestShareData): Bitmap {
+    private fun renderizarFeed(
+        context: Context,
+        data: SpeedtestShareData,
+    ): Bitmap {
         val bitmap = Bitmap.createBitmap(PREVIEW_W, PREVIEW_H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val (tfSemibold, tfMedium, tfMono) = carregarFontes(context)
@@ -127,12 +130,18 @@ object ResultadoCardImageGenerator {
         // Fundo escuro fixo
         canvas.drawColor(COLOR_BG)
 
-        val lockup = try {
-            BitmapFactory.decodeResource(context.resources, R.drawable.signallq_lockup_dark)
-        } catch (_: Exception) { null }
-        val badge = try {
-            BitmapFactory.decodeResource(context.resources, R.drawable.google_play_badge)
-        } catch (_: Exception) { null }
+        val lockup =
+            try {
+                BitmapFactory.decodeResource(context.resources, R.drawable.signallq_lockup_dark)
+            } catch (_: Exception) {
+                null
+            }
+        val badge =
+            try {
+                BitmapFactory.decodeResource(context.resources, R.drawable.google_play_badge)
+            } catch (_: Exception) {
+                null
+            }
 
         // Anel à esquerda: escala 470/440 a partir de (50, 80)
         canvas.save()
@@ -140,9 +149,10 @@ object ResultadoCardImageGenerator {
         val scaleRing = 470f / 440f
         canvas.scale(scaleRing, scaleRing)
 
-        val tickPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            strokeCap = Paint.Cap.ROUND
-        }
+        val tickPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                strokeCap = Paint.Cap.ROUND
+            }
         for (k in cardTicks(data.downloadMbps)) {
             tickPaint.color = k.color
             tickPaint.alpha = (k.opacity * 255).roundToInt().coerceIn(0, 255)
@@ -211,10 +221,11 @@ object ResultadoCardImageGenerator {
         canvas.drawText(cardHeadline(data.downloadMbps), 600f, 196f, textPaint)
 
         // 2 Painéis de métricas: UPLOAD e PING
-        val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = COLOR_PANEL
-            style = Paint.Style.FILL
-        }
+        val panelPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = COLOR_PANEL
+                style = Paint.Style.FILL
+            }
 
         // UPLOAD panel
         canvas.drawRoundRect(RectF(600f, 228f, 600f + 260f, 228f + 146f), 24f, 24f, panelPaint)
@@ -310,19 +321,28 @@ object ResultadoCardImageGenerator {
     /**
      * Template 1b: Vertical / Story (1080x1920).
      */
-    private fun renderizarStory(context: Context, data: SpeedtestShareData): Bitmap {
+    private fun renderizarStory(
+        context: Context,
+        data: SpeedtestShareData,
+    ): Bitmap {
         val bitmap = Bitmap.createBitmap(STORY_W, STORY_H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val (tfSemibold, tfMedium, tfMono) = carregarFontes(context)
 
         canvas.drawColor(COLOR_BG)
 
-        val lockup = try {
-            BitmapFactory.decodeResource(context.resources, R.drawable.signallq_lockup_dark)
-        } catch (_: Exception) { null }
-        val badge = try {
-            BitmapFactory.decodeResource(context.resources, R.drawable.google_play_badge)
-        } catch (_: Exception) { null }
+        val lockup =
+            try {
+                BitmapFactory.decodeResource(context.resources, R.drawable.signallq_lockup_dark)
+            } catch (_: Exception) {
+                null
+            }
+        val badge =
+            try {
+                BitmapFactory.decodeResource(context.resources, R.drawable.google_play_badge)
+            } catch (_: Exception) {
+                null
+            }
 
         val safeSide = 64f
 
@@ -337,9 +357,10 @@ object ResultadoCardImageGenerator {
         val scaleRing = 760f / 440f
         canvas.scale(scaleRing, scaleRing)
 
-        val tickPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            strokeCap = Paint.Cap.ROUND
-        }
+        val tickPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                strokeCap = Paint.Cap.ROUND
+            }
         for (k in cardTicks(data.downloadMbps)) {
             tickPaint.color = k.color
             tickPaint.alpha = (k.opacity * 255).roundToInt().coerceIn(0, 255)
@@ -381,10 +402,11 @@ object ResultadoCardImageGenerator {
         canvas.drawText("Mbps", 540f, 905f, textPaint)
 
         // 2 Painéis de métricas verticais at y=1140, w=460, h=170, r=32
-        val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = COLOR_PANEL
-            style = Paint.Style.FILL
-        }
+        val panelPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = COLOR_PANEL
+                style = Paint.Style.FILL
+            }
 
         // Panel UPLOAD at x=64
         desenharPainelStory(
@@ -469,19 +491,21 @@ object ResultadoCardImageGenerator {
         tfMedium: Typeface,
         tfMono: Typeface,
     ) {
-        val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = COLOR_PANEL
-            style = Paint.Style.FILL
-        }
+        val panelPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = COLOR_PANEL
+                style = Paint.Style.FILL
+            }
         canvas.drawRoundRect(RectF(x, y, x + w, y + h), 32f, 32f, panelPaint)
 
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = labelColor
-            typeface = tfMono
-            textSize = 26f
-            textAlign = Paint.Align.LEFT
-            letterSpacing = 3f / 26f
-        }
+        val textPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = labelColor
+                typeface = tfMono
+                textSize = 26f
+                textAlign = Paint.Align.LEFT
+                letterSpacing = 3f / 26f
+            }
         canvas.drawText(label, x + 36f, y + 52f, textPaint)
 
         textPaint.apply {
@@ -507,17 +531,24 @@ object ResultadoCardImageGenerator {
     /**
      * Renderiza o container e os módulos do QR Code Play Store.
      */
-    fun desenharQrCode(canvas: Canvas, x: Float, y: Float, size: Float) {
-        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.FILL
-        }
+    fun desenharQrCode(
+        canvas: Canvas,
+        x: Float,
+        y: Float,
+        size: Float,
+    ) {
+        val bgPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+            }
         canvas.drawRoundRect(RectF(x, y, x + size, y + size), 16f, 16f, bgPaint)
 
-        val qrPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = 0xFF1C1B1F.toInt()
-            style = Paint.Style.FILL
-        }
+        val qrPaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = 0xFF1C1B1F.toInt()
+                style = Paint.Style.FILL
+            }
 
         val rows = CardDesignTokens.PLAY_STORE_QR_ROWS
         val moduleCount = rows.size // 33
