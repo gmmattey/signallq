@@ -23,12 +23,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalContext
+import io.signallq.app.ui.share.CardShareFormat
+import io.signallq.app.ui.share.CompartilharSheet
+import io.signallq.app.ui.share.GameCardImageGenerator
+import io.signallq.app.ui.share.GameShareData
+import io.signallq.app.ui.share.OpcaoCompartilhamento
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -97,7 +104,9 @@ internal fun ModoGamerScreen(
             .NativeAdsGate(),
 ) {
     val c = LocalLkTokens.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var mostrarSheetCompartilhamento by remember { mutableStateOf(false) }
     val medicaoBaseAtualizada = rememberUpdatedState(medicaoBaseModoGamer)
     val networkIdAtualizado = rememberUpdatedState(networkIdAtual)
 
@@ -164,6 +173,17 @@ internal fun ModoGamerScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = c.textPrimary)
                     }
                 },
+                actions = {
+                    if (etapa is ModoGamerEtapa.Resultado) {
+                        IconButton(onClick = { mostrarSheetCompartilhamento = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Share,
+                                contentDescription = "Compartilhar resultado do jogo",
+                                tint = c.textPrimary,
+                            )
+                        }
+                    }
+                },
             )
         },
     ) { padding ->
@@ -213,10 +233,49 @@ internal fun ModoGamerScreen(
                     },
                     onTrocarJogoOuDevice = viewModel::trocarJogoOuDevice,
                     onIrParaHome = onIrParaHome,
+                    onCompartilhar = { mostrarSheetCompartilhamento = true },
                     adsGate = adsGate,
                 )
             }
         }
+    }
+
+    if (mostrarSheetCompartilhamento && etapa is ModoGamerEtapa.Resultado) {
+        val etapaResultado = etapa as ModoGamerEtapa.Resultado
+        val resultadoGamer = etapaResultado.resultado
+        val gameId = when (val sel = etapaResultado.selecaoJogo) {
+            is SelecaoJogoModoGamer.Catalogado -> sel.jogo.gameId
+            is SelecaoJogoModoGamer.ForaDoCatalogo -> sel.categoria.name.lowercase()
+        }
+        val gameName = etapaResultado.selecaoJogo.nomeExibido
+        val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(resultadoGamer.evidencias)
+
+        CompartilharSheet(
+            c = c,
+            mostrarOpcaoPdf = false,
+            onSelecionarOpcao = { opcao ->
+                scope.launch {
+                    try {
+                        val formato = if (opcao == OpcaoCompartilhamento.FEED) CardShareFormat.FEED else CardShareFormat.STORY
+                        GameCardImageGenerator.gerarECompartilhar(
+                            context = context,
+                            data = GameShareData(
+                                gameId = gameId,
+                                gameName = gameName,
+                                pingMs = ping,
+                                jitterMs = jitter,
+                                bufferbloatMs = bloat,
+                                status = resultadoGamer.status,
+                                customTitle = resultadoGamer.veredito,
+                            ),
+                            format = formato,
+                        )
+                    } catch (_: Exception) {
+                    }
+                }
+            },
+            onDismiss = { mostrarSheetCompartilhamento = false },
+        )
     }
 }
 
