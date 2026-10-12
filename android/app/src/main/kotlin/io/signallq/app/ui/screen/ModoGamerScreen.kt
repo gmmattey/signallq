@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +33,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -66,6 +70,11 @@ import io.signallq.app.modogamer.icone
 import io.signallq.app.ui.LkRadius
 import io.signallq.app.ui.LkSpacing
 import io.signallq.app.ui.LocalLkTokens
+import io.signallq.app.ui.share.CardShareFormat
+import io.signallq.app.ui.share.CompartilharSheet
+import io.signallq.app.ui.share.GameCardImageGenerator
+import io.signallq.app.ui.share.GameShareData
+import io.signallq.app.ui.share.OpcaoCompartilhamento
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -97,7 +106,9 @@ internal fun ModoGamerScreen(
             .NativeAdsGate(),
 ) {
     val c = LocalLkTokens.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var mostrarSheetCompartilhamento by remember { mutableStateOf(false) }
     val medicaoBaseAtualizada = rememberUpdatedState(medicaoBaseModoGamer)
     val networkIdAtualizado = rememberUpdatedState(networkIdAtual)
 
@@ -148,8 +159,11 @@ internal fun ModoGamerScreen(
 
     BackHandler(onBack = ::voltarUmPasso)
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         containerColor = c.bgPrimary,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -162,6 +176,17 @@ internal fun ModoGamerScreen(
                 navigationIcon = {
                     IconButton(onClick = ::voltarUmPasso) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = c.textPrimary)
+                    }
+                },
+                actions = {
+                    if (etapa is ModoGamerEtapa.Resultado) {
+                        IconButton(onClick = { mostrarSheetCompartilhamento = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Share,
+                                contentDescription = "Compartilhar resultado do jogo",
+                                tint = c.textPrimary,
+                            )
+                        }
                     }
                 },
             )
@@ -213,10 +238,54 @@ internal fun ModoGamerScreen(
                     },
                     onTrocarJogoOuDevice = viewModel::trocarJogoOuDevice,
                     onIrParaHome = onIrParaHome,
+                    onCompartilhar = { mostrarSheetCompartilhamento = true },
                     adsGate = adsGate,
                 )
             }
         }
+    }
+
+    if (mostrarSheetCompartilhamento && etapa is ModoGamerEtapa.Resultado) {
+        val etapaResultado = etapa as ModoGamerEtapa.Resultado
+        val resultadoGamer = etapaResultado.resultado
+        val gameId =
+            when (val sel = etapaResultado.selecaoJogo) {
+                is SelecaoJogoModoGamer.Catalogado -> sel.jogo.gameId
+                is SelecaoJogoModoGamer.ForaDoCatalogo -> sel.categoria.name.lowercase()
+            }
+        val gameName = etapaResultado.selecaoJogo.nomeExibido
+        val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(resultadoGamer.evidencias)
+
+        CompartilharSheet(
+            c = c,
+            mostrarOpcaoPdf = false,
+            onSelecionarOpcao = { opcao ->
+                scope.launch {
+                    try {
+                        val formato = if (opcao == OpcaoCompartilhamento.FEED) CardShareFormat.FEED else CardShareFormat.STORY
+                        GameCardImageGenerator.gerarECompartilhar(
+                            context = context,
+                            data =
+                                GameShareData(
+                                    gameId = gameId,
+                                    gameName = gameName,
+                                    pingMs = ping,
+                                    jitterMs = jitter,
+                                    bufferbloatMs = bloat,
+                                    status = resultadoGamer.status,
+                                    customTitle = resultadoGamer.veredito,
+                                ),
+                            format = formato,
+                        )
+                    } catch (e: Exception) {
+                        snackbarHostState.showSnackbar(
+                            message = "Não foi possível compartilhar o card: ${e.localizedMessage ?: "tente novamente"}",
+                        )
+                    }
+                }
+            },
+            onDismiss = { mostrarSheetCompartilhamento = false },
+        )
     }
 }
 

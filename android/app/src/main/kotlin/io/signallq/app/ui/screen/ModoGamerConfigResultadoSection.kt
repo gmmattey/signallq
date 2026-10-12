@@ -21,7 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SportsEsports
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -270,6 +273,7 @@ internal fun ModoGamerResultadoConteudo(
     onAlternarSalvarPadrao: (Boolean) -> Unit,
     onTrocarJogoOuDevice: () -> Unit,
     onIrParaHome: () -> Unit,
+    onCompartilhar: () -> Unit = {},
     /** Toggle remoto (Firebase Remote Config) + gate de consentimento UMP -- issue #555,
      *  reconectado do fluxo legado "Jogos" (GH#935) pela issue #1489. Default `false`: nunca
      *  mostra anuncio sem sinal explicito de que pode. */
@@ -400,7 +404,26 @@ internal fun ModoGamerResultadoConteudo(
             )
         }
 
-        Spacer(Modifier.height(LkSpacing.lg))
+        Spacer(Modifier.height(LkSpacing.md))
+        Button(
+            onClick = onCompartilhar,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(LkRadius.button),
+            colors = ButtonDefaults.buttonColors(containerColor = c.primary, contentColor = c.onPrimary),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Share,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(LkSpacing.sm))
+            Text(
+                text = "Compartilhar resultado do jogo",
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
+
+        Spacer(Modifier.height(LkSpacing.sm))
         OutlinedButton(
             onClick = onTrocarJogoOuDevice,
             modifier = Modifier.fillMaxWidth(),

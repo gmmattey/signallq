@@ -96,6 +96,11 @@ import io.signallq.app.ui.component.classificarUploadLocal
 import io.signallq.app.ui.component.copyInstabilidadePerdaPacotes
 import io.signallq.app.ui.component.corSemantica
 import io.signallq.app.ui.component.labelPt
+import io.signallq.app.ui.share.CardShareFormat
+import io.signallq.app.ui.share.CompartilharSheet
+import io.signallq.app.ui.share.OpcaoCompartilhamento
+import io.signallq.app.ui.share.ResultadoCardImageGenerator
+import io.signallq.app.ui.share.SpeedtestShareData
 import kotlinx.coroutines.launch
 
 /**
@@ -186,6 +191,7 @@ fun ResultadoVelocidadeScreen(
     // explicação quando ResultadoPdfGenerator.gerarECompartilhar lança (mesmo padrão de erro
     // de LaudoScreen.compartilharLaudo).
     var erroCompartilhamento by remember { mutableStateOf<String?>(null) }
+    var mostrarSheetCompartilhamento by remember { mutableStateOf(false) }
     var metricasDetalhadasAbertas by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -277,26 +283,8 @@ fun ResultadoVelocidadeScreen(
                         )
                     } else {
                         IconButton(onClick = {
-                            compartilhando = true
                             erroCompartilhamento = null
-                            scope.launch {
-                                try {
-                                    ResultadoPdfGenerator.gerarECompartilhar(
-                                        context = context,
-                                        resultado = resultado,
-                                        snapshotDiagnostico = snapshotDiagnostico,
-                                        analisadorState = analisadorState,
-                                        ispInfo = ispInfo,
-                                        operadoraMovel = operadoraMovel,
-                                        localizacaoServidor = localizacaoServidor,
-                                    )
-                                    onCompartilhar()
-                                } catch (e: Exception) {
-                                    erroCompartilhamento = mensagemErroCompartilhamentoResultado(e)
-                                } finally {
-                                    compartilhando = false
-                                }
-                            }
+                            mostrarSheetCompartilhamento = true
                         }) {
                             Icon(
                                 imageVector = Icons.Outlined.Share,
@@ -636,6 +624,28 @@ fun ResultadoVelocidadeScreen(
                 }
 
                 Spacer(Modifier.height(LkSpacing.sm))
+                OutlinedButton(
+                    onClick = {
+                        erroCompartilhamento = null
+                        mostrarSheetCompartilhamento = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(LkRadius.button),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(LkSpacing.sm))
+                    Text(
+                        text = "Compartilhar resultado",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = c.textPrimary,
+                    )
+                }
+
+                Spacer(Modifier.height(LkSpacing.sm))
                 HorizontalDivider(color = c.outlineVariant, thickness = 1.dp)
                 Spacer(Modifier.height(LkSpacing.sm))
 
@@ -670,6 +680,64 @@ fun ResultadoVelocidadeScreen(
                 Spacer(Modifier.height(LkSpacing.xl))
             }
         }
+    }
+
+    if (mostrarSheetCompartilhamento) {
+        CompartilharSheet(
+            c = c,
+            mostrarOpcaoPdf = true,
+            onSelecionarOpcao = { opcao ->
+                compartilhando = true
+                erroCompartilhamento = null
+                scope.launch {
+                    try {
+                        when (opcao) {
+                            OpcaoCompartilhamento.FEED -> {
+                                ResultadoCardImageGenerator.gerarECompartilhar(
+                                    context = context,
+                                    data =
+                                        SpeedtestShareData(
+                                            downloadMbps = resultado.downloadMbps,
+                                            uploadMbps = resultado.uploadMbps,
+                                            pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
+                                        ),
+                                    format = CardShareFormat.FEED,
+                                )
+                            }
+                            OpcaoCompartilhamento.STORY -> {
+                                ResultadoCardImageGenerator.gerarECompartilhar(
+                                    context = context,
+                                    data =
+                                        SpeedtestShareData(
+                                            downloadMbps = resultado.downloadMbps,
+                                            uploadMbps = resultado.uploadMbps,
+                                            pingMs = kotlin.math.round(resultado.latenciaMs).toInt(),
+                                        ),
+                                    format = CardShareFormat.STORY,
+                                )
+                            }
+                            OpcaoCompartilhamento.PDF -> {
+                                ResultadoPdfGenerator.gerarECompartilhar(
+                                    context = context,
+                                    resultado = resultado,
+                                    snapshotDiagnostico = snapshotDiagnostico,
+                                    analisadorState = analisadorState,
+                                    ispInfo = ispInfo,
+                                    operadoraMovel = operadoraMovel,
+                                    localizacaoServidor = localizacaoServidor,
+                                )
+                            }
+                        }
+                        onCompartilhar()
+                    } catch (e: Exception) {
+                        erroCompartilhamento = mensagemErroCompartilhamentoResultado(e)
+                    } finally {
+                        compartilhando = false
+                    }
+                }
+            },
+            onDismiss = { mostrarSheetCompartilhamento = false },
+        )
     }
 }
 

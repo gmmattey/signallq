@@ -18,6 +18,7 @@ import {
   type ScoreBand,
 } from "../modo-gamer/modoGamerEngine";
 import { useModoGamerRunner } from "../modo-gamer/useModoGamerRunner";
+import { GameShareRow } from "./GameShareRow";
 
 const GENRES_LIST: { id: GameGenre; label: string; desc: string }[] = [
   { id: 'FPS', label: 'FPS / Tiro', desc: 'Exige latência ultra-baixa e zero jitter' },
@@ -77,8 +78,17 @@ function getGradeColor(grade: ScoreBand) {
   }
 }
 
+const GENRE_TO_CAT_ID: Record<GameGenre, string> = {
+  'FPS': 'cat-fps',
+  'Battle royale': 'cat-br',
+  'MOBA': 'cat-mob',
+  'Esportes': 'cat-cas',
+  'Casual': 'cat-cas',
+};
+
 export default function TesteGamerContent() {
   const searchInputId = useId();
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [selectedGenre, setSelectedGenre] = useState<GameGenre>('FPS');
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +107,9 @@ export default function TesteGamerContent() {
     );
   }, [searchQuery]);
 
-  const handleSelectGame = (name: string, genre: GameGenre) => {
+  const handleSelectGame = (name: string, genre: GameGenre, id?: string) => {
+    const resolvedId = id || GAMES_DATA.find((g) => g.name.toLowerCase() === name.toLowerCase())?.id || null;
+    setSelectedGameId(resolvedId);
     setSelectedGame(name);
     setSelectedGenre(genre);
     setIsCustomMode(false);
@@ -106,6 +118,7 @@ export default function TesteGamerContent() {
   };
 
   const handleSelectCustomGenre = (genre: GameGenre) => {
+    setSelectedGameId(GENRE_TO_CAT_ID[genre] || 'cat-cas');
     setSelectedGame(`Jogo (${genre})`);
     setSelectedGenre(genre);
     setIsCustomMode(true);
@@ -126,9 +139,11 @@ export default function TesteGamerContent() {
   const handleResetGameChoice = () => {
     cancelTest();
     setSelectedGame(null);
+    setSelectedGameId(null);
     setIsCustomMode(false);
     setSearchQuery('');
   };
+
 
   const handleDownloadClick = () => {
     trackFeatureUsed(FEATURE_DOWNLOAD_APP_CLICADO);
@@ -259,7 +274,7 @@ export default function TesteGamerContent() {
                             <button
                               key={game.id}
                               type="button"
-                              onClick={() => handleSelectGame(game.name, game.genre)}
+                              onClick={() => handleSelectGame(game.name, game.genre, game.id)}
                               className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left text-[14px] text-white hover:bg-[#1D1535] hover:text-[#C9B6FF] transition-colors"
                             >
                               <span className="font-semibold">{game.name}</span>
@@ -299,11 +314,12 @@ export default function TesteGamerContent() {
                     {POPULAR_GAMES.map((name) => {
                       const entry = GAMES_DATA.find((g) => g.name === name);
                       const genre = entry ? entry.genre : 'FPS';
+                      const id = entry ? entry.id : undefined;
                       return (
                         <button
                           key={name}
                           type="button"
-                          onClick={() => handleSelectGame(name, genre)}
+                          onClick={() => handleSelectGame(name, genre, id)}
                           className="rounded-full border border-[#3A3446] bg-[#0E1116] px-4 py-2 text-[14px] font-medium text-[#E7E0EC] hover:border-[#7B4DF0] hover:bg-[#1D1535] hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9B6FF]"
                         >
                           {name}
@@ -312,6 +328,7 @@ export default function TesteGamerContent() {
                     })}
                   </div>
                 </div>
+
 
                 {/* Alternativa: Meu jogo não está na lista */}
                 <div className="border-t border-[#262B33] pt-5">
@@ -616,6 +633,20 @@ export default function TesteGamerContent() {
                 Escolher outro jogo
               </button>
             </div>
+
+            {/* Compartilhamento do resultado gamer */}
+            <div className="mt-6 flex justify-center">
+              <GameShareRow
+                payload={{
+                  game: selectedGameId || (selectedGame ? (GAMES_DATA.find((g) => g.name.toLowerCase() === selectedGame.toLowerCase())?.id ?? selectedGame) : 'fortnite'),
+                  verdict: runner.result.verdictStatus === 'adequate' ? 'ok' : runner.result.verdictStatus === 'warning' ? 'warn' : 'bad',
+                  ping: runner.idlePing ?? 0,
+                  jitter: runner.jitter ?? 0,
+                  bloat: runner.bufferbloat,
+                }}
+              />
+            </div>
+
 
             {/* 8. CTA Contextual do SignallQ Android */}
             <div className="mt-10 rounded-2xl border border-[#7B4DF0]/40 bg-[#1D1535] p-6 text-left">
