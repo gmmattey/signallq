@@ -1,8 +1,18 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { readSignedShare } from '@/lib/share/payload'
 import { SharedResult } from '@/components/SharedResult'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: 'Resultado de Velocidade — SignallQ',
+  robots: {
+    index: false,
+    follow: true,
+  },
+}
+
 
 export default async function SharedResultPage({
   searchParams,

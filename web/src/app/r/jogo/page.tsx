@@ -1,8 +1,18 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { readSignedGameShare } from '@/lib/share/gamePayload'
 import { SharedGameResult } from '@/components/SharedGameResult'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: 'Resultado Gamer — SignallQ',
+  robots: {
+    index: false,
+    follow: true,
+  },
+}
+
 
 export default async function SharedGameResultPage({
   searchParams,
