@@ -23,10 +23,23 @@ class GameCardImageGeneratorTest {
     }
 
     @Test
-    fun `extrairMetricasGamer usa fallback seguro quando evidencias estao vazias`() {
+    fun `extrairMetricasGamer preserva nulos quando evidencias nao trazem metricas`() {
         val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(emptyList())
-        assertEquals(25, ping)
-        assertEquals(3, jitter)
+        assertEquals(null, ping)
+        assertEquals(null, jitter)
+        assertEquals(null, bloat)
+    }
+
+    @Test
+    fun `extrairMetricasGamer lida com jogo casual sem jitter sem inventar valores`() {
+        val evidencias = listOf(
+            EvidenciaDiagnostico("Tempo de resposta", "22 ms", MetricStatus.bom),
+            EvidenciaDiagnostico("Download", "150.0 Mbps", MetricStatus.bom),
+        )
+        val (ping, jitter, bloat) = GameCardImageGenerator.extrairMetricasGamer(evidencias)
+        assertEquals(22, ping)
+        assertEquals(null, jitter)
         assertEquals(null, bloat)
     }
 }
+

@@ -46,8 +46,8 @@ import kotlin.math.max
 data class GameShareData(
     val gameId: String,
     val gameName: String,
-    val pingMs: Int,
-    val jitterMs: Int,
+    val pingMs: Int?,
+    val jitterMs: Int?,
     val bufferbloatMs: Int?,
     val status: DiagnosticStatus,
     val customTitle: String? = null,
@@ -60,29 +60,30 @@ data class GameShareData(
  */
 object GameCardImageGenerator {
 
-    fun extrairMetricasGamer(evidencias: List<EvidenciaDiagnostico>): Triple<Int, Int, Int?> {
-        var ping = 0
-        var jitter = 0
+    fun extrairMetricasGamer(evidencias: List<EvidenciaDiagnostico>): Triple<Int?, Int?, Int?> {
+        var ping: Int? = null
+        var jitter: Int? = null
         var bloat: Int? = null
 
         for (e in evidencias) {
             val digits = "\\d+".toRegex().find(e.valorExibido)?.value?.toIntOrNull() ?: continue
             val label = e.label.lowercase()
             when {
-                label.contains("tempo de resposta") || label.contains("latência") || label.contains("ping") -> {
-                    if (ping == 0 || label.contains("medido agora")) {
-                        ping = digits
-                    }
-                }
                 label.contains("variação") || label.contains("jitter") -> {
                     jitter = digits
                 }
-                label.contains("sobrecarga") || label.contains("carga") || label.contains("bufferbloat") -> {
+                label.contains("sobrecarga") || label.contains("bufferbloat") || label.contains("lentidão com a rede ocupada") -> {
                     bloat = digits
+                }
+                label.contains("tempo de resposta") || label.contains("latência") || label.contains("ping") -> {
+                    if (ping == null || label.contains("medido agora")) {
+                        ping = digits
+                    }
                 }
             }
         }
-        return Triple(if (ping > 0) ping else 25, if (jitter > 0) jitter else 3, bloat)
+        return Triple(ping, jitter, bloat)
+
     }
 
     suspend fun gerarECompartilhar(
@@ -102,10 +103,14 @@ object GameCardImageGenerator {
 
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 
+        val partesMetricas = mutableListOf<String>()
+        if (data.pingMs != null) partesMetricas.add("resposta ${data.pingMs} ms")
+        if (data.jitterMs != null) partesMetricas.add("jitter ${data.jitterMs} ms")
+        if (data.bufferbloatMs != null) partesMetricas.add("sob carga +${data.bufferbloatMs} ms")
+        val sufixoMetricas = if (partesMetricas.isNotEmpty()) ": " + partesMetricas.joinToString(", ") else ""
+
         val textoCompartilhamento =
-            "Testei minha conexão para jogar ${data.gameName} no SignallQ: " +
-                "resposta ${data.pingMs} ms, jitter ${data.jitterMs} ms" +
-                (if (data.bufferbloatMs != null) ", sob carga +${data.bufferbloatMs} ms" else "") +
+            "Testei minha conexão para jogar ${data.gameName} no SignallQ$sufixoMetricas" +
                 ". Teste a sua também: ${CardDesignTokens.PLAY_STORE_URL}"
 
         withContext(Dispatchers.Main) {
@@ -113,6 +118,7 @@ object GameCardImageGenerator {
                 type = "image/png"
                 putExtra(Intent.EXTRA_STREAM, uri)
                 putExtra(Intent.EXTRA_TEXT, textoCompartilhamento)
+
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -310,8 +316,22 @@ object GameCardImageGenerator {
 
         // 3 cards de métricas: RESPOSTA, JITTER, SOB CARGA
         val metricCards = listOf(
-            Triple("RESPOSTA", COLOR_GAME_BLUE, Pair("${data.pingMs}", "ms")),
-            Triple("JITTER", COLOR_GAME_GREEN, Pair("${data.jitterMs}", "ms")),
+            Triple(
+                "RESPOSTA",
+                COLOR_GAME_BLUE,
+                Pair(
+                    if (data.pingMs != null) "${data.pingMs}" else "—",
+                    if (data.pingMs != null) "ms" else ""
+                )
+            ),
+            Triple(
+                "JITTER",
+                COLOR_GAME_GREEN,
+                Pair(
+                    if (data.jitterMs != null) "${data.jitterMs}" else "—",
+                    if (data.jitterMs != null) "ms" else ""
+                )
+            ),
             Triple(
                 "SOB CARGA",
                 COLOR_GAME_AMBER,
@@ -321,6 +341,7 @@ object GameCardImageGenerator {
                 )
             )
         )
+
 
         val cardBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = 0xD916151D.toInt()
@@ -487,8 +508,22 @@ object GameCardImageGenerator {
         // 3 métricas em cards verticais at y=960, h=200
         val cardW = (STORY_W - safeSide * 2 - 2 * 20f) / 3f
         val metricCards = listOf(
-            Triple("RESPOSTA", COLOR_GAME_BLUE, Pair("${data.pingMs}", "ms")),
-            Triple("JITTER", COLOR_GAME_GREEN, Pair("${data.jitterMs}", "ms")),
+            Triple(
+                "RESPOSTA",
+                COLOR_GAME_BLUE,
+                Pair(
+                    if (data.pingMs != null) "${data.pingMs}" else "—",
+                    if (data.pingMs != null) "ms" else ""
+                )
+            ),
+            Triple(
+                "JITTER",
+                COLOR_GAME_GREEN,
+                Pair(
+                    if (data.jitterMs != null) "${data.jitterMs}" else "—",
+                    if (data.jitterMs != null) "ms" else ""
+                )
+            ),
             Triple(
                 "SOB CARGA",
                 COLOR_GAME_AMBER,
@@ -498,6 +533,7 @@ object GameCardImageGenerator {
                 )
             )
         )
+
 
         val cardBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = 0xEB16151D.toInt()

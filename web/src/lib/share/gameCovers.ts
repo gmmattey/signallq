@@ -39,6 +39,8 @@ const COVER: Record<string, string> = {
 }
 
 export function coverOf(id: string): string | null {
-  const f = COVER[id]
+  const key = id.toLowerCase().trim()
+  const f = COVER[key] ?? COVER[key.replace(/\s+/g, '-')] ?? COVER[key.replace(/[^a-z0-9]/g, '')]
   return f ? `/assets/games/${f}` : null
 }
+

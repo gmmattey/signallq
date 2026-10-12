@@ -30,11 +30,12 @@ export const CATEGORY_REFS: Record<string, { label: string }> = {
 
 /** Nome para exibir a partir da referência; `null` se a referência não existe. */
 export function gameNameOf(ref: string): string | null {
-  const g = GAMES_DATA.find((x) => x.id === ref)
+  const g = GAMES_DATA.find((x) => x.id === ref || x.name.toLowerCase() === ref.toLowerCase())
   if (g) return g.name
   const c = CATEGORY_REFS[ref]
   return c ? `Jogo (${c.label})` : ref || 'Jogo'
 }
+
 
 const VERDICTS: readonly string[] = ['ok', 'warn', 'bad']
 
