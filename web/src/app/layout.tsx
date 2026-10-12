@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "../index.css";
 import { SiteNav } from "../components/SiteNav";
 import { SiteFooter } from "../components/SiteFooter";
-import { TelemetryInit } from "../components/TelemetryInit";
 import { SITE_ORIGIN } from "../lib/routeMetadata";
 
 export const metadata: Metadata = {
@@ -57,7 +57,9 @@ export default function RootLayout({
         <link rel="stylesheet" href="/_ds/signallq-design-system-2d25d7a1-31b2-4ac3-881f-72dbc8f35a29/styles.css" />
       </head>
       <body className="bg-[color:var(--bg-primary)] text-[color:var(--text-primary)]">
-        <TelemetryInit />
+        {/* Web Analytics com rastreamento de rotas do Next.js. A telemetria de
+            eventos das ferramentas continua no pipeline de produto. */}
+        <Analytics />
         <div className="flex min-h-screen w-full flex-col">
           <SiteNav />
           <main className="flex w-full flex-1 flex-col">
