@@ -18,6 +18,7 @@ import {
   type ScoreBand,
 } from "../modo-gamer/modoGamerEngine";
 import { useModoGamerRunner } from "../modo-gamer/useModoGamerRunner";
+import { GameShareRow } from "./GameShareRow";
 
 const GENRES_LIST: { id: GameGenre; label: string; desc: string }[] = [
   { id: 'FPS', label: 'FPS / Tiro', desc: 'Exige latência ultra-baixa e zero jitter' },
@@ -615,6 +616,19 @@ export default function TesteGamerContent() {
               >
                 Escolher outro jogo
               </button>
+            </div>
+
+            {/* Compartilhamento do resultado gamer */}
+            <div className="mt-6 flex justify-center">
+              <GameShareRow
+                payload={{
+                  game: selectedGame || 'fortnite',
+                  verdict: runner.result.verdictStatus === 'adequate' ? 'ok' : runner.result.verdictStatus === 'warning' ? 'warn' : 'bad',
+                  ping: runner.idlePing ?? 0,
+                  jitter: runner.jitter ?? 0,
+                  bloat: runner.bufferbloat,
+                }}
+              />
             </div>
 
             {/* 8. CTA Contextual do SignallQ Android */}

@@ -13,6 +13,7 @@ import {
   getVerdict,
 } from './speedTestVerdict'
 import type { SpeedTestState } from './useSpeedTestEngine'
+import { ShareRow } from './ShareRow'
 
 export function SpeedTestResult({ state, onRetry }: { state: SpeedTestState; onRetry: () => void }) {
   const verdict = getVerdict(state.download)
@@ -126,6 +127,20 @@ export function SpeedTestResult({ state, onRetry }: { state: SpeedTestState; onR
             ))}
           </div>
         </div>
+
+        {/* Compartilhamento do resultado */}
+        {state.download != null && state.upload != null && state.ping != null && (
+          <div className="mt-6 pt-6 border-t border-[#E7E0EC]">
+            <ShareRow
+              metrics={{
+                download: state.download,
+                upload: state.upload,
+                ping: state.ping,
+                jitter: state.jitter ?? 0,
+              }}
+            />
+          </div>
+        )}
 
         {/* Nota técnica sobre as limitações do teste via navegador */}
         <div className="mt-5 rounded-xl bg-[#F8F9FA] border border-[#E7E0EC] px-4 py-3 text-[13px] leading-5 text-[#79747E]">
