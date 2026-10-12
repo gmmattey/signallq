@@ -75,6 +75,7 @@ Use `vercel deploy` **sem** `--prebuilt`: o build roda na Vercel (Linux). O `ver
 ## Variáveis de ambiente e domínios
 
 - `SITE_INGEST_KEY` precisa estar em **Production** (`vercel env add SITE_INGEST_KEY production --sensitive`) com o mesmo valor da secret do Worker `signallq-admin`. Variável nova só vale em um **novo deploy**.
+- `SHARE_SIGNING_KEY` precisa estar em **Production** e **Preview** (`vercel env add SHARE_SIGNING_KEY production --sensitive` e `preview`) com um segredo aleatório seguro (ex.: `openssl rand -hex 32`) para assinar links HMAC de `/r` e `/r/jogo`. Sem ela, os endpoints `/api/share` e `/api/share-jogo` respondem 501.
 - Domínios do projeto: `signallq.com` (e `www`, que redireciona) e `speedtest.signallq.com`. O DNS está na **Hostinger**: `speedtest.signallq.com` usa um registro `A speedtest → 76.76.21.21`. Depois que o DNS propagar, a Vercel emite o certificado (se demorar, `npx vercel certs issue speedtest.signallq.com`).
 
 ## Falhas comuns
@@ -83,4 +84,5 @@ Use `vercel deploy` **sem** `--prebuilt`: o build roda na Vercel (Linux). O `ver
 - **Falha nos gates:** corrija o commit indicado; o workflow não publica uma build reprovada.
 - **Falha no `vercel pull` ou `build`:** confirme que os IDs pertencem ao projeto vinculado e que o token tem acesso a ele.
 - **`/api/track` responde 501:** falta `SITE_INGEST_KEY` em Production na Vercel (ou o deploy foi feito antes de criá-la).
+- **`/api/share` ou `/api/share-jogo` respondem 501:** falta `SHARE_SIGNING_KEY` configurada no ambiente da Vercel (ou em `.env.local` em desenvolvimento local).
 - **Deploy inesperado após push/merge:** investigue a configuração do projeto na Vercel; este repositório não tem gatilho automático de deploy e a integração Git deve permanecer desativada.
