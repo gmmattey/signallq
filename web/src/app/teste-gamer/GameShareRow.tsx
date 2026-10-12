@@ -42,10 +42,12 @@ export function useGameShareLink(p: Shared): string | null {
 
 export function GameShareRow({ payload }: { payload: Shared }) {
   const signed = useGameShareLink(payload)
-  const url = signed ?? 'https://signallq.com/teste-gamer/'
-  const links = gameShareLinks(payload, url)
+  const isReady = signed !== null
+  const url = signed ?? ''
+  const links = gameShareLinks(payload, url || 'https://signallq.com/teste-gamer/')
   const [saving, setSaving] = useState(false)
   const [note, setNote] = useState<string | null>(null)
+
 
   async function saveImage(format: 'feed' | 'story' = 'feed') {
     setSaving(true)
@@ -110,7 +112,13 @@ export function GameShareRow({ payload }: { payload: Shared }) {
   }
 
   async function handleSocialClick(e: React.MouseEvent<HTMLAnchorElement>, l: { name: string; href: string; copy?: string | null }) {
+    if (!isReady) {
+      e.preventDefault()
+      return
+    }
+
     if (l.copy) {
+
       await copy(l.copy, 'Texto copiado para a área de transferência.')
       return
     }
@@ -169,13 +177,16 @@ export function GameShareRow({ payload }: { payload: Shared }) {
           {links.map((l) => (
             <a
               key={l.name}
-              href={l.href}
-              target="_blank"
+              href={isReady ? l.href : '#'}
+              target={isReady ? '_blank' : undefined}
               rel="noopener noreferrer"
               aria-label={`Compartilhar no ${l.name}`}
-              title={l.name}
+              aria-disabled={!isReady}
+              title={isReady ? l.name : 'Aguardando link assinado…'}
               onClick={(e) => void handleSocialClick(e, l)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#16151D] border border-[#4A4458] shadow-sm transition-transform hover:-translate-y-0.5 text-white"
+              className={`flex h-11 w-11 items-center justify-center rounded-full bg-[#16151D] border border-[#4A4458] shadow-sm transition-transform text-white ${
+                isReady ? 'hover:-translate-y-0.5' : 'opacity-40 cursor-not-allowed'
+              }`}
             >
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
                 <path d={l.icon} fill={l.color === 'currentColor' ? '#F2EDF7' : l.color} />
@@ -213,11 +224,13 @@ export function GameShareRow({ payload }: { payload: Shared }) {
         <button
           type="button"
           onClick={() => void copy(url, 'Link copiado.')}
-          className="rounded-full border border-[#4A4458] bg-[#16151D] px-5 py-2.5 text-xs sm:text-sm font-medium text-[#CAC4D0] hover:text-white hover:border-[#C9B6FF] transition-colors cursor-pointer shadow-sm"
+          disabled={!isReady}
+          className="rounded-full border border-[#4A4458] bg-[#16151D] px-5 py-2.5 text-xs sm:text-sm font-medium text-[#CAC4D0] hover:text-white hover:border-[#C9B6FF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
         >
-          Copiar link
+          {isReady ? 'Copiar link' : 'Gerando link…'}
         </button>
       </div>
+
 
       {note && (
         <p className="m-0 text-xs text-[#CAC4D0]" aria-live="polite">

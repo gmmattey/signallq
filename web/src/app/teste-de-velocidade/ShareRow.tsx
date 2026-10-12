@@ -49,10 +49,12 @@ export function useShareLink(f: ShareMetrics): string | null {
 
 export function ShareRow({ metrics }: { metrics: ShareMetrics }) {
   const signed = useShareLink(metrics)
-  const url = signed ?? 'https://signallq.com'
-  const links = shareLinks(metrics, url)
+  const isReady = signed !== null
+  const url = signed ?? ''
+  const links = shareLinks(metrics, url || 'https://signallq.com')
   const [saving, setSaving] = useState(false)
   const [note, setNote] = useState<string | null>(null)
+
 
   async function copy(text: string, ok: string) {
     try {
@@ -126,6 +128,11 @@ export function ShareRow({ metrics }: { metrics: ShareMetrics }) {
   }
 
   async function handleSocialClick(e: React.MouseEvent<HTMLAnchorElement>, l: { name: string; href: string; copy?: string | null }) {
+    if (!isReady) {
+      e.preventDefault()
+      return
+    }
+
     if (l.copy) {
       await copy(l.copy, 'Texto copiado para a área de transferência.')
       return
@@ -178,13 +185,16 @@ export function ShareRow({ metrics }: { metrics: ShareMetrics }) {
           {links.map((l) => (
             <a
               key={l.name}
-              href={l.href}
-              target="_blank"
+              href={isReady ? l.href : '#'}
+              target={isReady ? '_blank' : undefined}
               rel="noopener noreferrer"
               aria-label={`Compartilhar no ${l.name}`}
-              title={l.name}
+              aria-disabled={!isReady}
+              title={isReady ? l.name : 'Aguardando link assinado…'}
               onClick={(e) => void handleSocialClick(e, l)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-transform hover:-translate-y-0.5 border border-[#E7E0EC]"
+              className={`flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-transform border border-[#E7E0EC] ${
+                isReady ? 'hover:-translate-y-0.5' : 'opacity-40 cursor-not-allowed'
+              }`}
             >
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
                 <path d={l.icon} fill={l.color === 'currentColor' ? '#1C1B1F' : l.color} />
@@ -222,11 +232,13 @@ export function ShareRow({ metrics }: { metrics: ShareMetrics }) {
         <button
           type="button"
           onClick={() => void copy(url, 'Link copiado.')}
-          className="rounded-full border border-[#E7E0EC] bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-[#1C1B1F] hover:bg-[#F3EEFA] transition-colors cursor-pointer shadow-sm"
+          disabled={!isReady}
+          className="rounded-full border border-[#E7E0EC] bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-[#1C1B1F] hover:bg-[#F3EEFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm"
         >
-          Copiar link
+          {isReady ? 'Copiar link' : 'Gerando link…'}
         </button>
       </div>
+
 
       {note && (
         <p className="m-0 text-xs text-[#79747E]" aria-live="polite">

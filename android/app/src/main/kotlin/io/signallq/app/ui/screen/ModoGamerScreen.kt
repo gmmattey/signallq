@@ -39,7 +39,10 @@ import io.signallq.app.ui.share.OpcaoCompartilhamento
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -157,9 +160,13 @@ internal fun ModoGamerScreen(
 
     BackHandler(onBack = ::voltarUmPasso)
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         containerColor = c.bgPrimary,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
+
             CenterAlignedTopAppBar(
                 title = {
                     Text(
@@ -270,7 +277,10 @@ internal fun ModoGamerScreen(
                             ),
                             format = formato,
                         )
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        snackbarHostState.showSnackbar(
+                            message = "Não foi possível compartilhar o card: ${e.localizedMessage ?: "tente novamente"}"
+                        )
                     }
                 }
             },
@@ -278,6 +288,7 @@ internal fun ModoGamerScreen(
         )
     }
 }
+
 
 internal fun medicaoBaseEhElegivel(
     medicao: MedicaoBaseModoGamer,
