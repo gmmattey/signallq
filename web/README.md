@@ -24,14 +24,13 @@ Metadados por rota: `src/lib/pageMetaCatalog.ts`. Ao criar uma rota, registre-a 
 
 ## Variáveis de ambiente
 
-Veja [`.env.example`](.env.example). As variáveis lidas pelo código:
+Veja [`.env.example`](.env.example). Só quatro são lidas pelo código:
 
 | Variável | Onde | Para quê |
 |---|---|---|
 | `NEXT_PUBLIC_SIGNALLQ_PLAY_STORE_URL` | navegador | Destino do CTA de download (default: ficha na Play Store) |
 | `NEXT_PUBLIC_SPEEDTEST_DOWNLOAD_URL` / `_UPLOAD_URL` | navegador | Motor do teste de velocidade (default: `speed.cloudflare.com`) |
 | `SITE_INGEST_KEY` | **só servidor** | Autentica `/api/track` no Worker; o mesmo valor é secret do Worker |
-| `SHARE_SIGNING_KEY` | **só servidor** | Assina e valida links de compartilhamento (`/api/share`, `/r`, `/r/jogo`) |
 
 ## Comandos
 
