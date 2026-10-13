@@ -189,6 +189,9 @@ class ModoGamerEngineTest {
         assertTrue(borderlands3?.platforms?.contains(DeviceJogo.PC) == true)
         assertTrue(borderlands3?.platforms?.contains(DeviceJogo.PLAYSTATION) == true)
         assertTrue(borderlands3?.platforms?.contains(DeviceJogo.XBOX) == true)
+
+        val genshin = CatalogoJogosModoGamer.porId("genshin_impact")
+        assertTrue(genshin?.platforms?.contains(DeviceJogo.XBOX) == true)
     }
 
     @Test

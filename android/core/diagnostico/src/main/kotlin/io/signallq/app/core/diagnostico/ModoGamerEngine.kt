@@ -391,7 +391,7 @@ object CatalogoJogosModoGamer {
             // ── Casual ou mobile ─────────────────────────────────────────────────
             JogoCatalogoModoGamer("minecraft", "Minecraft", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
             JogoCatalogoModoGamer("roblox", "Roblox", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
-            JogoCatalogoModoGamer("genshin_impact", "Genshin Impact", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("genshin_impact", "Genshin Impact", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             JogoCatalogoModoGamer("dead_by_daylight", "Dead by Daylight", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
             JogoCatalogoModoGamer("destiny_2", "Destiny 2", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             JogoCatalogoModoGamer("brawl_stars", "Brawl Stars", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
