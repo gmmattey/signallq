@@ -401,7 +401,7 @@ object CatalogoJogosModoGamer {
             JogoCatalogoModoGamer("for_honor", "For Honor", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             JogoCatalogoModoGamer("borderlands_3", "Borderlands 3", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             JogoCatalogoModoGamer("new_world", "New World: Aeternum", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
-            JogoCatalogoModoGamer("squid_game_unleashed", "Squid Game: Unleashed", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("squid_game_unleashed", "Squid Game: Unleashed", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
             JogoCatalogoModoGamer("warhammer_darktide", "Warhammer 40,000: Darktide", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             JogoCatalogoModoGamer("marvel_snap", "MARVEL SNAP", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PC)),
             JogoCatalogoModoGamer("the_outlast_trials", "The Outlast Trials", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),

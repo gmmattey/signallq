@@ -192,6 +192,9 @@ class ModoGamerEngineTest {
 
         val genshin = CatalogoJogosModoGamer.porId("genshin_impact")
         assertTrue(genshin?.platforms?.contains(DeviceJogo.XBOX) == true)
+
+        val squidGame = CatalogoJogosModoGamer.porId("squid_game_unleashed")
+        assertEquals(listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE), squidGame?.platforms)
     }
 
     @Test
