@@ -183,6 +183,12 @@ class ModoGamerEngineTest {
 
         val overwatch2 = CatalogoJogosModoGamer.porId("overwatch_2")
         assertEquals(CategoriaJogoModoGamer.FPS_COMPETITIVO, overwatch2?.categoria)
+
+        val borderlands3 = CatalogoJogosModoGamer.porId("borderlands_3")
+        assertFalse(borderlands3?.platforms?.contains(DeviceJogo.SWITCH) == true)
+        assertTrue(borderlands3?.platforms?.contains(DeviceJogo.PC) == true)
+        assertTrue(borderlands3?.platforms?.contains(DeviceJogo.PLAYSTATION) == true)
+        assertTrue(borderlands3?.platforms?.contains(DeviceJogo.XBOX) == true)
     }
 
     @Test

@@ -225,5 +225,10 @@ fun resolverPadraoModoGamer(persistido: ModoGamerPadraoPersistido?): Pair<Seleca
                 ?.let { runCatching { CategoriaJogoModoGamer.valueOf(it) }.getOrNull() }
                 ?.let { SelecaoJogoModoGamer.ForaDoCatalogo(it) }
             ?: return null
+    val platforms = selecaoJogo.platforms
+    if (platforms != null && platforms.isNotEmpty()) {
+        val ehCompativel = device == DeviceJogo.TV_CLOUD || platforms.contains(device)
+        if (!ehCompativel) return null
+    }
     return selecaoJogo to device
 }

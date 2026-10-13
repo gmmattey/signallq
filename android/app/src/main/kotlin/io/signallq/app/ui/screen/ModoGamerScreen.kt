@@ -417,7 +417,11 @@ private fun ModoGamerSelecaoDeviceConteudo(
 ) {
     val c = LocalLkTokens.current
     val devicesExibidos = remember(platforms) {
-        platforms?.takeIf { it.isNotEmpty() } ?: DeviceJogo.entries
+        if (platforms != null && platforms.isNotEmpty()) {
+            if (platforms.contains(DeviceJogo.TV_CLOUD)) platforms else platforms + DeviceJogo.TV_CLOUD
+        } else {
+            DeviceJogo.entries
+        }
     }
     Column(modifier = modifier.fillMaxSize().padding(horizontal = LkSpacing.xl, vertical = LkSpacing.lg)) {
         Text(
