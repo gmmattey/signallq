@@ -350,77 +350,73 @@ data class JogoCatalogoModoGamer(
     val nome: String,
     val categoria: CategoriaJogoModoGamer,
     val specificProbeHost: String? = null,
+    val platforms: List<DeviceJogo>? = null,
 )
 
 /**
- * Catálogo de jogos do Modo gamer — 21 jogos, fundido pela issue #1487: os 9 originais do
- * protótipo #1474 (`diagnostico-guiado.jsx`, `GAMES`, issue #1483) + os 15 do catálogo do
- * fluxo legado "Jogos" (GH#935, `CatalogoJogos` aposentado — 16 entradas reais no código,
- * apesar do texto da issue #1487 citar "15"; contagem de código é a fonte de verdade)
- * deduplicados por jogo real (não por string exata — "EA Sports FC" do legado e "EA FC" do
- * novo são o mesmo jogo, assim como "VALORANT"/"Valorant"): Fortnite, Valorant, EA FC/EA
- * Sports FC e League of Legends já existiam nos dois catálogos, mantidos com o `gameId`/nome
- * do catálogo novo (que já pode estar persistido em `ModoGamerPadraoPersistido` desde
- * #1476). Os 12 jogos exclusivos do legado entraram mapeados numa das 6 categorias
- * existentes (nenhuma categoria nova criada) por gênero real do jogo, não pelo
- * `PerfilSensibilidade` antigo (que não sobrevive à fusão):
- * - BATTLE_ROYALE: Call of Duty: Warzone, Apex Legends, PUBG: Battlegrounds
- * - FPS_COMPETITIVO: Overwatch, Rainbow Six Siege, Marvel Rivals, THE FINALS,
- *   Counter-Strike 2, Rocket League (twitch competitivo em tempo real — mesmo perfil de
- *   latência/jitter/perda do FPS, apesar de não ser um shooter)
- * - MOBA: Dota 2
- * - CASUAL: Dead by Daylight, Destiny 2 (perfil `MULTIPLAYER_MODERADO` do legado — menos
- *   sensível a precisão de tiro em tempo real, mais próximo do perfil "download + latência
- *   básica" de CASUAL do que dos perfis competitivos)
- *
- * Nenhum jogo do legado mapeou para CLOUD_GAMING — categoria continua existindo só como
- * fallback genérico (mesmo comportamento de antes da fusão).
- *
- * Lista fechada por decisão de produto (issue #1476, "fora de escopo: lista infinita de
- * jogos") — jogo fora daqui cai em [CategoriaJogoModoGamer.OUTRO] (ou na categoria genérica
- * escolhida pelo usuário na tela de fallback), nunca em erro.
+ * Catálogo de jogos do Modo gamer — expandido com os jogos de servidores dedicados AWS GameLift
+ * e catálogo remoto. Inclui suporte a plataformas recomendadas/disponíveis por jogo.
  */
 object CatalogoJogosModoGamer {
     val jogos: List<JogoCatalogoModoGamer> =
         listOf(
             // ── Battle royale ────────────────────────────────────────────────────
-            JogoCatalogoModoGamer("freefire", "Free Fire", CategoriaJogoModoGamer.BATTLE_ROYALE),
-            JogoCatalogoModoGamer("fortnite", "Fortnite", CategoriaJogoModoGamer.BATTLE_ROYALE),
-            JogoCatalogoModoGamer("warzone", "Call of Duty: Warzone", CategoriaJogoModoGamer.BATTLE_ROYALE),
-            JogoCatalogoModoGamer("apex_legends", "Apex Legends", CategoriaJogoModoGamer.BATTLE_ROYALE),
-            JogoCatalogoModoGamer("pubg_battlegrounds", "PUBG: Battlegrounds", CategoriaJogoModoGamer.BATTLE_ROYALE),
+            JogoCatalogoModoGamer("freefire", "Free Fire", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("fortnite", "Fortnite", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("warzone", "Call of Duty: Warzone", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("apex_legends", "Apex Legends", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("pubg_battlegrounds", "PUBG: Battlegrounds", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("blood_strike", "Blood Strike", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("crossfar", "Crossfar", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("lost_rift", "Lost Rift", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("marauders", "Marauders", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("tacticool", "Tacticool", CategoriaJogoModoGamer.BATTLE_ROYALE, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PC)),
             // ── FPS competitivo ──────────────────────────────────────────────────
-            // Nenhuma entrada usa specificProbeHost — issue #1903: os hosts antigos aqui
-            // ("104.160.152.3", "gru.valve.net") eram dado morto herdado do legado "Jogos"
-            // (GH#935), nunca validados (gru.valve.net nem resolve em DNS) e quebrados como
-            // alvo HTTPS do PingExecutor (faltava scheme, sempre lançava
-            // IllegalArgumentException, capturado e tratado como "sem medição"). A sonda UDP
-            // real do beacon AWS GameLift (medirAmostrasRotaReal, ModoGamerConfigResultadoSection.kt)
-            // já roda para TODO jogo do catálogo, independente de specificProbeHost — não há
-            // equivalente Valve/Riot documentado e público pra substituir por um host real (ver
-            // achado da issue #1903: CS2/Dota2 usam matchmaking privado atrás do Steam Datagram
-            // Relay, sem servidor fixo queryable; integrar o SDK da Steam seria dependência
-            // estrutural nova, fora do escopo desta fatia). Removidos para não deixar dado morto
-            // no catálogo — sem specificProbeHost, o fallback HTTPS (quando a sonda UDP falha)
-            // usa BuildConfig.GAME_LATENCY_PROBE_URL, que funciona de verdade.
-            JogoCatalogoModoGamer("valorant", "Valorant", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("codm", "Call of Duty Mobile", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("ea_fc", "EA FC", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("overwatch", "Overwatch", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("rainbow_six_siege", "Rainbow Six Siege", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("marvel_rivals", "Marvel Rivals", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("the_finals", "THE FINALS", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("counter_strike_2", "Counter-Strike 2", CategoriaJogoModoGamer.FPS_COMPETITIVO),
-            JogoCatalogoModoGamer("rocket_league", "Rocket League", CategoriaJogoModoGamer.FPS_COMPETITIVO),
+            JogoCatalogoModoGamer("valorant", "Valorant", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PC, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX)),
+            JogoCatalogoModoGamer("codm", "Call of Duty Mobile", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("ea_fc", "EA FC", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("overwatch", "Overwatch", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("overwatch_2", "Overwatch 2", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("rainbow_six_siege", "Rainbow Six Siege", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("rainbow_six_mobile", "Rainbow Six Mobile", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("marvel_rivals", "Marvel Rivals", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("the_finals", "THE FINALS", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("counter_strike_2", "Counter-Strike 2", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("rocket_league", "Rocket League", CategoriaJogoModoGamer.FPS_COMPETITIVO, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
             // ── MOBA ─────────────────────────────────────────────────────────────
-            JogoCatalogoModoGamer("league_of_legends", "League of Legends", CategoriaJogoModoGamer.MOBA),
-            JogoCatalogoModoGamer("dota_2", "Dota 2", CategoriaJogoModoGamer.MOBA),
+            JogoCatalogoModoGamer("league_of_legends", "League of Legends", CategoriaJogoModoGamer.MOBA, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("dota_2", "Dota 2", CategoriaJogoModoGamer.MOBA, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("wild_rift", "League of Legends: Wild Rift", CategoriaJogoModoGamer.MOBA, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("predecessor", "Predecessor", CategoriaJogoModoGamer.MOBA, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
             // ── Casual ou mobile ─────────────────────────────────────────────────
-            JogoCatalogoModoGamer("minecraft", "Minecraft", CategoriaJogoModoGamer.CASUAL),
-            JogoCatalogoModoGamer("roblox", "Roblox", CategoriaJogoModoGamer.CASUAL),
-            JogoCatalogoModoGamer("genshin_impact", "Genshin Impact", CategoriaJogoModoGamer.CASUAL),
-            JogoCatalogoModoGamer("dead_by_daylight", "Dead by Daylight", CategoriaJogoModoGamer.CASUAL),
-            JogoCatalogoModoGamer("destiny_2", "Destiny 2", CategoriaJogoModoGamer.CASUAL),
+            JogoCatalogoModoGamer("minecraft", "Minecraft", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("roblox", "Roblox", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("genshin_impact", "Genshin Impact", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("dead_by_daylight", "Dead by Daylight", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("destiny_2", "Destiny 2", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("brawl_stars", "Brawl Stars", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("palworld", "Palworld", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("rust", "Rust", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("rocket_league_sideswipe", "Rocket League Sideswipe", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("for_honor", "For Honor", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("borderlands_3", "Borderlands 3", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("new_world", "New World: Aeternum", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("squid_game_unleashed", "Squid Game: Unleashed", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
+            JogoCatalogoModoGamer("warhammer_darktide", "Warhammer 40,000: Darktide", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("marvel_snap", "MARVEL SNAP", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("the_outlast_trials", "The Outlast Trials", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("tribes_of_midgard", "Tribes of Midgard", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("star_wars_hunters", "Star Wars: Hunters", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("rematch", "Rematch", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("super_mega_baseball_4", "Super Mega Baseball 4", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("legacy_steel_and_sorcery", "Legacy: Steel & Sorcery", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("ninjala", "Ninjala", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("roller_champions", "Roller Champions", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC, DeviceJogo.SWITCH)),
+            JogoCatalogoModoGamer("ghost_recon_breakpoint", "Ghost Recon Breakpoint", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("dark_alliance", "Dungeons & Dragons: Dark Alliance", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("wolcen_lords_of_mayhem", "Wolcen: Lords of Mayhem", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PLAYSTATION, DeviceJogo.XBOX, DeviceJogo.PC)),
+            JogoCatalogoModoGamer("streamline", "Streamline", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.PC)),
+            JogoCatalogoModoGamer("ghost_war", "Ghost War", CategoriaJogoModoGamer.CASUAL, platforms = listOf(DeviceJogo.ANDROID, DeviceJogo.IPHONE)),
         )
 
     fun porId(gameId: String): JogoCatalogoModoGamer? = jogos.find { it.gameId == gameId }

@@ -1,5 +1,6 @@
 package io.signallq.app.modogamer
 
+import io.signallq.app.core.datastore.ModoGamerPadraoPersistido
 import io.signallq.app.core.diagnostico.CatalogoJogosModoGamer
 import io.signallq.app.core.diagnostico.CategoriaJogoModoGamer
 import io.signallq.app.core.diagnostico.DeviceJogo
@@ -301,4 +302,31 @@ class ModoGamerViewModelTest {
             assertEquals("PC", devicePersistido)
             assertFalse((vm.etapa.value as ModoGamerEtapa.Resultado).salvoComoPadrao)
         }
+
+    // ── Resolução de padrão salvo com validação de plataforma (review Codex) ──
+
+    @Test
+    fun `resolverPadraoModoGamer rejeita combinacao incompativel de jogo e aparelho`() {
+        // CS2 é exclusivo para PC no catálogo. Se persistido com ANDROID, deve ser rejeitado.
+        val persistidoIncompativel = ModoGamerPadraoPersistido(jogoId = "counter_strike_2", categoriaFallback = null, deviceId = "ANDROID")
+        val resolvido = resolverPadraoModoGamer(persistidoIncompativel)
+        assertNull(resolvido)
+    }
+
+    @Test
+    fun `resolverPadraoModoGamer aceita combinacao compativel de jogo e aparelho`() {
+        val persistidoCompativel = ModoGamerPadraoPersistido(jogoId = "counter_strike_2", categoriaFallback = null, deviceId = "PC")
+        val resolvido = resolverPadraoModoGamer(persistidoCompativel)
+        assertEquals(DeviceJogo.PC, resolvido?.second)
+        assertEquals("counter_strike_2", (resolvido?.first as? SelecaoJogoModoGamer.Catalogado)?.jogo?.gameId)
+    }
+
+    @Test
+    fun `resolverPadraoModoGamer aceita TV_CLOUD mesmo para jogo com plataformas restritas`() {
+        // Jogos PC-only podem ser jogados via TV/Cloud streaming
+        val persistidoTvCloud = ModoGamerPadraoPersistido(jogoId = "counter_strike_2", categoriaFallback = null, deviceId = "TV_CLOUD")
+        val resolvido = resolverPadraoModoGamer(persistidoTvCloud)
+        assertEquals(DeviceJogo.TV_CLOUD, resolvido?.second)
+        assertEquals("counter_strike_2", (resolvido?.first as? SelecaoJogoModoGamer.Catalogado)?.jogo?.gameId)
+    }
 }

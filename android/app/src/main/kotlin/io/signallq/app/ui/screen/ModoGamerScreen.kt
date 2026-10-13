@@ -205,6 +205,7 @@ internal fun ModoGamerScreen(
                 ModoGamerSelecaoDeviceConteudo(
                     modifier = Modifier.padding(padding),
                     nomeJogo = etapaAtual.selecaoJogo.nomeExibido,
+                    platforms = etapaAtual.selecaoJogo.platforms,
                     onSelecionarDevice = viewModel::selecionarDevice,
                 )
             is ModoGamerEtapa.AguardandoTesteRapido ->
@@ -411,9 +412,17 @@ private fun ModoGamerSelecaoCategoriaFallback(
 private fun ModoGamerSelecaoDeviceConteudo(
     modifier: Modifier = Modifier,
     nomeJogo: String,
+    platforms: List<DeviceJogo>?,
     onSelecionarDevice: (DeviceJogo) -> Unit,
 ) {
     val c = LocalLkTokens.current
+    val devicesExibidos = remember(platforms) {
+        if (platforms != null && platforms.isNotEmpty()) {
+            if (platforms.contains(DeviceJogo.TV_CLOUD)) platforms else platforms + DeviceJogo.TV_CLOUD
+        } else {
+            DeviceJogo.entries
+        }
+    }
     Column(modifier = modifier.fillMaxSize().padding(horizontal = LkSpacing.xl, vertical = LkSpacing.lg)) {
         Text(
             text = "Em qual aparelho você joga $nomeJogo?",
@@ -422,7 +431,7 @@ private fun ModoGamerSelecaoDeviceConteudo(
             color = c.textPrimary,
         )
         Spacer(Modifier.height(LkSpacing.lg))
-        DeviceJogo.entries.forEach { device ->
+        devicesExibidos.forEach { device ->
             ModoGamerListItem(titulo = device.label, subtitulo = null, icone = device.icone(), onClick = { onSelecionarDevice(device) })
             Spacer(Modifier.height(LkSpacing.sm))
         }
