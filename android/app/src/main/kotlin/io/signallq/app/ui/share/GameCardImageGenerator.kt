@@ -184,8 +184,10 @@ object GameCardImageGenerator {
                 "codm", "call_of_duty_mobile" -> R.drawable.game_art_codm
                 "apex", "apex_legends" -> R.drawable.game_art_apex_legends
                 "rocket", "rocket_league" -> R.drawable.game_art_rocket_league
-                "overwatch", "overwatch_2" -> R.drawable.game_art_overwatch
+                "overwatch" -> R.drawable.game_art_overwatch
+                "overwatch_2" -> R.drawable.game_art_overwatch_2
                 "rainbowsix", "rainbow_six_siege" -> R.drawable.game_art_rainbow_six_siege
+                "rainbow_six_mobile" -> R.drawable.game_art_rainbow_six_mobile
                 "ea_fc", "fc", "eafc" -> R.drawable.game_art_ea_sports_fc
                 "marvel_rivals" -> R.drawable.game_art_marvel_rivals
                 "the_finals" -> R.drawable.game_art_the_finals
@@ -199,6 +201,36 @@ object GameCardImageGenerator {
                 "minecraft" -> R.drawable.game_art_minecraft
                 "dead_by_daylight" -> R.drawable.game_art_dead_by_daylight
                 "pubg", "pubg_battlegrounds", "pubg_mobile" -> R.drawable.game_art_pubg_battlegrounds
+                "brawl_stars" -> R.drawable.game_art_brawl_stars
+                "wild_rift" -> R.drawable.game_art_wild_rift
+                "blood_strike" -> R.drawable.game_art_blood_strike
+                "palworld" -> R.drawable.game_art_palworld
+                "rust" -> R.drawable.game_art_rust
+                "rocket_league_sideswipe" -> R.drawable.game_art_rocket_league_sideswipe
+                "for_honor" -> R.drawable.game_art_for_honor
+                "borderlands_3" -> R.drawable.game_art_borderlands_3
+                "new_world" -> R.drawable.game_art_new_world
+                "squid_game_unleashed" -> R.drawable.game_art_squid_game_unleashed
+                "warhammer_darktide" -> R.drawable.game_art_warhammer_darktide
+                "marvel_snap" -> R.drawable.game_art_marvel_snap
+                "the_outlast_trials" -> R.drawable.game_art_the_outlast_trials
+                "tribes_of_midgard" -> R.drawable.game_art_tribes_of_midgard
+                "crossfar" -> R.drawable.game_art_crossfar
+                "lost_rift" -> R.drawable.game_art_lost_rift
+                "star_wars_hunters" -> R.drawable.game_art_star_wars_hunters
+                "rematch" -> R.drawable.game_art_rematch
+                "predecessor" -> R.drawable.game_art_predecessor
+                "super_mega_baseball_4" -> R.drawable.game_art_super_mega_baseball_4
+                "marauders" -> R.drawable.game_art_marauders
+                "legacy_steel_and_sorcery" -> R.drawable.game_art_legacy_steel_and_sorcery
+                "ninjala" -> R.drawable.game_art_ninjala
+                "roller_champions" -> R.drawable.game_art_roller_champions
+                "ghost_recon_breakpoint" -> R.drawable.game_art_ghost_recon_breakpoint
+                "dark_alliance" -> R.drawable.game_art_dark_alliance
+                "wolcen_lords_of_mayhem" -> R.drawable.game_art_wolcen_lords_of_mayhem
+                "streamline" -> R.drawable.game_art_streamline
+                "tacticool" -> R.drawable.game_art_tacticool
+                "ghost_war" -> R.drawable.game_art_ghost_war
                 else -> null
             }
         return if (resId != null) {

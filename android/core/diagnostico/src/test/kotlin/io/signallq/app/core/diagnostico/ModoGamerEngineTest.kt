@@ -157,18 +157,32 @@ class ModoGamerEngineTest {
         assertEquals(DiagnosticStatus.ok, r.status)
     }
 
-    // ── Catálogo de jogos (fundido pela issue #1487 — 9 do #1476 + 12 exclusivos de GH#935) ──
+    // ── Catálogo de jogos expandido (53 jogos com suporte a servidores AWS GameLift) ──
 
     @Test
-    fun `catalogo fundido tem exatamente 21 jogos com ids unicos`() {
-        assertEquals(21, CatalogoJogosModoGamer.jogos.size)
+    fun `catalogo expandido tem exatamente 53 jogos com ids unicos`() {
+        assertEquals(53, CatalogoJogosModoGamer.jogos.size)
         assertEquals(
-            21,
+            53,
             CatalogoJogosModoGamer.jogos
                 .map { it.gameId }
                 .toSet()
                 .size,
         )
+    }
+
+    @Test
+    fun `jogos do catalogo definem plataformas compativeis`() {
+        val cs2 = CatalogoJogosModoGamer.porId("counter_strike_2")
+        assertEquals(listOf(DeviceJogo.PC), cs2?.platforms)
+
+        val fortnite = CatalogoJogosModoGamer.porId("fortnite")
+        assertTrue(fortnite?.platforms?.contains(DeviceJogo.PC) == true)
+        assertTrue(fortnite?.platforms?.contains(DeviceJogo.ANDROID) == true)
+        assertTrue(fortnite?.platforms?.contains(DeviceJogo.PLAYSTATION) == true)
+
+        val overwatch2 = CatalogoJogosModoGamer.porId("overwatch_2")
+        assertEquals(CategoriaJogoModoGamer.FPS_COMPETITIVO, overwatch2?.categoria)
     }
 
     @Test

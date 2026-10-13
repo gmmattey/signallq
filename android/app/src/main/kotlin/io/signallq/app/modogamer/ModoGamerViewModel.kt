@@ -18,6 +18,7 @@ sealed interface SelecaoJogoModoGamer {
     val categoria: CategoriaJogoModoGamer
     val nomeExibido: String
     val specificProbeHost: String?
+    val platforms: List<DeviceJogo>?
 
     data class Catalogado(
         val jogo: JogoCatalogoModoGamer,
@@ -25,6 +26,7 @@ sealed interface SelecaoJogoModoGamer {
         override val categoria get() = jogo.categoria
         override val nomeExibido get() = jogo.nome
         override val specificProbeHost get() = jogo.specificProbeHost
+        override val platforms get() = jogo.platforms
     }
 
     data class ForaDoCatalogo(
@@ -32,6 +34,7 @@ sealed interface SelecaoJogoModoGamer {
     ) : SelecaoJogoModoGamer {
         override val nomeExibido get() = categoria.label
         override val specificProbeHost get() = null
+        override val platforms: List<DeviceJogo>? get() = null
     }
 }
 
