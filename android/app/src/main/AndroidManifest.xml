@@ -52,6 +52,20 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Link público de campanha/download. A Activity abre o shell no
+                 estado seguro padrão; a rota não dispara medição nem carrega
+                 parâmetros externos como dados do produto. A verificação só
+                 fica ativa quando o assetlinks.json usar o certificado de
+                 assinatura da Play Console. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="signallq.com"
+                    android:pathPrefix="/app" />
+            </intent-filter>
         </activity>
 
         <!-- AdMob (issue #555): App ID de producao (Luiz criou a conta AdMob em 2026-07-20).
