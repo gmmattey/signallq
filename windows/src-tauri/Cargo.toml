@@ -1,0 +1,24 @@
+[package]
+name = "signallq-windows"
+version = "0.1.0"
+description = "Diagnostico de conectividade SignallQ para Windows"
+edition = "2021"
+
+[lib]
+name = "signallq_windows_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.5.1", features = [] }
+
+[dependencies]
+dirs = "6.0.0"
+futures-util = "0.3.31"
+reqwest = { version = "0.12.24", default-features = false, features = ["rustls-tls", "stream"] }
+rusqlite = { version = "0.37.0", features = ["bundled"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+tauri = { version = "2.9.5", features = [] }
+tauri-plugin-opener = "2.5.3"
+tokio = { version = "1.48.0", features = ["net", "time"] }
+uuid = { version = "1.18.1", features = ["v4"] }
