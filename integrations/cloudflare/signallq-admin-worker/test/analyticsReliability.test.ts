@@ -198,6 +198,11 @@ test('métricas de sites mantêm fonte sem token e sem eventos explicitamente in
 
   const invalid = await handleSitesMetrics(new Request('https://x/admin/metrics/sites?period=1d'), buildEnv(new SitesDb() as any))
   assert.equal(invalid.status, 400)
+
+  // O contrato canônico é 7d|30d|90d. Assim a SPA não volta a enviar
+  // números puros e transformar uma resposta válida de fonte parcial em erro total.
+  const missingSuffix = await handleSitesMetrics(new Request('https://x/admin/metrics/sites?period=30'), buildEnv(new SitesDb() as any))
+  assert.equal(missingSuffix.status, 400)
 })
 
 test('ranking de páginas de sites preserva o contrato path/page_views', async () => {

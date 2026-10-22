@@ -172,15 +172,24 @@ function aggregate(items: ProductMetrics[], key: MetricKey): number | null {
 function SourceNotice({ items }: { items: ProductMetrics[] }) {
   const unavailable = items.flatMap((item) => [item.availability.telemetry, item.availability.webAnalytics]).filter((item) => !item.available);
   if (!unavailable.length) return null;
-  return <p className="notice" role="status">Dados parciais: {unavailable[0]?.reason ?? "uma ou mais fontes estão indisponíveis."}</p>;
+  return <div className="notice" role="status"><strong>Atualização parcial</strong><span>{unavailable[0]?.reason ?? "Uma ou mais fontes estão indisponíveis."} O último retrato confiável continua visível abaixo.</span></div>;
 }
 
-function MetricCard({ label, value, hint }: { label: string; value: number | null; hint: string }) {
+function MetricCard({ label, value, hint, source }: { label: string; value: number | null; hint: string; source: string }) {
   return <article className="metric-card">
-    <p>{label}</p>
-    <strong className={value === null ? "unavailable" : ""}>{formatNumber(value)}</strong>
-    <small>{hint}</small>
+    <div className="metric-card__head"><p>{label}</p><span>{source}</span></div>
+    <strong className={value === null ? "unavailable" : ""}>{value === null ? "—" : formatNumber(value)}</strong>
+    <small>{value === null ? `Indisponível · ${hint}` : hint}</small>
   </article>;
+}
+
+function SourceHealth({ items }: { items: ProductMetrics[] }) {
+  const telemetry = items.filter((item) => item.availability.telemetry.available).length;
+  const analytics = items.filter((item) => item.availability.webAnalytics.available).length;
+  return <div className="source-health" aria-label="Saúde das fontes">
+    <span><i className={telemetry === items.length ? "is-ready" : "is-warn"} aria-hidden="true" />Telemetria <b>{telemetry}/{items.length}</b></span>
+    <span><i className={analytics === items.length ? "is-ready" : "is-warn"} aria-hidden="true" />Web Analytics <b>{analytics}/{items.length}</b></span>
+  </div>;
 }
 
 function LineChart({ data, metric }: { data: SeriesPoint[]; metric: MetricKey }) {
@@ -223,6 +232,21 @@ function RankingTable({ title, rows: data, empty, valueLabel, source }: { title:
   return <section className="panel ranking"><h2>{title}</h2><p className="table-source">{source}</p>{data.length ? <table><thead><tr><th>Origem</th><th>{valueLabel}</th></tr></thead><tbody>{data.slice(0, 6).map((row) => <tr key={row.label}><td>{row.label}</td><td>{formatNumber(row.value)}</td></tr>)}</tbody></table> : <p className="empty">{empty}</p>}</section>;
 }
 
+function sourceLabel(source: SourceStatus): string {
+  return source.available ? "Disponível" : "Indisponível";
+}
+
+function safeFailureMessage(response: Response, payload: unknown): string {
+  if (response.status === 401 || response.status === 403) return "Seu acesso ao painel não foi autorizado.";
+  const candidate = payload && typeof payload === "object"
+    ? (payload as { message?: unknown; error?: unknown; detail?: unknown; reason?: unknown })
+    : {};
+  const detail = [candidate.message, candidate.error, candidate.detail, candidate.reason]
+    .find((value): value is string => typeof value === "string" && value.trim().length > 0)
+    ?.replace(/\s+/g, " ").trim().slice(0, 180);
+  return detail ? `Não foi possível atualizar os dados: ${detail}` : "Não foi possível atualizar os dados agora.";
+}
+
 function App() {
   const [period, setPeriod] = useState<Period>(30);
   const [selected, setSelected] = useState<ProductId | "all">("all");
@@ -234,11 +258,12 @@ function App() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const response = await fetch(`/admin/metrics/sites?period=${period}`, { credentials: "same-origin", headers: { Accept: "application/json" } });
-      if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "Seu acesso ao painel não foi autorizado." : "Não foi possível atualizar os dados.");
-      setData(normalize(await response.json(), period));
+      const response = await fetch(`/admin/metrics/sites?period=${period}d`, { credentials: "same-origin", headers: { Accept: "application/json" } });
+      const payload: unknown = response.headers.get("content-type")?.includes("application/json") ? await response.json().catch(() => null) : null;
+      if (!response.ok) throw new Error(safeFailureMessage(response, payload));
+      setData(normalize(payload, period));
     } catch (cause) {
-      setData(null); setError(cause instanceof Error ? cause.message : "Não foi possível atualizar os dados.");
+      setError(cause instanceof Error ? cause.message : "Não foi possível atualizar os dados.");
     } finally { setLoading(false); }
   }, [period]);
 
@@ -257,19 +282,29 @@ function App() {
   const ranking = useMemo(() => mergeRows(visible.flatMap((item) => item.pages)), [visible]);
   const referrers = useMemo(() => mergeRows(visible.flatMap((item) => item.referrers)), [visible]);
 
+  const isTotalFailure = !data && Boolean(error);
   return <div className="shell">
-    <aside><a className="brand" href="/" aria-label="SignallQ admin"><span>signallQ</span><small>ADMIN</small></a><nav aria-label="Navegação principal"><a className="active" href="#sites" aria-current="page">Sites</a></nav><p className="side-note">Métricas de crescimento e conversão web.</p></aside>
     <main id="sites">
-      <header className="topbar"><div><p className="eyebrow">ECOSSISTEMA</p><h1>Sites</h1><p className="subtle">Acompanhe tráfego e intenção de conversão sem confundir clique com instalação.</p></div><div className="toolbar"><label>Período<select value={period} onChange={(event) => setPeriod(Number(event.target.value) as Period)} aria-label="Período"><option value={7}>7 dias</option><option value={30}>30 dias</option><option value={90}>90 dias</option></select></label><button onClick={() => void load()} disabled={loading}>{loading ? "Atualizando…" : "Atualizar"}</button></div></header>
-      <div className="filters" role="group" aria-label="Filtrar produto"><span>Produto</span>{["all", ...products.map((item) => item.id)].map((item) => <button key={item} className={selected === item ? "selected" : ""} aria-pressed={selected === item} onClick={() => setSelected(item as ProductId | "all")}>{item === "all" ? "Todos" : products.find((product) => product.id === item)?.name}</button>)}</div>
-      {loading && !data ? <section className="state" aria-live="polite"><span className="spinner" />Carregando métricas…</section> : error ? <section className="state error" role="alert"><h2>Não foi possível carregar o painel</h2><p>{error}</p><button onClick={() => void load()}>Tentar novamente</button></section> : !data || !visible.length ? <section className="state"><h2>Nenhum dado disponível</h2><p>Os eventos aparecerão aqui quando as fontes estiverem configuradas e receberem coleta.</p></section> : <>
+      <header className="topbar">
+        <a className="brand" href="#sites" aria-label="SignallQ Admin, Sites"><span>signallQ</span><small>ADMIN / SITES</small></a>
+        <div className="toolbar">
+          <div className="periods" role="group" aria-label="Período">{([7, 30, 90] as Period[]).map((value) => <button key={value} type="button" className={period === value ? "selected" : ""} aria-pressed={period === value} onClick={() => setPeriod(value)}>{value}d</button>)}</div>
+          <button className="refresh" type="button" onClick={() => void load()} disabled={loading}>{loading ? "Atualizando…" : "Atualizar"}</button>
+        </div>
+      </header>
+      <section className="hero" aria-labelledby="page-title">
+        <div><p className="eyebrow">ADMINISTRAÇÃO · DADOS AGREGADOS</p><h1 id="page-title">Visão dos sites</h1><p className="subtle">Tráfego, intenção e testes — sem chamar clique de instalação.</p></div>
+        {data && <div className="freshness"><span>Última leitura</span><strong>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt))}</strong><SourceHealth items={visible} /></div>}
+      </section>
+      <div className="filters" role="group" aria-label="Filtrar produto"><span>Produto</span>{["all", ...products.map((item) => item.id)].map((item) => <button type="button" key={item} className={selected === item ? "selected" : ""} aria-pressed={selected === item} onClick={() => setSelected(item as ProductId | "all")}>{item === "all" ? "Todos" : products.find((product) => product.id === item)?.name}</button>)}</div>
+      {loading && !data ? <section className="state" aria-live="polite"><span className="spinner" />Carregando a leitura mais recente…</section> : isTotalFailure ? <section className="state error" role="alert"><p className="eyebrow">ATUALIZAÇÃO INTERROMPIDA</p><h2>O painel não respondeu agora.</h2><p>{error}</p><button type="button" onClick={() => void load()}>Tentar novamente</button></section> : !data || !visible.length ? <section className="state"><h2>Ainda não há leitura para mostrar.</h2><p>Os eventos aparecerão quando as fontes estiverem configuradas e começarem a receber coleta.</p></section> : <>
+        {error && <div className="notice" role="status"><strong>Atualização parcial</strong><span>{error} O último retrato confiável continua visível abaixo.</span></div>}
         <SourceNotice items={visible} />
-        <section className="metrics" aria-label="Resumo do ecossistema"><MetricCard label="Visitas" value={aggregate(visible, "visits")} hint="Sessões web medidas" /><MetricCard label="CTAs de loja" value={aggregate(visible, "storeCtaClicks")} hint="Clique não confirma instalação" /><MetricCard label="Testes iniciados" value={aggregate(visible, "testStarts")} hint="Ação iniciada no site" /></section>
-        <section className="panel"><div className="panel-heading"><div><h2>Comparação por produto</h2><p>Dados disponíveis no período selecionado.</p></div></div><div className="comparison" role="list">{visible.map((item) => <article key={item.product} role="listitem" className="product-card" style={{ "--accent": products.find((product) => product.id === item.product)?.accent } as React.CSSProperties}><h3>{products.find((product) => product.id === item.product)?.name}</h3><dl><div><dt>Visitas</dt><dd>{formatNumber(item.metrics.visits)}</dd></div><div><dt>CTA loja</dt><dd>{formatNumber(item.metrics.storeCtaClicks)}</dd></div><div><dt>Teste</dt><dd>{formatNumber(item.metrics.testStarts)}</dd></div></dl><p className={item.availability.webAnalytics.available && item.availability.telemetry.available ? "source-ok" : "source-pending"}>{item.availability.webAnalytics.available && item.availability.telemetry.available ? "Fontes disponíveis" : "Dados parcialmente disponíveis"}</p></article>)}</div></section>
-        <section className="panel"><div className="panel-heading"><div><h2>Evolução diária</h2><p>Dados agregados por dia.</p></div><label className="metric-select">Métrica<select value={metric} onChange={(event) => setMetric(event.target.value as MetricKey)}><option value="visits">Visitas</option><option value="storeCtaClicks">CTAs de loja</option><option value="testStarts">Testes iniciados</option></select></label></div><LineChart data={dashboardSeries} metric={metric} /></section>
-        <section className="data-grid"><RankingTable title="Visualizações (telemetria)" rows={ranking} empty="A telemetria de visualizações ainda não está disponível." valueLabel="Visualizações" source="Eventos screen_view coletados pelo site; não são pageviews estimados por requisições HTTP." /><RankingTable title="Origens por requisições HTTP" rows={referrers} empty="A fonte de origens HTTP ainda não está disponível." valueLabel="Requisições" source="Cloudflare httpRequestsAdaptiveGroups; cada valor é uma requisição HTTP, não uma visita." /></section>
-        <section className="panel funnel"><div><h2>Funil de intenção</h2><p>O clique na loja é intenção; a instalação acontece fora deste painel.</p></div><ol>{(["visits", "storeCtaClicks", "testStarts"] as MetricKey[]).map((key, index) => <li key={key}><span>{index + 1}</span><div><strong>{metricLabels[key]}</strong><b>{formatNumber(aggregate(visible, key))}</b></div></li>)}</ol></section>
-        <p className="updated">Atualizado em {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt))}.</p>
+        <section className="metrics" aria-label="Resumo do ecossistema"><MetricCard label="Visitas" value={aggregate(visible, "visits")} hint="Sessões web medidas" source="Web Analytics" /><MetricCard label="CTAs de loja" value={aggregate(visible, "storeCtaClicks")} hint="Clique não confirma instalação" source="Telemetria" /><MetricCard label="Testes iniciados" value={aggregate(visible, "testStarts")} hint="Ação iniciada no site" source="Telemetria" /></section>
+        <section className="panel comparison-panel"><div className="panel-heading"><div><p className="eyebrow">ECOSSISTEMA</p><h2>Comparação por produto</h2><p>Somente dados que as fontes confirmaram neste período.</p></div></div><div className="comparison" role="list">{visible.map((item) => <article key={item.product} role="listitem" className="product-card" style={{ "--accent": products.find((product) => product.id === item.product)?.accent } as React.CSSProperties}><div className="product-card__top"><h3>{products.find((product) => product.id === item.product)?.name}</h3><span className="product-accent" aria-hidden="true" /></div><dl><div><dt>Visitas</dt><dd>{item.metrics.visits === null ? "—" : formatNumber(item.metrics.visits)}</dd></div><div><dt>CTA loja</dt><dd>{item.metrics.storeCtaClicks === null ? "—" : formatNumber(item.metrics.storeCtaClicks)}</dd></div><div><dt>Teste</dt><dd>{item.metrics.testStarts === null ? "—" : formatNumber(item.metrics.testStarts)}</dd></div></dl><div className="source-badges"><span className={item.availability.webAnalytics.available ? "available" : "unavailable"}>Web Analytics · {sourceLabel(item.availability.webAnalytics)}</span><span className={item.availability.telemetry.available ? "available" : "unavailable"}>Telemetria · {sourceLabel(item.availability.telemetry)}</span></div></article>)}</div></section>
+        <section className="content-grid"><section className="panel series-panel"><div className="panel-heading"><div><p className="eyebrow">MOVIMENTO</p><h2>Evolução diária</h2><p>Soma diária das fontes disponíveis.</p></div><label className="metric-select">Métrica<select value={metric} onChange={(event) => setMetric(event.target.value as MetricKey)}><option value="visits">Visitas</option><option value="storeCtaClicks">CTAs de loja</option><option value="testStarts">Testes iniciados</option></select></label></div><LineChart data={dashboardSeries} metric={metric} /></section>
+          <section className="panel funnel"><div><p className="eyebrow">INTENÇÃO</p><h2>Funil dos sites</h2><p>O clique na loja não confirma uma instalação.</p></div><ol>{(["visits", "storeCtaClicks", "testStarts"] as MetricKey[]).map((key, index) => <li key={key}><span>{index + 1}</span><div><strong>{metricLabels[key]}</strong><b>{aggregate(visible, key) === null ? "—" : formatNumber(aggregate(visible, key))}</b></div></li>)}</ol></section></section>
+        <section className="data-grid"><RankingTable title="Páginas mais vistas" rows={ranking} empty="A telemetria de visualizações ainda não está disponível." valueLabel="Visualizações" source="Eventos screen_view coletados pelo site." /><RankingTable title="Origens de tráfego" rows={referrers} empty="A fonte de origens HTTP ainda não está disponível." valueLabel="Requisições" source="Requisições HTTP; não equivale a visitas." /></section>
       </>}
     </main>
   </div>;
