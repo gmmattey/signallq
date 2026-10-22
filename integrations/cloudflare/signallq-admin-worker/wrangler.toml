@@ -1,9 +1,12 @@
 name = "signallq-admin"
 main = "src/index.ts"
 compatibility_date = "2026-06-21"
+# Mantém a rota workers.dev ativa apenas para que o Worker possa responder
+# explicitamente 403 fora do domínio administrativo canônico.
+workers_dev = true
 
 [vars]
-ALLOWED_ORIGIN = "https://signallq-admin-panel.pages.dev"
+ALLOWED_ORIGIN = "https://admin.signallq.com"
 FIREBASE_PROJECT_ID = "signallq-app"
 FIREBASE_GA4_PROPERTY_ID = "543555227"
 # #883 — nao sao secret (account_id e database_id ja sao publicos no dashboard/neste arquivo).
@@ -24,16 +27,15 @@ CLOUDFLARE_D1_DATABASE_ID = "952cb253-1a84-48ac-9018-a4ca31036915"
 # real contra a API.
 FIREBASE_SYNC_ENABLED = "false"
 # Configuração não secreta do Cloudflare Access para `admin.signallq.com`.
-# Definir os valores reais no dashboard/CI autorizado; sem ambos, toda rota
-# administrativa responde 401 de forma segura.
-# TEAM_DOMAIN = "<team>.cloudflareaccess.com"
-# ACCESS_AUD = "<application-audience-tag>"
+# Sem ambos, toda rota administrativa responde 401 de forma segura.
+TEAM_DOMAIN = "giammattey-luiz.cloudflareaccess.com"
+ACCESS_AUD = "f436aa5fb23ad33b6c2321936357dcc0c63191b05397390e653103de3b370df7"
 
 # Zone IDs não são segredos. Necessários para o adaptador server-side de
 # Analytics; sem eles a fonte de tráfego aparece como indisponível, nunca zero.
-# SIGNALLQ_ZONE_TAG = "<zone-id>"
-# LAGCHECK_ZONE_TAG = "<zone-id>"
-# LINKA_ZONE_TAG = "<zone-id>"
+SIGNALLQ_ZONE_TAG = "08c832af414402053b5be231847fe87a"
+LAGCHECK_ZONE_TAG = "08c832af414402053b5be231847fe87a"
+LINKA_ZONE_TAG = "08c832af414402053b5be231847fe87a"
 
 # DIAGNOSTIC_PROXY_SECRET (Refs #1446): compartilhada com o signallq-diagnostic-worker (mesmo
 #   valor nos dois lados) — autentica o proxy de /admin/diagnostic/* worker-to-worker, sem expor
@@ -77,6 +79,10 @@ binding = "ASSETS"
 # A API precisa interceptar tudo antes do asset handler para proteger inclusive
 # o index e os deep links com o JWT do Cloudflare Access.
 run_worker_first = true
+
+[[routes]]
+pattern = "admin.signallq.com"
+custom_domain = true
 
 # Refs #1446 — service binding pro signallq-diagnostic-worker, usado só pra fazer proxy de
 # /admin/diagnostic/* (ver proxyDiagnosticAdmin em src/index.ts). Mesmo padrão do GH#767
