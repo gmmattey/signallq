@@ -9,6 +9,7 @@ type MetricKey = "visits" | "storeCtaClicks" | "testStarts";
 interface SourceStatus {
   available: boolean;
   reason?: string;
+  state: "available" | "no_data" | "unavailable";
 }
 
 interface SeriesPoint {
@@ -63,16 +64,18 @@ function integerOrNull(value: unknown): number | null {
 
 function status(value: unknown): SourceStatus {
   if (typeof value === "string") {
-    return value === "available"
-      ? { available: true }
-      : { available: false, reason: value === "not_configured" ? "Fonte ainda não configurada." : value === "no_data" ? "Ainda não há dados para este período." : "Fonte temporariamente indisponível." };
+    if (value === "available") return { available: true, state: "available" };
+    if (value === "no_data") return { available: false, state: "no_data", reason: "Aguardando a primeira leitura deste período." };
+    return { available: false, state: "unavailable", reason: value === "not_configured" ? "Fonte ainda não configurada." : "Fonte temporariamente indisponível." };
   }
-  if (!value || typeof value !== "object") return { available: false, reason: "Fonte sem resposta." };
-  const candidate = value as { available?: unknown; reason?: unknown; status?: unknown };
+  if (!value || typeof value !== "object") return { available: false, state: "unavailable", reason: "Fonte sem resposta." };
+  const candidate = value as { available?: unknown; reason?: unknown; status?: unknown; state?: unknown };
   if (typeof candidate.status === "string") return status(candidate.status);
+  if (typeof candidate.state === "string") return status(candidate.state);
   return {
     available: candidate.available === true,
     reason: typeof candidate.reason === "string" ? candidate.reason : undefined,
+    state: candidate.available === true ? "available" : "unavailable",
   };
 }
 
@@ -172,7 +175,8 @@ function aggregate(items: ProductMetrics[], key: MetricKey): number | null {
 function SourceNotice({ items }: { items: ProductMetrics[] }) {
   const unavailable = items.flatMap((item) => [item.availability.telemetry, item.availability.webAnalytics]).filter((item) => !item.available);
   if (!unavailable.length) return null;
-  return <div className="notice" role="status"><strong>Atualização parcial</strong><span>{unavailable[0]?.reason ?? "Uma ou mais fontes estão indisponíveis."} O último retrato confiável continua visível abaixo.</span></div>;
+  const hasFailure = unavailable.some((source) => source.state === "unavailable");
+  return <div className="notice" role="status"><strong>{hasFailure ? "Atualização parcial" : "Coleta em andamento"}</strong><span>{unavailable[0]?.reason ?? "Uma ou mais fontes estão indisponíveis."} {hasFailure ? "O último retrato confiável continua visível abaixo." : "Os números aparecerão após as primeiras leituras."}</span></div>;
 }
 
 function MetricCard({ label, value, hint, source }: { label: string; value: number | null; hint: string; source: string }) {
@@ -190,6 +194,24 @@ function SourceHealth({ items }: { items: ProductMetrics[] }) {
     <span><i className={telemetry === items.length ? "is-ready" : "is-warn"} aria-hidden="true" />Telemetria <b>{telemetry}/{items.length}</b></span>
     <span><i className={analytics === items.length ? "is-ready" : "is-warn"} aria-hidden="true" />Web Analytics <b>{analytics}/{items.length}</b></span>
   </div>;
+}
+
+function allSourcesAreAwaitingData(items: ProductMetrics[]): boolean {
+  const sources = items.flatMap((item) => [item.availability.telemetry, item.availability.webAnalytics]);
+  return sources.length > 0 && sources.every((source) => source.state === "no_data");
+}
+
+function CollectionState({ items }: { items: ProductMetrics[] }) {
+  return <section className="collection" aria-labelledby="collection-title">
+    <div className="collection__intro"><p className="eyebrow">COLETA ATIVA</p><h2 id="collection-title">Aguardando as primeiras visitas.</h2><p>Os conectores já estão prontos. Assim que cada fonte receber atividade, ela aparece aqui com o período selecionado.</p></div>
+    <div className="collection__matrix" role="region" aria-label="Estado da coleta por produto e fonte"><table><thead><tr><th>Produto</th><th>Web Analytics</th><th>Telemetria</th></tr></thead><tbody>{items.map((item) => <tr key={item.product}><th scope="row">{products.find((product) => product.id === item.product)?.name}</th><td><SourceCell source={item.availability.webAnalytics} /></td><td><SourceCell source={item.availability.telemetry} /></td></tr>)}</tbody></table></div>
+    <div className="collection__preview"><p className="eyebrow">QUANDO A LEITURA CHEGAR</p><ul><li><strong>Visitas e páginas</strong><span>tráfego confirmado no período</span></li><li><strong>CTAs de loja</strong><span>intenção, não instalação</span></li><li><strong>Testes iniciados</strong><span>ações que começaram no site</span></li></ul></div>
+  </section>;
+}
+
+function SourceCell({ source }: { source: SourceStatus }) {
+  const label = source.state === "available" ? "Recebendo dados" : source.state === "no_data" ? "Aguardando atividade" : "Indisponível";
+  return <span className={`source-cell source-cell--${source.state}`}><i aria-hidden="true" />{label}</span>;
 }
 
 function LineChart({ data, metric }: { data: SeriesPoint[]; metric: MetricKey }) {
@@ -233,7 +255,7 @@ function RankingTable({ title, rows: data, empty, valueLabel, source }: { title:
 }
 
 function sourceLabel(source: SourceStatus): string {
-  return source.available ? "Disponível" : "Indisponível";
+  return source.state === "available" ? "Disponível" : source.state === "no_data" ? "Aguardando" : "Indisponível";
 }
 
 function safeFailureMessage(response: Response, payload: unknown): string {
@@ -283,6 +305,7 @@ function App() {
   const referrers = useMemo(() => mergeRows(visible.flatMap((item) => item.referrers)), [visible]);
 
   const isTotalFailure = !data && Boolean(error);
+  const isAwaitingFirstData = allSourcesAreAwaitingData(visible);
   return <div className="shell">
     <main id="sites">
       <header className="topbar">
@@ -297,7 +320,7 @@ function App() {
         {data && <div className="freshness"><span>Última leitura</span><strong>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(data.generatedAt))}</strong><SourceHealth items={visible} /></div>}
       </section>
       <div className="filters" role="group" aria-label="Filtrar produto"><span>Produto</span>{["all", ...products.map((item) => item.id)].map((item) => <button type="button" key={item} className={selected === item ? "selected" : ""} aria-pressed={selected === item} onClick={() => setSelected(item as ProductId | "all")}>{item === "all" ? "Todos" : products.find((product) => product.id === item)?.name}</button>)}</div>
-      {loading && !data ? <section className="state" aria-live="polite"><span className="spinner" />Carregando a leitura mais recente…</section> : isTotalFailure ? <section className="state error" role="alert"><p className="eyebrow">ATUALIZAÇÃO INTERROMPIDA</p><h2>O painel não respondeu agora.</h2><p>{error}</p><button type="button" onClick={() => void load()}>Tentar novamente</button></section> : !data || !visible.length ? <section className="state"><h2>Ainda não há leitura para mostrar.</h2><p>Os eventos aparecerão quando as fontes estiverem configuradas e começarem a receber coleta.</p></section> : <>
+      {loading && !data ? <section className="state" aria-live="polite"><span className="spinner" />Carregando a leitura mais recente…</section> : isTotalFailure ? <section className="state error" role="alert"><p className="eyebrow">ATUALIZAÇÃO INTERROMPIDA</p><h2>O painel não respondeu agora.</h2><p>{error}</p><button type="button" onClick={() => void load()}>Tentar novamente</button></section> : !data || !visible.length ? <section className="state"><h2>Ainda não há leitura para mostrar.</h2><p>Os eventos aparecerão quando as fontes estiverem configuradas e começarem a receber coleta.</p></section> : isAwaitingFirstData ? <CollectionState items={visible} /> : <>
         {error && <div className="notice" role="status"><strong>Atualização parcial</strong><span>{error} O último retrato confiável continua visível abaixo.</span></div>}
         <SourceNotice items={visible} />
         <section className="metrics" aria-label="Resumo do ecossistema"><MetricCard label="Visitas" value={aggregate(visible, "visits")} hint="Sessões web medidas" source="Web Analytics" /><MetricCard label="CTAs de loja" value={aggregate(visible, "storeCtaClicks")} hint="Clique não confirma instalação" source="Telemetria" /><MetricCard label="Testes iniciados" value={aggregate(visible, "testStarts")} hint="Ação iniciada no site" source="Telemetria" /></section>

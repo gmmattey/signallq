@@ -675,6 +675,14 @@ function siteZoneTag(product: Exclude<SiteProduct, 'unknown'>, env: Env): string
   return product === 'signallq' ? env.SIGNALLQ_ZONE_TAG : product === 'lagcheck' ? env.LAGCHECK_ZONE_TAG : env.LINKA_ZONE_TAG
 }
 
+function siteHostname(product: Exclude<SiteProduct, 'unknown'>): string {
+  return product === 'signallq'
+    ? 'signallq.com'
+    : product === 'lagcheck'
+      ? 'lagcheck.signallq.com'
+      : 'linka.signallq.com'
+}
+
 function unavailableSiteSource(reason: string) {
   return { status: 'unavailable' as const, reason, visits: null, pages: null, referrers: null, daily: null }
 }
@@ -690,21 +698,22 @@ async function getCloudflareSiteAnalytics(product: Exclude<SiteProduct, 'unknown
   }
   const zoneTag = siteZoneTag(product, env)
   if (!zoneTag) return unavailableSiteSource('zone tag do produto não configurado')
+  const hostname = siteHostname(product)
 
   // httpRequestsAdaptiveGroups é o dataset documentado pela Cloudflare para
   // visitas HTTP. Não inferimos page views a partir de requests de assets.
-  const query = `query SiteAnalytics($zoneTag: String!, $since: Time!, $until: Time!) {
+  const query = `query SiteAnalytics($zoneTag: String!, $hostname: String!, $since: Time!, $until: Time!) {
     viewer {
       zones(filter: { zoneTag: $zoneTag }) {
-        daily: httpRequestsAdaptiveGroups(limit: 10000, filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+        daily: httpRequestsAdaptiveGroups(limit: 10000, filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball", clientRequestHTTPHost: $hostname }) {
           dimensions { datetimeHour }
           sum { visits }
         }
-        paths: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+        paths: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball", clientRequestHTTPHost: $hostname }) {
           count
           dimensions { clientRequestPath }
         }
-        referrers: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+        referrers: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball", clientRequestHTTPHost: $hostname }) {
           count
           dimensions { clientRefererHost }
         }
@@ -715,6 +724,7 @@ async function getCloudflareSiteAnalytics(product: Exclude<SiteProduct, 'unknown
   type GraphData = { viewer?: { zones?: Array<{ daily?: GraphRow[]; paths?: GraphRow[]; referrers?: GraphRow[] }> } }
   const result = await queryCloudflareGraphQL<GraphData>(env, query, {
     zoneTag,
+    hostname,
     since: new Date(since * 1000).toISOString(),
     until: new Date().toISOString(),
   })

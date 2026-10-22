@@ -227,11 +227,18 @@ test('ranking de referrers Cloudflare preserva o contrato name/requests', async 
       referrers: [{ dimensions: { clientRefererHost: 'google.com' }, count: 4 }],
     }] } },
   }
-  await withMockedFetch((async () => new Response(JSON.stringify(graphResponse), { status: 200 })) as typeof fetch, async () => {
+  const queriedHosts: string[] = []
+  await withMockedFetch((async (_input, init) => {
+    const body = JSON.parse(String(init?.body)) as { query?: string; variables?: { hostname?: string } }
+    assert.match(body.query ?? '', /clientRequestHTTPHost: \$hostname/)
+    if (body.variables?.hostname) queriedHosts.push(body.variables.hostname)
+    return new Response(JSON.stringify(graphResponse), { status: 200 })
+  }) as typeof fetch, async () => {
     const response = await handleSitesMetrics(new Request('https://x/admin/metrics/sites?period=7d'), env)
     const payload = await response.json() as { products: { signallq: { traffic: { topReferrers: unknown } } } }
     assert.deepEqual(payload.products.signallq.traffic.topReferrers, [{ name: 'google.com', requests: 4 }])
   })
+  assert.deepEqual(new Set(queriedHosts), new Set(['signallq.com', 'lagcheck.signallq.com', 'linka.signallq.com']))
 })
 
 test('Access bloqueia workers.dev, sessão legada e API admin sem JWT', async () => {
