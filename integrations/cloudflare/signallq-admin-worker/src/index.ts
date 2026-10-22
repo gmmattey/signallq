@@ -1,5 +1,6 @@
 // SignallQ Admin API Worker
-// /admin/* exige sessão httpOnly via cookie (SIG-136 — auth própria via D1).
+// /admin/* exige JWT assinado pelo Cloudflare Access. As tabelas de sessão SIG-136
+// permanecem para compatibilidade/migração, mas não autorizam mais o painel.
 // /ingest/* exige Bearer INGEST_KEY (chave separada, scope limitado, vai no APK)
 // OU SITE_INGEST_KEY (#1155 — chave dedicada ao SignallQ Site, mesmo scope).
 // /health exige Bearer ADMIN_SECRET (retrocompat dev/monitoramento externo).
@@ -46,6 +47,10 @@ export interface Env {
    * INGEST_KEY do app Android para não precisar rotacionar a chave já embutida no APK
    * publicado. Opcional até ser configurada em produção via `wrangler secret put`. */
   SITE_INGEST_KEY?: string;
+  /** Chaves de ingest web, uma por produto. Nunca são expostas ao browser. */
+  SIGNALLQ_SITE_INGEST_KEY?: string;
+  LAGCHECK_SITE_INGEST_KEY?: string;
+  LINKA_SITE_INGEST_KEY?: string;
   FIREBASE_CLIENT_EMAIL: string;
   FIREBASE_PRIVATE_KEY: string;
   /** GH#761 — service account com acesso à Android Publisher API (reviews). */
@@ -59,6 +64,14 @@ export interface Env {
   /** #883 — não é secret (já visível em wrangler.toml/dashboard), mas fica no Env para não hardcodear no handler. */
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_D1_DATABASE_ID?: string;
+  SIGNALLQ_ZONE_TAG?: string;
+  LAGCHECK_ZONE_TAG?: string;
+  LINKA_ZONE_TAG?: string;
+  /** Configuração não secreta da aplicação Cloudflare Access que protege o painel. */
+  TEAM_DOMAIN?: string;
+  ACCESS_AUD?: string;
+  /** Static Assets do painel; configurado em wrangler.toml. */
+  ASSETS?: { fetch: typeof fetch };
   /** Refs #1446 — service binding pro signallq-diagnostic-worker (proxy de /admin/diagnostic/*).
    * Worker-to-Worker fetch entre dois *.workers.dev é bloqueado pela Cloudflare (erro 1042,
    * mesmo motivo do GH#767 no ai-diagnosis-worker) — service binding é a forma correta. */
@@ -119,19 +132,108 @@ function authenticate(request: Request, env: Env): boolean {
   return scheme === "Bearer" && token === env.ADMIN_SECRET;
 }
 
-/** Autentica rotas /ingest/* com a INGEST_KEY (scope limitado — so POST /ingest/*). */
-function authenticateIngest(request: Request, env: Env): boolean {
+type SiteProduct = 'signallq' | 'lagcheck' | 'linka' | 'unknown'
+
+async function secretEquals(candidate: string, expected: string | undefined): Promise<boolean> {
+  if (!expected) return false
+  const encoder = new TextEncoder()
+  const candidateBytes = encoder.encode(candidate)
+  const expectedBytes = encoder.encode(expected)
+  if (candidateBytes.byteLength !== expectedBytes.byteLength) return false
+  // workerd expõe timingSafeEqual como extensão do Web Crypto. O fallback mantém
+  // a mesma quantidade de comparações quando a extensão não está disponível em
+  // um runtime de teste mais antigo.
+  const subtle = crypto.subtle as SubtleCrypto & {
+    timingSafeEqual?: (left: ArrayBuffer | ArrayBufferView, right: ArrayBuffer | ArrayBufferView) => boolean | Promise<boolean>
+  }
+  if (subtle.timingSafeEqual) return await subtle.timingSafeEqual(candidateBytes, expectedBytes)
+  let difference = 0
+  for (let index = 0; index < candidateBytes.length; index += 1) difference |= candidateBytes[index] ^ expectedBytes[index]
+  return difference === 0
+}
+
+/** Deriva o produto exclusivamente da credencial server-to-server de ingest. */
+async function authenticateIngestProduct(request: Request, env: Env): Promise<SiteProduct | null> {
   const auth = request.headers.get("Authorization") ?? "";
   const [scheme, token] = auth.split(" ");
-  if (scheme !== "Bearer") return false;
-  // Aceita INGEST_KEY (chave do app) OU ADMIN_SECRET (retrocompat e dev local)
-  // OU SITE_INGEST_KEY (#1155 — chave dedicada ao Site, evita rotacionar a
-  // INGEST_KEY já embutida no APK Android publicado).
-  return (
-    token === env.INGEST_KEY ||
-    token === env.ADMIN_SECRET ||
-    (!!env.SITE_INGEST_KEY && token === env.SITE_INGEST_KEY)
-  );
+  if (scheme !== "Bearer" || !token) return null;
+  if (await secretEquals(token, env.SIGNALLQ_SITE_INGEST_KEY) || await secretEquals(token, env.SITE_INGEST_KEY)) return 'signallq';
+  if (await secretEquals(token, env.LAGCHECK_SITE_INGEST_KEY)) return 'lagcheck';
+  if (await secretEquals(token, env.LINKA_SITE_INGEST_KEY)) return 'linka';
+  // Clientes Android existentes seguem válidos, mas não entram por engano no
+  // comparativo de sites sem uma dimensão de produto comprovada.
+  if (await secretEquals(token, env.INGEST_KEY) || await secretEquals(token, env.ADMIN_SECRET)) return 'unknown';
+  return null;
+}
+
+type AdminIdentity = { userId: string; role: string }
+interface AccessJwtHeader { alg?: string; kid?: string }
+interface AccessJwtClaims { aud?: string | string[]; email?: string; exp?: number; iss?: string; nbf?: number; sub?: string }
+interface AccessJwk { kid?: string; kty?: string; n?: string; e?: string }
+
+const accessJwksCache = new Map<string, { expiresAt: number; keys: AccessJwk[] }>()
+const ACCESS_JWKS_CACHE_MS = 60 * 60 * 1000
+
+function decodeBase64UrlBytes(value: string): Uint8Array | null {
+  // JWT usa Base64URL sem padding. Além de filtrar caracteres inválidos,
+  // reencodamos o resultado e exigimos igualdade exata para recusar variantes
+  // não canônicas que decodificam para os mesmos bytes.
+  if (!/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1) return null
+  try {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')
+    const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0))
+    const canonical = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    return canonical === value ? bytes : null
+  } catch {
+    return null
+  }
+}
+
+function decodeBase64UrlJson<T>(value: string): T | null {
+  const bytes = decodeBase64UrlBytes(value)
+  if (!bytes) return null
+  try { return JSON.parse(new TextDecoder().decode(bytes)) as T } catch { return null }
+}
+
+async function getAccessJwks(teamDomain: string): Promise<AccessJwk[]> {
+  const cached = accessJwksCache.get(teamDomain)
+  if (cached && cached.expiresAt > Date.now()) return cached.keys
+  const response = await fetch(`https://${teamDomain}/cdn-cgi/access/certs`, { headers: { Accept: 'application/json' } })
+  if (!response.ok) throw new Error(`jwks_http_${response.status}`)
+  const body = await response.json() as { keys?: AccessJwk[] }
+  if (!Array.isArray(body.keys) || body.keys.length === 0) throw new Error('jwks_empty')
+  accessJwksCache.set(teamDomain, { keys: body.keys, expiresAt: Date.now() + ACCESS_JWKS_CACHE_MS })
+  return body.keys
+}
+
+/** Verifica assinatura, issuer, audience e validade temporal do JWT do Access. */
+export async function authenticateAccess(request: Request, env: Env): Promise<AdminIdentity | null> {
+  const jwt = request.headers.get('Cf-Access-Jwt-Assertion')
+  if (!jwt || !env.TEAM_DOMAIN || !env.ACCESS_AUD) return null
+  const pieces = jwt.split('.')
+  if (pieces.length !== 3) return null
+  const header = decodeBase64UrlJson<AccessJwtHeader>(pieces[0])
+  const claims = decodeBase64UrlJson<AccessJwtClaims>(pieces[1])
+  if (!header || !claims || header.alg !== 'RS256' || !header.kid) return null
+  const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud]
+  const now = Math.floor(Date.now() / 1000)
+  if (claims.iss !== `https://${env.TEAM_DOMAIN}` || !audiences.includes(env.ACCESS_AUD) ||
+      typeof claims.exp !== 'number' || claims.exp <= now ||
+      (typeof claims.nbf === 'number' && claims.nbf > now + 60)) return null
+  try {
+    const jwk = (await getAccessJwks(env.TEAM_DOMAIN)).find((key) => key.kid === header.kid && key.kty === 'RSA')
+    if (!jwk) return null
+    const key = await crypto.subtle.importKey('jwk', jwk as JsonWebKey, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify'])
+    const signature = decodeBase64UrlBytes(pieces[2])
+    if (!signature) return null
+    const signedContent = new TextEncoder().encode(`${pieces[0]}.${pieces[1]}`)
+    if (!(await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, signedContent))) return null
+  } catch {
+    return null
+  }
+  // A política Access é a fonte de autorização; o papel preserva os checks de
+  // escrita dos handlers legados sem reativar login/senha próprios.
+  return { userId: claims.email ?? claims.sub ?? 'access-admin', role: 'admin' }
 }
 
 // --- SIG-136: Auth por sessão ---
@@ -226,7 +328,7 @@ async function incrementRateLimit(ip: string, db: D1Database): Promise<void> {
   }
 }
 
-async function handleAuthLogin(request: Request, env: Env): Promise<Response> {
+export async function handleAuthLogin(request: Request, env: Env): Promise<Response> {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown'
   if (await checkRateLimit(ip, env.DB)) {
     return err('Muitas tentativas. Tente novamente em 15 minutos.', 429, env)
@@ -260,7 +362,7 @@ async function handleAuthLogin(request: Request, env: Env): Promise<Response> {
   })
 }
 
-async function handleAuthLogout(request: Request, env: Env): Promise<Response> {
+export async function handleAuthLogout(request: Request, env: Env): Promise<Response> {
   const token = getSessionToken(request)
   if (token) await revokeSession(token, env.DB)
   return new Response(JSON.stringify({ ok: true }), {
@@ -273,7 +375,7 @@ async function handleAuthLogout(request: Request, env: Env): Promise<Response> {
   })
 }
 
-async function handleAuthMe(request: Request, env: Env): Promise<Response> {
+export async function handleAuthMe(request: Request, env: Env): Promise<Response> {
   const session = await authenticateSession(request, env)
   if (!session) return err('Unauthorized', 401, env)
   const user = await env.DB.prepare(
@@ -283,7 +385,7 @@ async function handleAuthMe(request: Request, env: Env): Promise<Response> {
   return json({ email: user.email, role: user.role }, 200, env)
 }
 
-async function handleAuthCreateUser(request: Request, env: Env, session: { userId: string; role: string }): Promise<Response> {
+export async function handleAuthCreateUser(request: Request, env: Env, session: { userId: string; role: string }): Promise<Response> {
   if (session.role !== 'admin') return err('Forbidden', 403, env)
   let body: { email?: string; password?: string }
   try { body = await request.json() } catch { return err('body JSON inválido', 400, env) }
@@ -307,7 +409,7 @@ async function handleAuthCreateUser(request: Request, env: Env, session: { userI
   return json({ ok: true, id }, 201, env)
 }
 
-async function handleAuthChangePassword(request: Request, env: Env, session: { userId: string; role: string }): Promise<Response> {
+export async function handleAuthChangePassword(request: Request, env: Env, session: { userId: string; role: string }): Promise<Response> {
   let body: { currentPassword?: string; newPassword?: string }
   try { body = await request.json() } catch { return err('body JSON inválido', 400, env) }
   const { currentPassword, newPassword } = body
@@ -563,6 +665,148 @@ async function queryCloudflareGraphQL<T = unknown>(
   if (!body.data) return { data: null, error: "empty_response" };
 
   return { data: body.data };
+}
+
+type SiteMetricsPeriod = '7d' | '30d' | '90d'
+const SITE_METRICS_PERIODS = new Set<SiteMetricsPeriod>(['7d', '30d', '90d'])
+const SITE_PRODUCTS: Exclude<SiteProduct, 'unknown'>[] = ['signallq', 'lagcheck', 'linka']
+
+function siteZoneTag(product: Exclude<SiteProduct, 'unknown'>, env: Env): string | undefined {
+  return product === 'signallq' ? env.SIGNALLQ_ZONE_TAG : product === 'lagcheck' ? env.LAGCHECK_ZONE_TAG : env.LINKA_ZONE_TAG
+}
+
+function unavailableSiteSource(reason: string) {
+  return { status: 'unavailable' as const, reason, visits: null, pages: null, referrers: null, daily: null }
+}
+
+/**
+ * Busca Web Analytics sem deixar o token sair do Worker. A forma do dataset é
+ * mantida isolada aqui: erro de token, zona ou GraphQL vira fonte indisponível,
+ * nunca contagem zero nem uma resposta parcialmente inventada.
+ */
+async function getCloudflareSiteAnalytics(product: Exclude<SiteProduct, 'unknown'>, since: number, env: Env) {
+  if (!env.CLOUDFLARE_API_TOKEN || !env.CLOUDFLARE_ACCOUNT_ID) {
+    return unavailableSiteSource('CLOUDFLARE_API_TOKEN não configurado')
+  }
+  const zoneTag = siteZoneTag(product, env)
+  if (!zoneTag) return unavailableSiteSource('zone tag do produto não configurado')
+
+  // httpRequestsAdaptiveGroups é o dataset documentado pela Cloudflare para
+  // visitas HTTP. Não inferimos page views a partir de requests de assets.
+  const query = `query SiteAnalytics($zoneTag: String!, $since: Time!, $until: Time!) {
+    viewer {
+      zones(filter: { zoneTag: $zoneTag }) {
+        daily: httpRequestsAdaptiveGroups(limit: 10000, filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+          dimensions { datetimeHour }
+          sum { visits }
+        }
+        paths: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+          count
+          dimensions { clientRequestPath }
+        }
+        referrers: httpRequestsAdaptiveGroups(limit: 10, orderBy: [count_DESC], filter: { datetime_geq: $since, datetime_lt: $until, requestSource: "eyeball" }) {
+          count
+          dimensions { clientRefererHost }
+        }
+      }
+    }
+  }`
+  type GraphRow = { count?: number; dimensions?: { datetimeHour?: string; clientRequestPath?: string; clientRefererHost?: string }; sum?: { visits?: number } }
+  type GraphData = { viewer?: { zones?: Array<{ daily?: GraphRow[]; paths?: GraphRow[]; referrers?: GraphRow[] }> } }
+  const result = await queryCloudflareGraphQL<GraphData>(env, query, {
+    zoneTag,
+    since: new Date(since * 1000).toISOString(),
+    until: new Date().toISOString(),
+  })
+  if (!result.data) return unavailableSiteSource(result.error ?? 'Cloudflare Analytics sem resposta')
+  const zone = result.data.viewer?.zones?.[0]
+  const rows = zone?.daily
+  if (!Array.isArray(rows)) return unavailableSiteSource('Cloudflare Analytics não retornou dados de Web Analytics')
+  const daily = new Map<string, number>()
+  let visits = 0
+  for (const row of rows) {
+    const count = typeof row.sum?.visits === 'number' ? row.sum.visits : 0
+    visits += count
+    const hour = row.dimensions?.datetimeHour
+    const date = hour?.slice(0, 10)
+    if (date) daily.set(date, (daily.get(date) ?? 0) + count)
+  }
+  const requestRows = (items: GraphRow[] | undefined, dimension: 'clientRequestPath' | 'clientRefererHost') =>
+    (items ?? []).flatMap((row) => {
+      const name = row.dimensions?.[dimension]
+      return typeof name === 'string' && typeof row.count === 'number' ? [{ name, requests: row.count }] : []
+    })
+  return {
+    status: rows.length === 0 ? 'no_data' as const : 'available' as const,
+    reason: rows.length === 0 ? 'sem dados no período' : null,
+    visits: rows.length === 0 ? null : visits,
+    // Estes rankings são requests HTTP, não page views/visits por URL.
+    pages: rows.length === 0 ? null : requestRows(zone?.paths, 'clientRequestPath'),
+    referrers: rows.length === 0 ? null : requestRows(zone?.referrers, 'clientRefererHost'),
+    daily: rows.length === 0 ? null : [...daily].map(([date, visits]) => ({ date, visits })).sort((a, b) => a.date.localeCompare(b.date)),
+  }
+}
+
+async function getD1SiteMetrics(product: Exclude<SiteProduct, 'unknown'>, since: number, env: Env) {
+  const summary = await env.DB.prepare(
+    `SELECT COUNT(*) AS observed_events,
+      COUNT(DISTINCT CASE WHEN event_name = 'session_start' AND session_id != '' THEN session_id END) AS sessions,
+      SUM(CASE WHEN event_name = 'screen_view' THEN 1 ELSE 0 END) AS page_views,
+      SUM(CASE WHEN event_name = 'feature_used' AND feature_id = 'web_store_cta_clicked' THEN 1 ELSE 0 END) AS store_cta_clicks,
+      SUM(CASE WHEN event_name = 'feature_used' AND feature_id = 'web_test_started' THEN 1 ELSE 0 END) AS test_starts
+     FROM analytics_events
+     WHERE product = ? AND platform = 'web' AND created_at >= ?`
+  ).bind(product, since).first<{ observed_events: number; sessions: number; page_views: number; store_cta_clicks: number; test_starts: number }>()
+  if (!summary || Number(summary.observed_events) === 0) {
+    return { status: 'no_data' as const, reason: 'sem eventos telemétricos no período', sessions: null, pageViews: null, storeCtaClicks: null, testStarts: null, daily: null, topPages: null }
+  }
+  const dailyResult = await env.DB.prepare(
+    `SELECT strftime('%Y-%m-%d', created_at, 'unixepoch') AS date,
+      COUNT(DISTINCT CASE WHEN event_name = 'session_start' AND session_id != '' THEN session_id END) AS sessions,
+      SUM(CASE WHEN event_name = 'screen_view' THEN 1 ELSE 0 END) AS page_views,
+      SUM(CASE WHEN event_name = 'feature_used' AND feature_id = 'web_store_cta_clicked' THEN 1 ELSE 0 END) AS store_cta_clicks,
+      SUM(CASE WHEN event_name = 'feature_used' AND feature_id = 'web_test_started' THEN 1 ELSE 0 END) AS test_starts
+     FROM analytics_events
+     WHERE product = ? AND platform = 'web' AND created_at >= ?
+     GROUP BY date ORDER BY date ASC`
+  ).bind(product, since).all<{ date: string; sessions: number; page_views: number; store_cta_clicks: number; test_starts: number }>()
+  const pagesResult = await env.DB.prepare(
+    `SELECT page_path AS path, COUNT(*) AS page_views FROM analytics_events
+     WHERE product = ? AND platform = 'web' AND event_name = 'screen_view' AND page_path != '' AND created_at >= ?
+     GROUP BY page_path ORDER BY page_views DESC LIMIT 10`
+  ).bind(product, since).all<{ path: string; page_views: number }>()
+  return {
+    status: 'available' as const,
+    reason: null,
+    sessions: Number(summary.sessions ?? 0),
+    pageViews: Number(summary.page_views ?? 0),
+    storeCtaClicks: Number(summary.store_cta_clicks ?? 0),
+    testStarts: Number(summary.test_starts ?? 0),
+    daily: dailyResult.results ?? [],
+    topPages: (pagesResult.results ?? []).map((row) => ({ path: row.path, page_views: Number(row.page_views ?? 0) })),
+  }
+}
+
+/** GET /admin/metrics/sites?period=7d|30d|90d */
+export async function handleSitesMetrics(request: Request, env: Env): Promise<Response> {
+  const period = new URL(request.url).searchParams.get('period') ?? '30d'
+  if (!SITE_METRICS_PERIODS.has(period as SiteMetricsPeriod)) return err('period deve ser 7d, 30d ou 90d', 400, env)
+  const since = nowSec() - periodToSeconds(period)
+  const values = await Promise.all(SITE_PRODUCTS.map(async (product) => {
+    const [telemetryResult, trafficResult] = await Promise.allSettled([
+      getD1SiteMetrics(product, since, env), getCloudflareSiteAnalytics(product, since, env),
+    ])
+    const telemetry = telemetryResult.status === 'fulfilled' ? telemetryResult.value :
+      { status: 'unavailable' as const, reason: 'D1 indisponível', sessions: null, pageViews: null, storeCtaClicks: null, testStarts: null, daily: null, topPages: null }
+    const traffic = trafficResult.status === 'fulfilled' ? trafficResult.value : unavailableSiteSource('Cloudflare Analytics indisponível')
+    return [product, {
+      conversions: { status: telemetry.status, reason: telemetry.reason, webSessions: telemetry.sessions, storeCtaClicks: telemetry.storeCtaClicks, testStarts: telemetry.testStarts, daily: telemetry.daily },
+      traffic: { status: traffic.status, reason: traffic.reason, visits: traffic.visits, pageViews: telemetry.pageViews, daily: traffic.daily, topPages: telemetry.topPages, topReferrers: traffic.referrers },
+    }] as const
+  }))
+  const products = Object.fromEntries(values) as Record<Exclude<SiteProduct, 'unknown'>, unknown>
+  const from = new Date(since * 1000).toISOString()
+  return json({ generatedAt: new Date().toISOString(), period: { key: period, from, to: new Date().toISOString() }, products }, 200, env)
 }
 
 // --- handlers /admin ---
@@ -4259,7 +4503,24 @@ const VALID_ANALYTICS_EVENTS = new Set([
   'feature_used', 'screen_view', 'session_start', 'session_end', 'feature_crash', 'battery_snapshot',
 ]);
 
-export async function handleIngestAnalytics(request: Request, env: Env): Promise<Response> {
+const LEGACY_SIGNALLQ_WEB_FEATURES: Record<string, string> = {
+  download_app_clicado: 'web_store_cta_clicked',
+  teste_velocidade_iniciado: 'web_test_started',
+}
+const WEB_FEATURES = new Set(['web_store_cta_clicked', 'web_test_started'])
+
+function normalizePagePath(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 512 || !value.startsWith('/')) return null
+  const path = value.split(/[?#]/, 1)[0]
+  return path.length > 0 ? path : null
+}
+
+function normalizeCtaId(value: unknown): string | null {
+  if (typeof value !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,119}$/i.test(value)) return null
+  return value
+}
+
+export async function handleIngestAnalytics(request: Request, env: Env, product: SiteProduct = 'unknown'): Promise<Response> {
   let body: any;
   try { body = await request.json(); } catch { return err('body JSON inválido', 400, env); }
 
@@ -4283,6 +4544,30 @@ export async function handleIngestAnalytics(request: Request, env: Env): Promise
       rejected += 1;
       return [];
     }
+    const isWebProduct = product !== 'unknown'
+    const platform = e.platform === 'web' ? 'web' : 'android'
+    let featureId = typeof e.feature_id === 'string' ? e.feature_id : ''
+    if (isWebProduct && platform !== 'web') {
+      rejected += 1
+      return []
+    }
+    if (isWebProduct && featureId in LEGACY_SIGNALLQ_WEB_FEATURES && product === 'signallq') {
+      featureId = LEGACY_SIGNALLQ_WEB_FEATURES[featureId]
+    }
+    if (isWebProduct && e.name === 'feature_used' && !WEB_FEATURES.has(featureId)) {
+      rejected += 1
+      return []
+    }
+    const pagePath = isWebProduct ? normalizePagePath(e.page_path ?? e.screen_name) : null
+    if (isWebProduct && e.name === 'screen_view' && !pagePath) {
+      rejected += 1
+      return []
+    }
+    const ctaId = isWebProduct && featureId === 'web_store_cta_clicked' ? normalizeCtaId(e.cta_id) : null
+    if (isWebProduct && featureId === 'web_store_cta_clicked' && e.cta_id != null && !ctaId) {
+      rejected += 1
+      return []
+    }
     const normalizedTimestamp = normalizeAnalyticsTimestamp(e.timestamp, now);
     if (normalizedTimestamp.timestamp == null) {
       rejected += 1;
@@ -4294,15 +4579,16 @@ export async function handleIngestAnalytics(request: Request, env: Env): Promise
     return [env.DB.prepare(
         `INSERT OR IGNORE INTO analytics_events
            (id, event_name, session_id, created_at, app_version, feature_id, screen_name, error_type,
-            battery_level, battery_charging, environment, device_id, version_code, dist_channel, build_type, duration_ms, platform)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            battery_level, battery_charging, environment, device_id, version_code, dist_channel, build_type, duration_ms, platform,
+            product, page_path, cta_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         id,
         e.name,
         e.session_id ?? '',
         normalizedTimestamp.timestamp,
         e.app_version ?? '',
-        e.feature_id  ?? '',
+        featureId,
         e.screen_name ?? '',
         e.error_type  ?? '',
         typeof e.battery_level    === 'number' ? e.battery_level    : null,
@@ -4314,7 +4600,10 @@ export async function handleIngestAnalytics(request: Request, env: Env): Promise
         e.build_type   ?? 'release',
         typeof e.duration_ms === 'number' ? e.duration_ms : null,
         // GH#442: mesmo critério de origem dos demais endpoints de ingest.
-        e.platform === 'web' ? 'web' : 'android',
+        platform,
+        product,
+        pagePath ?? '',
+        ctaId ?? '',
       ),
     ];
   });
@@ -5296,6 +5585,7 @@ const ROUTES: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   { method: "GET",  pattern: /^\/admin\/metrics\/intelligence$/,                handler: withErrorLogging('metrics', handleDiagnosticsIntelligence) },
   { method: "GET",  pattern: /^\/admin\/diagnostics\/intelligence$/,            handler: withErrorLogging('metrics', handleDiagnosticsIntelligence) },
   { method: "GET",  pattern: /^\/admin\/metrics\/analytics\/product$/,          handler: withErrorLogging('analytics', handleProductAnalytics) },
+  { method: "GET",  pattern: /^\/admin\/metrics\/sites$/,                      handler: withErrorLogging('sites-metrics', handleSitesMetrics) },
   { method: "GET",  pattern: /^\/admin\/analytics\/product$/,                   handler: withErrorLogging('analytics', handleProductAnalytics) },
   { method: "GET",  pattern: /^\/admin\/metrics\/analytics\/speedtest-funnel$/, handler: withErrorLogging('analytics', handleSpeedtestFunnel) },
   { method: "GET",  pattern: /^\/admin\/metrics\/analytics\/battery$/,          handler: withErrorLogging('analytics', handleBatteryAnalytics) },
@@ -5305,7 +5595,7 @@ const ROUTES: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   { method: "GET",  pattern: /^\/admin\/metrics\/errors$/,                      handler: handleErrors },
   { method: "GET",  pattern: /^\/admin\/metrics\/errors\/timeline$/,             handler: withErrorLogging('metrics', handleErrorsTimeline) },
   { method: "POST", pattern: /^\/admin\/errors\/[^/]+\/resolve$/,               handler: withErrorLogging('errors', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleResolveSystemError(req, env, session);
     }) },
@@ -5344,39 +5634,39 @@ const ROUTES: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   // validate/publish/rollback validam contra o catálogo canônico (`src/featureFlagCatalog.ts`,
   // #1477) desde 2026-07-26 (fechamento de #1478); não são mais skeleton bloqueado.
   { method: "GET",  pattern: /^\/admin\/firebase\/remote-config$/,              handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleRemoteConfigAdminGet(req, env, session);
     }) },
   { method: "GET",  pattern: /^\/admin\/firebase\/remote-config\/versions$/,    handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleRemoteConfigAdminVersions(req, env, session);
     }) },
   { method: "POST", pattern: /^\/admin\/firebase\/remote-config\/validate$/,    handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleRemoteConfigAdminValidate(req, env, session);
     }) },
   { method: "POST", pattern: /^\/admin\/firebase\/remote-config\/publish$/,     handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleRemoteConfigAdminPublish(req, env, session);
     }) },
   { method: "POST", pattern: /^\/admin\/firebase\/remote-config\/rollback$/,    handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleRemoteConfigAdminRollback(req, env, session);
     }) },
   // GH#1478 — catálogo canônico (leitura, pro Admin F3 consumir) e sincronização catálogo→Firebase
   // (cria parâmetros ausentes, detecta órfãos/divergências). ?dryRun=true simula sem publicar.
   { method: "GET",  pattern: /^\/admin\/firebase\/feature-flags\/catalog$/,     handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleFeatureFlagsCatalogGet(req, env, session);
     }) },
   { method: "POST", pattern: /^\/admin\/firebase\/feature-flags\/sync$/,        handler: withErrorLogging('remote-config-admin', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleFeatureFlagsSync(req, env, session);
     }) },
@@ -5394,7 +5684,7 @@ const ROUTES: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   { method: "POST", pattern: /^\/admin\/settings$/,                             handler: handleSettings },
   { method: "GET",  pattern: /^\/admin\/feature-flags$/,                        handler: withErrorLogging('feature-flags', handleFeatureFlags) },
   { method: "PUT",  pattern: /^\/admin\/feature-flags\/[^/]+$/,                 handler: withErrorLogging('feature-flags', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleUpdateFeatureFlag(req, env, session);
     }) },
@@ -5407,7 +5697,7 @@ const ROUTES: Array<{ method: string; pattern: RegExp; handler: Handler }> = [
   // GH#1312: catálogo remoto de releases — histórico, publicação e disparo de push.
   { method: "GET",  pattern: /^\/admin\/app-updates$/,                    handler: withErrorLogging('app-updates', handleAdminAppUpdatesList) },
   { method: "POST", pattern: /^\/admin\/app-updates$/,                    handler: withErrorLogging('app-updates', async (req, env) => {
-      const session = await authenticateSession(req, env);
+      const session = await authenticateAccess(req, env);
       if (!session) return err('Unauthorized', 401, env);
       return handleAdminPublishAppUpdate(req, env, session);
     }) },
@@ -5522,11 +5812,6 @@ export default {
     }
     const url = new URL(request.url);
 
-    // Redireciona browser direto para o painel (evita exibir JSON cru em Edge/Chrome).
-    if (url.pathname === "/" || url.pathname === "") {
-      return Response.redirect("https://signallq-admin-panel.pages.dev", 302);
-    }
-
     if (url.pathname === "/health") {
       if (!authenticate(request, env)) return err("Unauthorized", 401, env);
       return json({ status: "ok", worker: "signallq-admin-worker", timestamp: new Date().toISOString() }, 200, env);
@@ -5552,37 +5837,23 @@ export default {
     // Rotas /ingest/* — autenticam com INGEST_KEY (scope limitado, vai no APK).
     for (const route of INGEST_ROUTES) {
       if (route.method === request.method && route.pattern.test(url.pathname)) {
-        if (!authenticateIngest(request, env)) return err("Unauthorized", 401, env);
+        const product = await authenticateIngestProduct(request, env)
+        if (!product) return err("Unauthorized", 401, env);
+        if (url.pathname === '/ingest/analytics') return handleIngestAnalytics(request, env, product)
         return route.handler(request, env);
       }
     }
 
-    // SIG-136: rotas de auth — login é a única /admin/* sem sessão prévia.
-    if (url.pathname === '/admin/auth/login' && request.method === 'POST') {
-      return handleAuthLogin(request, env)
-    }
-    if (url.pathname === '/admin/auth/logout' && request.method === 'POST') {
-      return handleAuthLogout(request, env)
-    }
-    if (url.pathname === '/admin/auth/me' && request.method === 'GET') {
-      return handleAuthMe(request, env)
-    }
-    if (url.pathname === '/admin/auth/users' && request.method === 'POST') {
-      const session = await authenticateSession(request, env)
-      if (!session) return err('Unauthorized', 401, env)
-      return handleAuthCreateUser(request, env, session)
-    }
-    if (url.pathname === '/admin/auth/password' && request.method === 'POST') {
-      const session = await authenticateSession(request, env)
-      if (!session) return err('Unauthorized', 401, env)
-      return handleAuthChangePassword(request, env, session)
-    }
+    // Login/sessão legados são mantidos no D1 para rollback/auditoria, mas não
+    // participam mais do caminho público do painel protegido por Access.
+    if (url.pathname.startsWith('/admin/auth/')) return err('Autenticação administrativa é gerenciada pelo Cloudflare Access.', 410, env)
 
-    // Rotas /admin/* — autenticam por sessão httpOnly (SIG-136).
-    const session = await authenticateSession(request, env)
-    if (!session) {
-      return err("Unauthorized", 401, env);
-    }
+    // O hostname workers.dev nunca entrega a SPA nem qualquer rota /admin.
+    // Endpoints públicos e ingest já retornaram antes deste ponto.
+    if (url.hostname.endsWith('.workers.dev')) return err('Acesso administrativo direto não permitido.', 403, env)
+
+    const session = await authenticateAccess(request, env)
+    if (!session) return err('Unauthorized', 401, env)
 
     // Refs #1446 — /admin/diagnostic/* é proxy pro signallq-diagnostic-worker (ver
     // proxyDiagnosticAdmin acima). Prefixo genérico, não uma lista fixa de endpoints: cobre tudo
@@ -5596,6 +5867,15 @@ export default {
       if (route.method === request.method && route.pattern.test(url.pathname)) {
         return route.handler(request, env);
       }
+    }
+    // Qualquer caminho não-API é um asset do painel. A verificação Access acima
+    // também protege index.html, JS, CSS e deep links da SPA.
+    if (env.ASSETS && request.method === 'GET') {
+      const asset = await env.ASSETS.fetch(request)
+      if (asset.status !== 404 || !request.headers.get('Accept')?.includes('text/html')) return asset
+      const indexUrl = new URL(request.url)
+      indexUrl.pathname = '/index.html'
+      return env.ASSETS.fetch(new Request(indexUrl.toString(), request))
     }
     return err("Not found", 404, env);
   },

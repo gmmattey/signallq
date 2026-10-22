@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:admin-ui": "tsc -p admin-ui/tsconfig.json && vite build --config vite.config.ts",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "test": "node --test",
@@ -14,6 +15,14 @@
     "@cloudflare/workers-types": "^4.20260702.1",
     "@types/node": "^24.13.3",
     "typescript": "^5.6.3",
-    "wrangler": "^4.20.0"
+    "wrangler": "^4.20.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.2.2"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
