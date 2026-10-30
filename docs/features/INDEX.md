@@ -18,13 +18,13 @@ version: "1.0.0"
 |---|---|---|---|---|---|
 | `assist-diagnostico` | SignallQ Assist ‚Äî diagn√≥stico guiado | jornada | ativo | feature/diagnostico, core/diagnostico, core/nds, core/recommendation, core/featureflags, app | [assist-diagnostico.md](assist-diagnostico.md) |
 | `dispositivos-rede` | Quem est√° usando sua rede | jornada | ativo | feature/devices, app, core/database, core/network | [dispositivos-rede.md](dispositivos-rede.md) |
-| `dns-ping` | Äî DNS e Ping (Tempo de resposta) | transversal | ativo | feature/dns, feature/speedtest, core/network, core/diagnostico, core/featureflags, app | [dns-ping.md](dns-ping.md) |
-| `equipamento-internet` | Äî Seu equipamento (modem/ONT/roteador) | jornada | ativo | feature/fibra, feature/router, core/network, core/datastore, core/featureflags, app | [equipamento-internet.md](equipamento-internet.md) |
+| `dns-ping` | DNS e Ping (Tempo de resposta) | transversal | ativo | feature/dns, feature/speedtest, core/network, core/diagnostico, core/featureflags, app | [dns-ping.md](dns-ping.md) |
+| `equipamento-internet` | Seu equipamento (modem/ONT/roteador) | jornada | ativo | feature/fibra, feature/router, core/network, core/datastore, core/featureflags, app | [equipamento-internet.md](equipamento-internet.md) |
 | `historico-laudo` | Hist√≥rico e Relat√≥rio para sua operadora | jornada | ativo | feature/history, core/database, core/relatorio, app | [historico-laudo.md](historico-laudo.md) |
 | `inicio-status` | In√≠cio ‚Äî status da conex√£o ao vivo | jornada | ativo | app, feature/home, core/network | [inicio-status.md](inicio-status.md) |
 | `modo-gamer` | Jogos online (Modo gamer) | jornada | ativo | core/diagnostico, core/probejogo, feature/speedtest, core/datastore, app | [modo-gamer.md](modo-gamer.md) |
-| `monitoramento-alertas` | Äî Acompanhar conex√£o (monitoramento e alertas) | transversal | ativo | app, core/datastore, core/database, core/featureflags, feature/history | [monitoramento-alertas.md](monitoramento-alertas.md) |
-| `perfil-ajustes-legal` | Äî Ajustes, perfil, privacidade e termos | transversal | ativo | feature/settings, core/datastore, core/featureflags, app | [perfil-ajustes-legal.md](perfil-ajustes-legal.md) |
-| `velocidade-resultado` | Äî Velocidade e resultado | jornada | ativo | feature/speedtest, core/diagnostico, core/network, core/featureflags, app | [velocidade-resultado.md](velocidade-resultado.md) |
+| `monitoramento-alertas` | Acompanhar conex√£o (monitoramento e alertas) | transversal | ativo | app, core/datastore, core/database, core/featureflags, feature/history | [monitoramento-alertas.md](monitoramento-alertas.md) |
+| `perfil-ajustes-legal` | Ajustes, perfil, privacidade e termos | transversal | ativo | feature/settings, core/datastore, core/featureflags, app | [perfil-ajustes-legal.md](perfil-ajustes-legal.md) |
+| `velocidade-resultado` | Velocidade e resultado | jornada | ativo | feature/speedtest, core/diagnostico, core/network, core/featureflags, app | [velocidade-resultado.md](velocidade-resultado.md) |
 | `wifi-canais-sinal` | Sinal ‚Äî Wi-Fi, canais e rede m√≥vel | jornada | ativo | app, feature/wifi, core/network, core/diagnostico, core/telephony | [wifi-canais-sinal.md](wifi-canais-sinal.md) |
 | `wifi-casa` | WiFi Casa ‚Äî mapeamento do sinal por c√¥modo | jornada | ativo | app, core/database, core/diagnostico | [wifi-casa.md](wifi-casa.md) |
