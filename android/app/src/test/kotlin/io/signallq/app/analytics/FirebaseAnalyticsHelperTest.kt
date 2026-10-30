@@ -20,7 +20,7 @@ import org.robolectric.annotation.Config
  * Testes unitarios de [FirebaseAnalyticsHelper] — funil principal de
  * engajamento (SIG-155). Mocka [FirebaseAnalytics] com MockK e captura o
  * [Bundle] passado a `logEvent` para verificar nomes de evento e parametros
- * exatamente como definidos em docs_ai/technical/analytics-events.md.
+ * exatamente como definidos em docs/technical/analytics-events.md.
  *
  * Robolectric e necessario aqui: android.os.Bundle e um stub que lanca
  * excecao em unit tests JVM puros sem um runtime Android simulado.

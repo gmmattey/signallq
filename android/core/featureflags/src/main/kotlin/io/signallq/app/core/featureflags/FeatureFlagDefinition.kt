@@ -2,7 +2,7 @@ package io.signallq.app.core.featureflags
 
 /**
  * Entrada tipada do catalogo canonico -- espelha 1:1 o schema JSON do Epico #1347
- * (`docs_ai/CONTRATOS/schemas/README.md` referencia o arquivo de origem
+ * (`docs/CONTRATOS/schemas/README.md` referencia o arquivo de origem
  * `core/featureflags/src/main/resources/featureflags/consumer-catalog.json`).
  *
  * Este e o contrato que o SignallQ Admin (F3, #1479) e o Worker (F2, #1478) devem

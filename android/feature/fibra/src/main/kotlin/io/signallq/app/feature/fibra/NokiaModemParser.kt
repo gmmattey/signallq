@@ -116,7 +116,7 @@ internal object NokiaModemParser {
      * ja buscada para LAN), NAO em `lan_status.cgi?wlan` como o documento de
      * campo original (e a primeira versao deste parser) assumiam. A pagina
      * `?wlan` contem outros objetos (`wlan_ssid`, `device_cfg`, `alias_cfg`)
-     * — ver `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`, secao revisada.
+     * — ver `docs/technical/NOKIA_GPON_FIELD_MAP.md`, secao revisada.
      *
      * `larguraCanal` fica sempre null nesta fase: o unico campo documentado
      * para largura de banda (`X_ASB_COM_OperatingChannelBandwidth`) vive na
@@ -173,7 +173,7 @@ internal object NokiaModemParser {
      * Combina o IP/mascara da propria interface LAN do ONT (`lan_ifip`, tela
      * `lan_status.cgi?lan`) com a configuracao do servidor DHCP (`ipv4_config`,
      * tela `lan_ipv4.cgi`) — GH#865 Fase 1. Ver
-     * `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`.
+     * `docs/technical/NOKIA_GPON_FIELD_MAP.md`.
      */
     fun parseLan(
         lanStatusHtml: String,
@@ -213,7 +213,7 @@ internal object NokiaModemParser {
      * Extrai a lista real de clientes conectados (`device_cfg`, array JS) e
      * funde com os apelidos que o usuário deu no próprio roteador
      * (`alias_cfg`) — ambos vivem em `lan_status.cgi?wlan`. GH#839/#865
-     * Fase 2, ver `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`.
+     * Fase 2, ver `docs/technical/NOKIA_GPON_FIELD_MAP.md`.
      *
      * Apelido (`HostAlias`) tem prioridade sobre o hostname técnico
      * (`HostName`, que costuma vir genérico tipo "Unknown_90:75:bc:39:83:30")
@@ -513,7 +513,7 @@ internal object NokiaModemParser {
 /**
  * Normaliza a string crua de `InterfaceType` (`device_cfg`, `lan_status.cgi?wlan`)
  * para [TipoConexaoFisica] — GH#983 Fase 4. Único valor confirmado no field-map
- * (`docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`) é `"Ethernet"`; os demais valores
+ * (`docs/technical/NOKIA_GPON_FIELD_MAP.md`) é `"Ethernet"`; os demais valores
  * de firmware não estão documentados, então qualquer variante contendo termos de
  * rede sem fio ("wifi"/"wireless"/"wlan") cai em [TipoConexaoFisica.WIFI] e o
  * restante (nulo, vazio ou não reconhecido) cai em [TipoConexaoFisica.DESCONHECIDO].

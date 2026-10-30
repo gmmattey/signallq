@@ -9,7 +9,7 @@ effective_date: "2026-08-05"
 
 **Objetivo:** Garantir que documentação é (1) sincronizada com código, (2) confiável o suficiente para qualquer desenvolvedor agir baseado nela, (3) útil (encontrável, indexada, viva).
 
-**Escopo:** Todos os documentos em `docs_ai/`, `AGENTS.md`, `CLAUDE.md`, contratos OpenAPI, e runbooks.
+**Escopo:** Todos os documentos em `docs/`, `AGENTS.md`, `CLAUDE.md`, contratos OpenAPI, e runbooks.
 
 ---
 
@@ -22,11 +22,11 @@ Esta política deixou de ser só texto. `.github/workflows/docs-ci.yml` roda
 |---|---|
 | Inventário gerado vs. código | `TECNICO.md`/`ARQUITETURA/README.md` com versão, contagem de módulos, tabelas D1 ou endpoints diferentes do código |
 | Espelhos de skill | `.agents/skills/` ou `.github/skills/` divergindo de `.claude/skills/` |
-| Frontmatter | `.md` em `docs_ai/` alterado pela PR sem `title`, `description`, `type`, `status`, `owner`, `last_updated` |
+| Frontmatter | `.md` em `docs/` alterado pela PR sem `title`, `description`, `type`, `status`, `owner`, `last_updated` |
 | Localização | `.md` criado fora da árvore permitida |
 | Contagem do índice | `INDICE.md` declarando "`technical/` (14)" quando o disco tem 15 |
-| Pasta órfã | pasta nova em `docs_ai/` não citada em `INDICE.md` nem `README.md` |
-| Documento solto | `.md` na raiz de `docs_ai/` sem citação no índice |
+| Pasta órfã | pasta nova em `docs/` não citada em `INDICE.md` nem `README.md` |
+| Documento solto | `.md` na raiz de `docs/` sem citação no índice |
 
 **A PR valida apenas os arquivos que ela toca.** Exigir frontmatter da árvore
 inteira reprovaria 79 documentos herdados e travaria todo mundo. Dívida nova é
@@ -40,8 +40,8 @@ bash scripts/validar-docs.sh --base origin/main   # como na PR
 bash scripts/validar-docs.sh --relatorio          # cobertura, nunca falha
 ```
 
-Isenções: `docs_ai/templates/` e `docs_ai/decisions/` (vocabulário próprio de status), e tudo
-fora de `docs_ai/` — `SKILL.md` usa o cabeçalho exigido pelo carregador de skills.
+Isenções: `docs/templates/` e `docs/archive/decisoes/` (vocabulário próprio de status), e tudo
+fora de `docs/` — `SKILL.md` usa o cabeçalho exigido pelo carregador de skills.
 
 ---
 
@@ -51,7 +51,7 @@ fora de `docs_ai/` — `SKILL.md` usa o cabeçalho exigido pelo carregador de sk
 
 - **Documentação obsoleta é pior que ausência.** Desenvolvedores agindo em docs antigas geram bugs.
 - **Manutenção é responsabilidade de quem mexe no código,** não de um "proprietário de docs".
-- **Docs vivem perto de código.** `docs_ai/` fica no repo, commits incluem atualizações relacionadas.
+- **Docs vivem perto de código.** `docs/` fica no repo, commits incluem atualizações relacionadas.
 
 ### 1.2 Fonte única de verdade por tipo
 
@@ -119,12 +119,12 @@ version: "X.Y.Z"
 
 Manter atualizados:
 
-- `docs_ai/INDICE.md` — mapa central com todos os documentos
-- `docs_ai/README.md` — entrada rápida
-- `docs_ai/FUNCIONAL.md` — índice de features
-- `docs_ai/TECNICO.md` — índice técnico
-- `docs_ai/decisions/README.md` — lista de ADRs
-- `docs_ai/operations/README.md` — lista de runbooks
+- `docs/INDICE.md` — mapa central com todos os documentos
+- `docs/README.md` — entrada rápida
+- `docs/01-funcional.md` — índice de features
+- `docs/03-especificacao-tecnica.md` — índice técnico
+- `docs/archive/decisoes/README.md` — lista de ADRs
+- `docs/operations/README.md` — lista de runbooks
 
 **Violação:** Criar doc novo sem adicionar ao índice → considerar perdido.
 
@@ -181,24 +181,25 @@ Quando Android + Web + Admin consomem o mesmo endpoint:
 
 ### 4.1 Responsáveis
 
-Squad canônico pós-ADR-016 são 3 agentes: Claudete (PM), Camilo (Dev), Caio (Reviewer). Design, growth e dados/telemetria viraram skills invocáveis, não agentes permanentes.
+Squad ativo (ver `AGENTS.md`): Marcelo (produto e aceite), Priscila (UX/UI e Design System), Camillo (engenharia e arquitetura) e Renan (QA). Design, growth e telemetria seguem como skills invocáveis.
 
 | Tipo | Cria | Mantém | Revisa |
 |---|---|---|---|
-| Técnico | Camilo | Camilo | Caio |
-| Funcional | Claudete | Claudete | Caio |
-| ADR | Claudete/Camilo | Claudete/Camilo | Caio |
-| Runbook | Camilo | Camilo | Caio |
+| Técnico | Camillo | Camillo | Renan |
+| Funcional | Marcelo | Marcelo | Renan |
+| Design System | Priscila | Priscila | Renan |
+| Decisão (`docs/DECISOES.md`) | Marcelo/Camillo | Marcelo/Camillo | Renan |
+| Runbook | Camillo | Camillo | Renan |
 
 Notas por tipo:
 
-- **Funcional** — checagem de design invocando `/design-check` (arquivo/tela) ou `/auditar-ux` (auditoria profunda multi-tela); Claudete decide direção.
+- **Funcional** — checagem de design invocando `/design-check` (arquivo/tela) ou `/auditar-ux` (auditoria profunda multi-tela); Priscila especifica a experiência e Marcelo decide direção.
 - **Runbook** — checagem de dados/telemetria invocando `/analytics-spec` quando aplicável (evento novo, mudança de propriedade, propriedade sensível).
 
 ### 4.2 Aprovação
 
-- **Técnico / ADR / Runbook:** Revisor independente (Caio) se afeta arquitetura/segurança.
-- **Funcional:** Revisor (Caio) se afeta jornada/UX; usar `/design-check` para validação pontual e `/auditar-ux` para revisão profunda multi-tela.
+- **Técnico / decisão / runbook:** revisão independente do Renan se afeta arquitetura, segurança ou privacidade.
+- **Funcional:** revisão do Renan se afeta jornada/UX; usar `/design-check` para validação pontual e `/auditar-ux` para revisão profunda multi-tela.
 
 ### 4.3 Escalação
 
@@ -298,7 +299,7 @@ Quando `signallq` + `signallq-web` + `buildea-admin` compartilham:
 
 ### 8.2 Referências cruzadas
 
-- Linkable em markdown: `../signallq-web/docs_ai/FUNCIONAL.md`
+- Linkable em markdown: `../signallq-web/docs/01-funcional.md`
 - Documentar em `AGENTS.md` que existe overlap
 
 ---
@@ -307,7 +308,7 @@ Quando `signallq` + `signallq-web` + `buildea-admin` compartilham:
 
 **Pode desviar desta política se:**
 
-1. Aprovação explícita de Claudete (exceção de negócio)
+1. Aprovação explícita de Marcelo ou do Luiz (exceção de negócio)
 2. Situação de emergência/incidente (fixar depois)
 3. Documentação em transição (máximo 2 sprints em `draft`)
 

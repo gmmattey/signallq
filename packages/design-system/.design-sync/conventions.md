@@ -1,11 +1,11 @@
 # SignallQ Design System — Conventions
 
-> **Governança:** `docs_ai/DESIGN_SYSTEM.md` é a fonte de governança do design system Android
+> **Governança:** `docs/04-design-system.md` é a fonte de governança do design system Android
 > consumer (estados semânticos, profundidade, acessibilidade, mapeamento Compose). Este arquivo
 > descreve só as convenções de uso do pacote React (`@signallq/design-system`) — não duplica
 > conteúdo, referencia.
 
-> **Projeto canônico no Claude Design: `SignallQ Design System` (projectId `2d25d7a1-31b2-4ac3-881f-72dbc8f35a29`)** — o mesmo fixado em `.design-sync/config.json`. Criado em 2026-07-18 na **separação DS/protótipos** (ver `docs_ai/design-system/DECISAO_SEPARACAO_DS_PROTOTIPOS_2026-07-18.md`): este projeto contém **só o DS reutilizável** (tokens + primitivos + layout + animações, 14 componentes). O projeto antigo `e77ea465-291f-4bf5-930c-a267680da04e` foi renomeado para **"SignallQ — Protótipos"** e agora hospeda os fluxos (`tobe/`, `templates/`, `uploads/`), NÃO o DS — não sincronizar o pacote nele. Reuse sempre este `projectId`; o workspace tem vários "...Design System" (SignallQ PRO, Speedtest by SignallQ) — se a listagem mostrar mais de um **"SignallQ Design System"** exato, pare e confirme com a Claudete antes de sincronizar.
+> **Projeto canônico no Claude Design: `SignallQ Design System` (projectId `2d25d7a1-31b2-4ac3-881f-72dbc8f35a29`)** — o mesmo fixado em `.design-sync/config.json`. Criado em 2026-07-18 na **separação DS/protótipos** (ver `docs/design-system/DECISAO_SEPARACAO_DS_PROTOTIPOS_2026-07-18.md`): este projeto contém **só o DS reutilizável** (tokens + primitivos + layout + animações, 14 componentes). O projeto antigo `e77ea465-291f-4bf5-930c-a267680da04e` foi renomeado para **"SignallQ — Protótipos"** e agora hospeda os fluxos (`tobe/`, `templates/`, `uploads/`), NÃO o DS — não sincronizar o pacote nele. Reuse sempre este `projectId`; o workspace tem vários "...Design System" (SignallQ PRO, Speedtest by SignallQ) — se a listagem mostrar mais de um **"SignallQ Design System"** exato, pare e confirme com o Marcelo antes de sincronizar.
 
 ## Setup
 

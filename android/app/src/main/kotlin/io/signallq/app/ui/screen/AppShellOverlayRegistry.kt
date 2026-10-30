@@ -15,7 +15,7 @@ import io.signallq.app.feature.speedtest.ResultadoSpeedtest
  * coisa que este registro resolve — respondem por só ~30-40 linhas (~15%). O resto (100% de
  * wiring de root content em duas fatias, lambda de regra de negócio numa terceira, estado
  * hoisted numa quarta) não passa por aqui e continua sendo risco de crescimento do arquivo — ver
- * `docs_ai/technical/appshell-overlay-registry.md`, seção "O que este registro não resolve".
+ * `docs/technical/appshell-overlay-registry.md`, seção "O que este registro não resolve".
  * Dentro do que resolve, generaliza o padrão de overlays extraídos (issue #1656) já
  * provou — overlay com Composable e callbacks próprios, em arquivo dedicado — para os demais
  * overlays do [AppShellOverlay.Companion] migrados aqui, e cria o único ponto de agregação: este
@@ -54,7 +54,7 @@ import io.signallq.app.feature.speedtest.ResultadoSpeedtest
  * [AppShellOverlay.Dns]. Os demais overlays (Ajustes, Perfil, Ferramentas, Dispositivos,
  * Fibra/EquipamentoInternet, Laudo, SinalCanais, ResultadoVelocidade, DiagnosticoGuiado,
  * ModoGamer) continuam inline em `AppShell.kt` — migração de cada um é responsabilidade de
- * quem tocar essa área numa fatia futura (ver `docs_ai/technical/appshell-overlay-registry.md`).
+ * quem tocar essa área numa fatia futura (ver `docs/technical/appshell-overlay-registry.md`).
  */
 @Composable
 internal fun AppShellOverlayRegistry(

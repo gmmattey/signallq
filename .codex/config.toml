@@ -1,5 +1,5 @@
 # Configuração de projeto do Codex para o SignallQ.
-# AGENTS.md é a entrada; documentacao/GOVERNANCA.md contém a autoridade normativa.
+# AGENTS.md é a entrada; docs/05-governanca-e-fluxo-de-trabalho.md contém a autoridade normativa.
 
 [agents]
 enabled = true

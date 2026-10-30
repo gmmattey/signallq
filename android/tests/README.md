@@ -21,7 +21,7 @@ A garantia de qualidade do SignallQ se apoia em três camadas:
 2. **Testes instrumentados (androidTest)** — hoje restritos à camada de banco
    (Room / migrations / DAO). Não há cobertura instrumentada de UI Compose.
 3. **Testes manuais / E2E** — roteiro estruturado em
-   [`signallq_test_cases.yaml`](./signallq_test_cases.yaml), cobrindo os fluxos
+   [`signallq_test_cases.yaml`](signallq_test_cases.yaml), cobrindo os fluxos
    de ponta a ponta de todas as telas. Serve de checklist de QA e de base para
    automação futura (ex.: Firebase App Testing).
 
@@ -115,7 +115,7 @@ Existem **2 classes** instrumentadas, ambas focadas na camada de banco
 ## 4. Testes manuais / E2E
 
 O caderno mais completo e atual é
-[`caderno-completo-testes-android.xlsx`](./caderno-completo-testes-android.xlsx)
+[`caderno-completo-testes-android.xlsx`](caderno-completo-testes-android.xlsx)
 (178 casos, adicionado em 2026-07-17) — cobre tela por tela (Início, Velocidade,
 Sinal, Histórico, Perfil/Ferramentas, overlays/detalhes), fluxos E2E, checklist
 de tokens de design, template de bug para o GitHub e comandos ADB de apoio.
@@ -187,5 +187,5 @@ speedtest concluído).
 ```
 
 ### Testes manuais / E2E
-Seguir o roteiro de [`signallq_test_cases.yaml`](./signallq_test_cases.yaml)
+Seguir o roteiro de [`signallq_test_cases.yaml`](signallq_test_cases.yaml)
 em um device/emulador, validando cada `finalScreenAssertion`.

@@ -29,7 +29,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 /**
- * ViewModel do fluxo "WiFi Casa" (`docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`,
+ * ViewModel do fluxo "WiFi Casa" (`docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`,
  * `.agents/architecture-plan.md`) -- primeira ferramenta do hub Ferramentas com `@HiltViewModel`
  * de verdade (decisão de produto registrada no architecture plan, seção 4.3): precisa sobreviver
  * à navegação entre "adicionar marcador" e falar com o Room para retomar mapeamento incompleto

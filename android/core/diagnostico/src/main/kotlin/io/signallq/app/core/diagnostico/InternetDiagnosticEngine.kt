@@ -113,7 +113,7 @@ object InternetDiagnosticEngine {
         // IN-NORMAL-05: limiar historico de latencia (>100ms). "Anatel RQUAL" era usado
         // como nome informal da ORIGEM historica deste limiar, mas NAO e uma citacao
         // normativa comprovada -- a unica documentacao real de "Anatel RQUAL" neste repo
-        // (docs_ai/FUNCIONAL.md) descreve um criterio diferente (% de velocidade em relacao
+        // (docs/01-funcional.md) descreve um criterio diferente (% de velocidade em relacao
         // ao plano contratado, Ato 7869/2022), sem relacao com latencia. Por isso a mensagem
         // ao usuario NAO cita Anatel/RQUAL (GH#1502, revisao independente da PR #1515 --
         // decisao aprovada na planilha original foi superada por revisao de confiabilidade:

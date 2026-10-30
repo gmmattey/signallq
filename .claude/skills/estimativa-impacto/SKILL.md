@@ -47,11 +47,10 @@ Se `SIM`, a implementação espera Architecture Plan/revisão do Camillo.
 
 ## 4. Especialistas prováveis
 
-- produto/jornada: Claudete;
-- Android: Rian;
-- diagnóstico/Workers: Marcelo;
-- arquitetura sistêmica: Camillo;
-- qualidade: Tiago.
+- produto/jornada: Marcelo;
+- UX/UI e Design System: Priscila;
+- Android, diagnóstico/Workers e arquitetura sistêmica: Camillo;
+- qualidade: Renan.
 
 Liste apenas quem realmente agrega valor.
 

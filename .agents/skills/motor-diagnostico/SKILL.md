@@ -9,7 +9,7 @@ Use em mudanças que afetem diagnóstico, speedtest, Wi-Fi, DNS, latência, jitt
 
 A skill orienta o procedimento. O roteamento de agentes vem do `AGENTS.md`.
 
-Contexto por feature (regras de decisão, estados, mapa de código e `thresholds_em`): `docs_ai/features/INDEX.md` — em especial `assist-diagnostico`, `dns-ping`, `velocidade-resultado` e `wifi-canais-sinal`. Mudou comportamento, atualize a página.
+Contexto por feature (regras de decisão, estados, mapa de código e `thresholds_em`): `docs/features/INDEX.md` — em especial `assist-diagnostico`, `dns-ping`, `velocidade-resultado` e `wifi-canais-sinal`. Mudou comportamento, atualize a página.
 
 ## 1. Antes de propor mudança
 

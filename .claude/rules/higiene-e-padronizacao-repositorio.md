@@ -2,9 +2,9 @@
 
 - **Status:** ativo
 - **Última validação:** 2026-10-04 (§5 de módulos alinhada a `android/settings.gradle.kts`; regra de páginas de feature em §10; demais seções validadas em 2026-08-19)
-- **Fonte de verdade:** este arquivo (`.claude/rules/higiene-e-padronizacao-repositorio.md`) — não duplicar em `docs_ai/`, `AGENTS.md`, mirrors ou docs de módulo
+- **Fonte de verdade:** este arquivo (`.claude/rules/higiene-e-padronizacao-repositorio.md`) — não duplicar em `docs/`, `AGENTS.md`, mirrors ou docs de módulo
 - **Escopo:** repositório `buildea-labs/signallq` (monorepo SignallQ) inteiro — Android, Admin, Cloudflare, docs
-- **Responsável:** Claudete (dono do processo). Esta regra se aplica a todos os agentes autorizados e aplicáveis ao repositório, conforme a governança canônica em ../ai-governance, e a qualquer sessão humana no repo.
+- **Responsável:** Marcelo (dono do processo). Esta regra se aplica a todos os agentes autorizados e aplicáveis ao repositório, conforme a governança canônica em ../ai-governance, e a qualquer sessão humana no repo.
 
 Declarada como obrigatória no `AGENTS.md` deste repositório (seção "Regras operacionais
 obrigatórias") e referenciada pelos perfis dos agentes canônicos aplicáveis ao repositório. Não
@@ -408,7 +408,7 @@ versionado.
 
 Faça a melhoria na mesma branch e na mesma PR da tarefa principal. Quando a melhoria for relevante,
 use commit separado — mas não abra uma PR para cada achado (ver a regra de batching em
-`docs_ai/operations/PROCESSO_PR_E_AGENTES_2026-07-16.md`, item 2).
+`docs/operations/PROCESSO_PR_E_AGENTES_2026-07-16.md`, item 2).
 
 ---
 
@@ -433,7 +433,7 @@ estratégia de rollback quando aplicável. Seguir `abrir-issue` para nomenclatur
 ### Estrutura real (validada em 2026-07-16, pós-consolidação)
 
 ```
-docs_ai/
+docs/
 ├── README.md              (índice curto)
 ├── FUNCIONAL.md            (o que o app faz)
 ├── TECNICO.md               (como o app é construído/integrado)
@@ -456,7 +456,7 @@ docs_ai/
 └── _archive/                   (vazia por decisão — só o README com instrução de recuperação)
 ```
 
-Nota: assets de marca (`signallq-*.png`) vivem em `brand/` na raiz do repo, não em `docs_ai/` — é a
+Nota: assets de marca (`signallq-*.png`) vivem em `brand/` na raiz do repo, não em `docs/` — é a
 fonte da verdade de logo/ícone/favicon, referenciada por build Android e Admin (ver `brand/README.md`).
 
 A árvore `FUNCIONAL.md`/`TECNICO.md`/`ARQUITETURA/`/`CONTRATOS/`/`DESIGN_SYSTEM.md` é o alvo para
@@ -464,9 +464,9 @@ conteúdo funcional, técnico, arquitetural, de contrato e de design — não um
 tudo para dentro dela. `decisions/`, `functional/` (residual), `legal/`, `operations/`,
 `technical/` (residual) e `templates/` continuam existindo para o que não se encaixa nessa árvore
 (ADRs, planos pontuais, mapas de campo de equipamento, runbooks, termos legais). Ver
-`docs_ai/README.md` para o índice completo.
+`docs/README.md` para o índice completo.
 
-**Perímetro (atualizado 2026-08-06):** `docs_ai/` documenta **apenas** o app consumer Android e o
+**Perímetro (atualizado 2026-08-06):** `docs/` documenta **apenas** o app consumer Android e o
 backend Cloudflare. O painel Admin vive em `buildea-admin` e o site/PWA em `signallq-web` — a
 documentação deles pertence aos repositórios deles, aqui só existe ponteiro. O worker
 `signallq-admin-worker` é exceção: é deste repositório, embora o painel que o consome não seja.
@@ -475,15 +475,15 @@ design foram removidos do repositório nas Fases 4a-b do épico #1623.
 
 **Sem pasta de arquivo.** Documento substituído é **removido**, não movido para `_archive/`. O git
 é o arquivo — a pasta duplicava o histórico e poluía toda busca com versões antigas, que agentes e
-humanos liam como verdade atual. Ver `docs_ai/_archive/README.md` para recuperar qualquer documento
+humanos liam como verdade atual. Ver `docs/archive/README.md` para recuperar qualquer documento
 removido.
 
-`docs_ai/README.md` deve funcionar como índice, não como uma segunda documentação completa.
+`docs/README.md` deve funcionar como índice, não como uma segunda documentação completa.
 
-### Páginas de feature (`docs_ai/features/`)
+### Páginas de feature (`docs/features/`)
 
 Mudou o comportamento de uma feature (regra de produto, estado ou copy, flag, evento, módulo ou
-arquivo do mapa de código)? **Atualize `docs_ai/features/<slug>.md` na mesma PR.** A página é a
+arquivo do mapa de código)? **Atualize `docs/features/<slug>.md` na mesma PR.** A página é a
 fonte por feature; `FUNCIONAL.md`, `ARQUITETURA/MODULOS/*` e `technical/*` guardam só o que é
 transversal ou específico do módulo e apontam para ela. Não copie limiares: use `thresholds_em`.
 
@@ -492,7 +492,7 @@ O CI valida (`scripts/validar-docs.sh`): todo caminho de `modulos`, `arquivos`, 
 `technical/analytics-events*.md`; toda flag existe no código ou no catálogo; `INDEX.md` e
 `features.json` batem com o gerado (`scripts/gerar-features-index.sh`); todo módulo Gradle aparece
 em alguma feature (aviso, ou falha com `FEATURES_COBERTURA_ESTRITA=1`); e avisa quando um `.kt`
-listado mudou sem tocar a página. Formato: `docs_ai/features/README.md`.
+listado mudou sem tocar a página. Formato: `docs/features/README.md`.
 
 ### Nomes
 
@@ -544,7 +544,7 @@ Cada ADR deve possuir número único. Existe histórico de numeração duplicada
 processo antigo; cita arquitetura que não existe mais; serve apenas como memória histórica.
 
 Não mova para `_archive`. O git preserva tudo, e manter cópias antigas na árvore custa caro: até
-2026-08-06 havia 100 documentos arquivados em `docs_ai/_archive/`, e toda busca por um fato técnico
+2026-08-06 havia 100 documentos arquivados em `docs/archive/`, e toda busca por um fato técnico
 devolvia a versão substituída junto com a vigente — agentes e humanos liam a antiga como verdade
 atual. A pasta foi esvaziada e não volta a receber arquivos.
 
@@ -557,7 +557,7 @@ Ao remover:
 Exceção: documento de **produto pausado** não é removido nem arquivado — fica onde está, com um
 README de selagem declarando o congelamento, a data, o estado no congelamento e a condição de
 retomada. Se o pausado virar descontinuado permanente, o README de selagem some junto com o resto
-(modelo histórico: `docs_ai/pro-onhold/`, removido em 2026-08-15 — `git show 0daa424a:docs_ai/pro-onhold/README.md`).
+(modelo histórico: `docs/pro-onhold/`, removido em 2026-08-15 — `git show 0daa424a:docs_ai/pro-onhold/README.md`).
 
 ---
 

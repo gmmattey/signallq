@@ -14,7 +14,7 @@ Localize no componente afetado:
 - `migrations/`;
 - `wrangler.toml` e binding real;
 - queries/repositories que consomem o schema;
-- contratos/documentação em `docs_ai/CONTRATOS/` quando existirem.
+- contratos/documentação em `docs/CONTRATOS/` quando existirem.
 
 Não copie nome de banco ou número de migration desta skill sem confirmar no código atual.
 
@@ -55,4 +55,4 @@ Testes: ...
 Gate Camillo: SIM/NÃO — motivo
 ```
 
-Marcelo normalmente responde por Worker/contrato do diagnóstico. Camillo entra por gate sistêmico. Tiago revisa migration/compatibilidade. A skill não executa migration de produção nem deploy.
+Camillo responde por Worker, contrato do diagnóstico e gate sistêmico. Renan revisa migration/compatibilidade. A skill não executa migration de produção nem deploy.

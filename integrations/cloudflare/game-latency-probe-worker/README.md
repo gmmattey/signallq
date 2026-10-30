@@ -1,7 +1,7 @@
 # SignallQ Game Latency Probe Worker
 
 Worker de eco/latencia dedicado a tela **Jogos** (GH#935), estrategia
-`REGIONAL_ESTIMATE` da `docs_ai/functional/JOGOS_TESTE_CONEXAO_SPEC.md`.
+`REGIONAL_ESTIMATE` da `docs/functional/JOGOS_TESTE_CONEXAO_SPEC.md`.
 
 ## Escopo — de proposito minimo
 

@@ -12,13 +12,13 @@ type: compartilhada
 
 **Produto:** Diagnostica rede, wi-fi, sinal móvel; oferece recomendações de otimização e análise de topologia
 
-**Governança e squad:** `AGENTS.md` (Claudete, Rian, Marcelo, Tiago, Camillo)
+**Governança e squad:** `AGENTS.md` (Marcelo, Priscila, Camillo, Renan)
 
 **Documentação Central:**
-- `docs_ai/FUNCIONAL.md` — o que o app faz
-- `docs_ai/TECNICO.md` — como é construído
-- `docs_ai/ARQUITETURA/` — módulos e decisões técnicas
+- `docs/01-funcional.md` — o que o app faz
+- `docs/03-especificacao-tecnica.md` — como é construído
+- `docs/02-arquitetura.md` — módulos e decisões técnicas
 
-**Índice Completo:** `docs_ai/INDICE.md`
+**Índice Completo:** `docs/INDICE.md`
 
 **Governança:** `.claude/rules/politica-documentacao-viva.md` (docs vivem com código)

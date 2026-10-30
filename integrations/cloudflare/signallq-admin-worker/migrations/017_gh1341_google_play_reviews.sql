@@ -4,7 +4,7 @@
 -- resposta do desenvolvedor e status de tratamento -- isso é uma lista de registros identificáveis
 -- por reviewId (não estado pontual de config como admin_settings, não série temporal como
 -- integration_metric_snapshots/migration 016), então precisa de tabela própria com o reviewId
--- como chave (decisão da Claudete, 2026-07-24 — registro removido de docs_ai/decisions/ na Fase
+-- como chave (decisão da Claudete, 2026-07-24 — registro removido de docs/archive/decisoes/ na Fase
 -- 4d do épico #1623, git preserva).
 --
 -- UPDATE-em-lugar (não histórico de versão): a própria API não expõe histórico de edição de

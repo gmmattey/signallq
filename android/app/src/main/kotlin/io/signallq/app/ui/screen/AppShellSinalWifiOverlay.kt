@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 
 /**
- * Overlay "WiFi Casa" (`docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, evolução de "Sinal
+ * Overlay "WiFi Casa" (`docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, evolução de "Sinal
  * WiFi"/GH#1201) do hub Ferramentas — extraído do corpo de [AppShell] pela issue #1695 (épico
  * #1647), entrada de exemplo do [AppShellOverlayRegistry].
  *

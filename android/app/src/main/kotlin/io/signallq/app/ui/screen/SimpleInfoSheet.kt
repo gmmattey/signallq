@@ -105,7 +105,7 @@ internal fun InfoRow(
 // ─── Sobre (6f) ─────────────────────────────────────────────────────────────
 // Conteudo estatico: versao do app, plataforma, contato de suporte e resumo de
 // licencas de terceiros. Fonte completa das licencas fica em
-// docs_ai/technical/THIRD_PARTY_LICENSES.md (nao duplicada aqui — so resumida).
+// docs/technical/THIRD_PARTY_LICENSES.md (nao duplicada aqui — so resumida).
 @Composable
 internal fun SobreSheet(
     c: LkTokens,

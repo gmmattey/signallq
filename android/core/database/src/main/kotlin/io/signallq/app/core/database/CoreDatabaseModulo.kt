@@ -338,7 +338,7 @@ object CoreDatabaseModulo {
             }
         }
 
-    /** `docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`/`.agents/architecture-plan.md`
+    /** `docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`/`.agents/architecture-plan.md`
      *  (WiFi Casa — mapeamento espacial de sinal Wi-Fi). Aditiva: cria as duas tabelas novas
      *  (sessão de mapeamento + marcadores filhos, precedente `chat_sessions`/`chat_messages`) --
      *  nenhuma tabela existente é alterada, nenhuma linha é perdida. Instalações existentes

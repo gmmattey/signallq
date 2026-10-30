@@ -2,7 +2,7 @@
 set -uo pipefail
 
 # Guardrail da documentacao. Existe porque regra sem enforcement foi exatamente
-# como docs_ai/ chegou a 235 arquivos com inventario defasado em varios deles.
+# como docs/ chegou a 235 arquivos com inventario defasado em varios deles.
 #
 # Uso:
 #   scripts/validar-docs.sh                 valida so os .md alterados vs. origin/main
@@ -30,7 +30,7 @@ done
 
 # Diretorios onde .md e permitido. Qualquer outro lugar exige decisao explicita.
 # web/ (site publico, migrado do repo signallq-web em 2026-10) tem docs e skills proprios.
-ARVORE_PERMITIDA='^(docs_ai/|\.claude/|\.github/|\.agents/|android/|integrations/|packages/|scripts/|brand/|docs/|web/|_archive/|[A-Z_]+\.md$)'
+ARVORE_PERMITIDA='^(docs/|\.claude/|\.github/|\.agents/|android/|integrations/|packages/|scripts/|brand/|web/|windows/|[A-Z_]+\.md$)'
 
 CAMPOS_OBRIGATORIOS=(title description type status owner last_updated)
 
@@ -78,16 +78,18 @@ case "$MODO" in
     echo "→ validando .md alterados vs. $BASE"
     ;;
   *)
-    ALVOS=$(find docs_ai -name '*.md' | sort)
+    ALVOS=$(find docs -name '*.md' | sort)
     echo "→ validando árvore inteira"
     ;;
 esac
 
-# O frontmatter obrigatorio e regra de docs_ai/. Fora dali cada arvore tem formato
+# O frontmatter obrigatorio e regra de docs/. Fora dali cada arvore tem formato
 # proprio — SKILL.md usa name/description exigidos pelo carregador de skills, e as
 # regras em .claude/rules/ nao sao documentacao de produto. Impor o mesmo cabecalho
 # ali quebraria ferramenta em troca de nada.
-ALVOS=$(echo "$ALVOS" | grep -E '^docs_ai/' || true)
+# docs/archive/ e docs/windows/ ficam fora do frontmatter obrigatorio: o primeiro e historico
+# preservado como esta, o segundo tem formato proprio do produto Windows.
+ALVOS=$(echo "$ALVOS" | grep -E '^docs/' | grep -vE '^docs/(archive|windows)/' || true)
 
 # ---------------------------------------------------------------------------
 # 4. Frontmatter obrigatorio
@@ -118,9 +120,9 @@ if [[ -n "${ALVOS//[[:space:]]/}" ]]; then
 
     # status precisa ser um valor conhecido.
     # templates/ e isento: o campo la lista as opcoes possiveis, nao um valor.
-    # decisions/ tem vocabulario proprio — decisao registrada nao e "ativa",
+    # archive/decisoes/ tem vocabulario proprio — decisao registrada nao e "ativa",
     # e "vigente" ou "registrado (historico)"; ADR usa aceito/proposto/rejeitado.
-    if ! echo "$f" | grep -qE '^docs_ai/(templates|decisions)/'; then
+    if ! echo "$f" | grep -qE '^docs/(templates|archive/decisoes)/'; then
       st=$(sed -n '2,/^---$/p' "$f" | grep -E '^status:' | head -1 | sed 's/status: *//; s/"//g' || true)
       if [[ -n "$st" ]] && ! echo "$st" | grep -qE '^(ativo|draft|congelado|deprecated)$'; then
         aviso "$f — status desconhecido: '$st' (esperado: ativo|draft|congelado|deprecated)"
@@ -130,11 +132,11 @@ if [[ -n "${ALVOS//[[:space:]]/}" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 4b. Paginas de feature (docs_ai/features/*.md)
+# 4b. Paginas de feature (docs/features/*.md)
 # ---------------------------------------------------------------------------
 # O frontmatter dessas paginas e o mapa feature -> codigo que uma IA usa para se
 # localizar; mapa com caminho morto e pior que mapa nenhum. Entao toda referencia
-# do frontmatter precisa existir de verdade. Contrato: docs_ai/features/README.md.
+# do frontmatter precisa existir de verdade. Contrato: docs/features/README.md.
 #
 # Promover a cobertura de modulos de AVISO para FALHA quando as 12 paginas existirem:
 #   FEATURES_COBERTURA_ESTRITA=1 bash scripts/validar-docs.sh   (ou default 1 desde a migração das 12 features; use FEATURES_COBERTURA_ESTRITA=0 para rebaixar a aviso)
@@ -157,8 +159,8 @@ PAGINAS_FEAT=$(features_paginas)
 if [[ "$MODO" == "alterados" ]]; then
   # Alem do diff contra a base, inclui paginas ainda nao commitadas: sem isso uma
   # pagina nova so seria validada depois do commit, que e tarde para o autor.
-  ALVOS_FEAT=$( { echo "$ALVOS"; git ls-files -m -o --exclude-standard -- docs_ai/features; } \
-    | grep -E '^docs_ai/features/[^/]+[.]md$' | grep -vE '/(README|INDEX)[.]md$' | sort -u || true)
+  ALVOS_FEAT=$( { echo "$ALVOS"; git ls-files -m -o --exclude-standard -- docs/features; } \
+    | grep -E '^docs/features/[^/]+[.]md$' | grep -vE '/(README|INDEX)[.]md$' | sort -u || true)
 else
   ALVOS_FEAT="$PAGINAS_FEAT"
 fi
@@ -199,8 +201,8 @@ if [[ -n "${ALVOS_FEAT//[[:space:]]/}" ]]; then
       while IFS= read -r item; do
         [[ -z "$item" ]] && continue
         if [[ ! -e "$item" ]]; then
-          # contratos pode vir relativo a docs_ai/ (ex.: CONTRATOS/openapi/x.yaml)
-          if [[ "$campo" == "contratos" && -e "docs_ai/$item" ]]; then continue; fi
+          # contratos pode vir relativo a docs/ (ex.: CONTRATOS/openapi/x.yaml)
+          if [[ "$campo" == "contratos" && -e "docs/$item" ]]; then continue; fi
           erro "$f — $campo: caminho inexistente: $item"
         fi
       done < <(fm_lista "$f" "$campo")
@@ -217,7 +219,7 @@ if [[ -n "${ALVOS_FEAT//[[:space:]]/}" ]]; then
       [[ -z "$ev" ]] && { erro "$f — eventos: item sem nome de evento: $item"; continue; }
       literais_kotlin
       if grep -qxF "$ev" "$LIT_KT"; then continue; fi
-      if grep -qF "$ev" docs_ai/technical/analytics-events.md docs_ai/technical/analytics-events-schema.md 2>/dev/null; then
+      if grep -qF "$ev" docs/technical/analytics-events.md docs/technical/analytics-events-schema.md 2>/dev/null; then
         continue
       fi
       erro "$f — eventos: '$ev' não aparece no código Kotlin nem em technical/analytics-events*.md"
@@ -239,11 +241,11 @@ fi
 echo "  $n_feat página(s) de feature validada(s)"
 
 # INDEX.md e features.json sao gerados: divergir da fonte e erro (mesmo padrao do inventario).
-if [[ -n "$PAGINAS_FEAT" || -e docs_ai/features/INDEX.md ]]; then
+if [[ -n "$PAGINAS_FEAT" || -e docs/features/INDEX.md ]]; then
   if bash scripts/gerar-features-index.sh --check >/tmp/feat-idx.out 2>&1; then
     echo "  ✓ INDEX.md e features.json em dia"
   else
-    erro "docs_ai/features/INDEX.md ou features.json desatualizado — rode: scripts/gerar-features-index.sh"
+    erro "docs/features/INDEX.md ou features.json desatualizado — rode: scripts/gerar-features-index.sh"
     sed 's/^/    /' /tmp/feat-idx.out | head -8
   fi
 fi
@@ -316,36 +318,36 @@ while read -r linha; do
   dir=$(echo "$linha" | grep -oE '`[a-zA-Z/_-]+/`' | head -1 | tr -d '`')
   num=$(echo "$linha" | grep -oE '\(([0-9]+)\)' | head -1 | tr -d '()')
   [[ -z "$dir" || -z "$num" ]] && continue
-  [[ ! -d "docs_ai/$dir" ]] && continue
-  real=$(find "docs_ai/$dir" -maxdepth 1 -name '*.md' | wc -l | tr -d ' ')
+  [[ ! -d "docs/$dir" ]] && continue
+  real=$(find "docs/$dir" -maxdepth 1 -name '*.md' | wc -l | tr -d ' ')
   if [[ "$real" != "$num" ]]; then
     erro "INDICE.md declara $dir com $num documentos; o disco tem $real"
     divergencias=$((divergencias + 1))
   fi
-done < <(grep -E '^#{2,3} .*`[a-zA-Z/_-]+/`.*\([0-9]+\)' docs_ai/INDICE.md || true)
+done < <(grep -E '^#{2,3} .*`[a-zA-Z/_-]+/`.*\([0-9]+\)' docs/INDICE.md || true)
 [[ $divergencias -eq 0 ]] && echo "  ✓ contagens conferem"
 
 # ---------------------------------------------------------------------------
 # 6b. Pasta nova nao mencionada em lugar nenhum
 # ---------------------------------------------------------------------------
-echo "→ pastas de docs_ai/ citadas no índice"
+echo "→ pastas de docs/ citadas no índice"
 naocitadas=0
-for d in docs_ai/*/; do
+for d in docs/*/; do
   nome=$(basename "$d")
-  if ! grep -qE "$nome/" docs_ai/INDICE.md docs_ai/README.md 2>/dev/null; then
-    erro "docs_ai/$nome/ existe mas não é citada em INDICE.md nem README.md"
+  if ! grep -qE "$nome/" docs/INDICE.md docs/README.md 2>/dev/null; then
+    erro "docs/$nome/ existe mas não é citada em INDICE.md nem README.md"
     naocitadas=$((naocitadas + 1))
   fi
 done
 [[ $naocitadas -eq 0 ]] && echo "  ✓ todas citadas"
 
-# Documento solto na raiz de docs_ai/ precisa de citacao nominal.
-echo "→ documentos na raiz de docs_ai/"
+# Documento solto na raiz de docs/ precisa de citacao nominal.
+echo "→ documentos na raiz de docs/"
 soltos=0
-for f in docs_ai/*.md; do
+for f in docs/*.md; do
   nome=$(basename "$f")
   [[ "$nome" == "INDICE.md" || "$nome" == "README.md" ]] && continue
-  if ! grep -qF "$nome" docs_ai/INDICE.md docs_ai/README.md 2>/dev/null; then
+  if ! grep -qF "$nome" docs/INDICE.md docs/README.md 2>/dev/null; then
     erro "$f — documento na raiz sem citação em INDICE.md nem README.md"
     soltos=$((soltos + 1))
   fi
@@ -357,7 +359,7 @@ done
 # ---------------------------------------------------------------------------
 echo
 if [[ "$MODO" != "alterados" ]]; then
-  tot=$(find docs_ai -name '*.md' | wc -l | tr -d ' ')
+  tot=$(find docs -name '*.md' | wc -l | tr -d ' ')
   echo "cobertura de frontmatter: $com_fm de $((com_fm + sem_fm)) verificados (árvore: $tot documentos)"
 fi
 echo "falhas: $falhas · avisos: $avisos"

@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 /**
  * Implementacao de [AnalyticsHelper] usando Firebase Analytics — funil
- * principal de engajamento (SIG-155). Ver docs_ai/technical/analytics-events.md.
+ * principal de engajamento (SIG-155). Ver docs/technical/analytics-events.md.
  *
  * Compartilha a mesma instancia de [FirebaseAnalytics] do [FirebaseAnalyticsTracker]
  * (SIG-134) — ambos sao providos como @Singleton a partir do mesmo

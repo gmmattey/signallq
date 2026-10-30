@@ -9,11 +9,11 @@ allowed-tools: Bash(grep *), Bash(find *), Read
 
 Use para checagem pontual de UI já existente ou alterada. Para desenho novo, consulte `SignallQ-design`; para auditoria multi-tela, use `auditar-ux`.
 
-A skill não pertence a uma persona. Claudete pode usá-la para aceite visual, Rian durante implementação e Tiago durante revisão.
+A skill não pertence a uma persona. Marcelo pode usá-la para aceite visual, Priscila na especificação, Camillo durante implementação e Renan durante revisão.
 
 ## Fonte de verdade
 
-Consulte `docs_ai/DESIGN_SYSTEM.md` e a skill `SignallQ-design`. Não copie tokens para este arquivo.
+Consulte `docs/04-design-system.md` e a skill `SignallQ-design`. Não copie tokens para este arquivo.
 
 ## Verificações
 
@@ -47,7 +47,7 @@ Classifique cada ocorrência com contexto; não reprovar automaticamente cor de 
 
 ### Produto
 
-Confirme que a tela comunica diagnóstico em linguagem compreensível e não apresenta conclusão sem evidência. Mudança de jornada/escopo volta para Claudete; mudança sistêmica que atravesse módulos/contratos segue o gate do Camillo.
+Confirme que a tela comunica diagnóstico em linguagem compreensível e não apresenta conclusão sem evidência. Mudança de jornada/escopo volta para Marcelo; mudança sistêmica que atravesse módulos/contratos segue o gate do Camillo.
 
 ## Saída
 

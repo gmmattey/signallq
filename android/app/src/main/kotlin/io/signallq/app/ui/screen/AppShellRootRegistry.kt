@@ -39,7 +39,7 @@ import androidx.compose.runtime.Stable
  * exatamente como [AppShellOverlayRegistry] faz para overlay. Não existe segundo motor de
  * navegação.
  *
- * Ver `docs_ai/technical/appshell-root-content-registry.md`.
+ * Ver `docs/technical/appshell-root-content-registry.md`.
  *
  * @param root raiz selecionada — vem de `navigator.selectedRoot`, que é
  *   [AppShellRoot.fromIndex] sobre `selectedTab`. Índice desconhecido cai em

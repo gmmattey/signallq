@@ -23,7 +23,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["../../brand/signallq-symbol-512.png"],
+    "icon": ["../../brand/signallq-symbol-512.png", "icons/icon.ico"],
     "windows": { "wix": { "language": ["pt-BR"] } }
   }
 }

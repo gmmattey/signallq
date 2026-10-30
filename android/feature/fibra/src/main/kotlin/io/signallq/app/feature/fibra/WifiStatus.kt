@@ -3,7 +3,7 @@ package io.signallq.app.feature.fibra
 /**
  * Estado de um radio Wi-Fi (2.4GHz/5GHz) lido da tela "Home Networking"
  * (`lan_status.cgi?wlan`) do roteador Nokia — ver
- * `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`.
+ * `docs/technical/NOKIA_GPON_FIELD_MAP.md`.
  *
  * Deliberadamente nao carrega PSK/senha — o field-map confirma que a senha
  * Wi-Fi so aparece na tela de configuracao (`wlan_config.cgi`), nunca

@@ -4,7 +4,7 @@ package io.signallq.app.core.featureflags
  * Le o catalogo canonico do classpath (`src/main/resources/featureflags/consumer-catalog.json`)
  * -- funciona identico em teste JVM puro, Robolectric e device real, sem depender de
  * `Context`/`AssetManager` (motivo de usar `resources/`, nao `assets/`, ver decisao
- * tecnica em `docs_ai/technical/feature-flags-catalog.md`).
+ * tecnica em `docs/technical/feature-flags-catalog.md`).
  */
 object FeatureFlagCatalogLoader {
     private const val CAMINHO_CATALOGO_CONSUMER = "/featureflags/consumer-catalog.json"

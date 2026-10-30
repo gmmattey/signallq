@@ -416,13 +416,14 @@ private fun ModoGamerSelecaoDeviceConteudo(
     onSelecionarDevice: (DeviceJogo) -> Unit,
 ) {
     val c = LocalLkTokens.current
-    val devicesExibidos = remember(platforms) {
-        if (platforms != null && platforms.isNotEmpty()) {
-            if (platforms.contains(DeviceJogo.TV_CLOUD)) platforms else platforms + DeviceJogo.TV_CLOUD
-        } else {
-            DeviceJogo.entries
+    val devicesExibidos =
+        remember(platforms) {
+            if (platforms != null && platforms.isNotEmpty()) {
+                if (platforms.contains(DeviceJogo.TV_CLOUD)) platforms else platforms + DeviceJogo.TV_CLOUD
+            } else {
+                DeviceJogo.entries
+            }
         }
-    }
     Column(modifier = modifier.fillMaxSize().padding(horizontal = LkSpacing.xl, vertical = LkSpacing.lg)) {
         Text(
             text = "Em qual aparelho você joga $nomeJogo?",

@@ -46,8 +46,8 @@ data class DeviceDriverProfile(
 /**
  * Catalogo interno de drivers conhecidos — curado manualmente pelo time
  * SignallQ. Apenas entradas fisicamente validadas (ver
- * `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md` e
- * `docs_ai/technical/TPLINK_ARCHER_ROUTER_FIELD_MAP.md`) usam
+ * `docs/technical/NOKIA_GPON_FIELD_MAP.md` e
+ * `docs/technical/TPLINK_ARCHER_ROUTER_FIELD_MAP.md`) usam
  * [SupportLevel.LAB_VALIDATED] — qualquer entrada nova entra como
  * [SupportLevel.PARSER_IMPORTED] ou [SupportLevel.INFERRED_FAMILY] ate
  * validacao fisica (GH#540 valida C20/C6 no SignallQ; GH#539 trata parsers

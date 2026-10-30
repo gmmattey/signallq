@@ -17,7 +17,7 @@ Skill vendorizada para trabalho detalhado de UI/UX. Os scripts, references e ass
 ## Antes de usar
 
 1. Leia `AGENTS.md` e identifique se a tarefa é exploração, decisão ou execução.
-2. Leia o Design System implementado em `docs_ai/DESIGN_SYSTEM.md`.
+2. Leia o Design System implementado em `docs/04-design-system.md`.
 3. Para criar UI nova, consulte também `SignallQ-design`.
 4. Para checagem pontual de tela pronta, prefira `design-check`.
 5. Para auditoria multi-tela/fluxo, prefira `auditar-ux`.
@@ -39,10 +39,9 @@ Não trate instrução genérica do pacote vendorizado como autoridade superior 
 - acessibilidade/TalkBack e contraste fazem parte da entrega;
 - evite aparência genérica de dashboard/IA e cardização desnecessária;
 - copy de diagnóstico precisa corresponder às evidências reais;
-- mudança de jornada é decisão de Claudete;
-- Rian normalmente implementa Compose;
-- Marcelo valida semântica diagnóstica;
-- Tiago revisa qualidade;
+- mudança de jornada é decisão de Marcelo;
+- Priscila define jornada e visual; Camillo implementa Compose e valida a semântica diagnóstica;
+- Renan revisa qualidade;
 - mudança sistêmica segue o gate de Camillo.
 
 A skill é procedimento/tooling, não agente, não owner de produto e não define modelo de IA.

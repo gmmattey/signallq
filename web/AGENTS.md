@@ -20,7 +20,7 @@
 
 - **Componentes principais:** Next.js 16, React 19, TypeScript, Tailwind CSS, `src/app/`, `src/components/`, `src/lib/`, `src/styles/` e `public/`.
 - **Rotas:** uma pasta por rota em `src/app/` (`page.tsx` fino + `*Content.tsx`); metadados em `src/lib/pageMetaCatalog.ts` (`PAGE_META`, fonte única, validada contra `public/sitemap.xml` por `sitemap.test.ts`); `src/middleware.ts` mantém o allowlist de rotas públicas e faz o rewrite de `speedtest.signallq.com`.
-- **Integrações:** Play Store (`NEXT_PUBLIC_SIGNALLQ_PLAY_STORE_URL`); motor do teste de velocidade chamado direto do navegador (`NEXT_PUBLIC_SPEEDTEST_DOWNLOAD_URL`/`UPLOAD_URL`, default `speed.cloudflare.com`); proxy server-side `/api/track` → Worker `signallq-admin` em `signallq-admin.gmmattey.workers.dev`, autenticado por `SITE_INGEST_KEY` (secret do servidor, igual à do Worker). Visitas e cliques alimentam o informe diário no Discord (ver `docs_ai/technical/admin-api-schema.md`).
+- **Integrações:** Play Store (`NEXT_PUBLIC_SIGNALLQ_PLAY_STORE_URL`); motor do teste de velocidade chamado direto do navegador (`NEXT_PUBLIC_SPEEDTEST_DOWNLOAD_URL`/`UPLOAD_URL`, default `speed.cloudflare.com`); proxy server-side `/api/track` → Worker `signallq-admin` em `signallq-admin.gmmattey.workers.dev`, autenticado por `SITE_INGEST_KEY` (secret do servidor, igual à do Worker). Visitas e cliques alimentam o informe diário no Discord (ver `docs/technical/admin-api-schema.md`).
 - **Dependências:** declaradas em `package.json`.
 
 ## Comandos essenciais comprovados
@@ -37,26 +37,23 @@
 
 - **Acessibilidade e performance:** preservar semântica, navegação por teclado, responsividade e desempenho. **Fidelidade ao protótipo:** medidas, cores e textos seguem `docs/handoffs/2026-10-novas-paginas-site.md`; não reintroduza tema escuro nem componentes do sistema de design antigo sem decisão do Luiz.
 - **Privacidade:** segredos, incluindo `SITE_INGEST_KEY`, devem permanecer somente no servidor.
-- **SEO técnico:** Renan responde por rotas, metadados, redirecionamentos, indexação e dados estruturados. SEO editorial e aquisição pertencem a Marcos.
+- **SEO técnico:** Camillo responde por rotas, metadados, redirecionamentos, indexação e dados estruturados. SEO editorial e aquisição pertencem a Marcelo.
 - **Custos:** mudanças em telemetria, hospedagem ou serviços externos exigem aprovação do Luiz quando criarem custo ou compromisso externo.
 - **Publicação:** o deploy continua manual (`Web Deploy manual na Vercel`, projeto Vercel `signallq-web`, secrets `VERCEL_*` deste repositório); deploy, produção, alteração pública de marca, rotas públicas, consentimento ou mudança irreversível exigem aprovação explícita do Luiz.
 
 ## Agentes aplicáveis
 
-Reavaliado em 2026-08-28 após a redução de escopo: com o site limitado a três rotas estáticas e um proxy de telemetria de clique, nem todo agente listado no portfólio tem trabalho rotineiro aqui. A lista abaixo distingue quem é central deste repositório de quem atua só sob demanda.
+O site segue a Squad Ultra-Enxuta definida no `AGENTS.md` da raiz do repositório. Com o site limitado a três rotas estáticas e um proxy de telemetria de clique, o engajamento aqui é este:
 
-- **Líder funcional (central):** Claudete — prioridade, escopo e critérios de aceite da landing.
-- **Responsável técnico web (central):** Renan — implementação, SEO técnico, acessibilidade, performance e o único dono técnico do repositório.
-- **Revisão independente (central):** Caio; não implementa a entrega que revisa — obrigatório em qualquer mudança de código, segurança ou produção.
-- **Design (sob demanda):** Juliana — só quando a landing, o CTA ou as páginas legais mudarem visualmente; não há mais fluxo de produto complexo a desenhar.
-- **Growth e SEO editorial (sob demanda, papel residual):** Marcos — o repositório não tem mais conteúdo editorial, blog ou comparador; acionar apenas para mensagem/posicionamento do CTA de download, não como rotina.
-- **Operações, métricas e dados (sob demanda, papel residual):** Gustavo — o único dado é o evento de clique em `/api/track`; acionar apenas se o catálogo dessa métrica ou o pipeline de telemetria mudar, não há mais superfície de dados a manter.
-- **Fonte organizacional:** os agentes corporativos canônicos vivem em `../ai-governance/agents/`. Este arquivo não redefine escopo organizacional, só a prioridade de engajamento dentro deste repositório.
-- **Skills locais:** `skills/` contém instruções específicas deste repositório.
+- **Líder funcional (central):** Marcelo — prioridade, escopo e critérios de aceite da landing; também a mensagem e o posicionamento do CTA de download.
+- **Responsável técnico web (central):** Camillo — implementação, SEO técnico, acessibilidade, performance e o evento de clique em `/api/track`.
+- **Design (sob demanda):** Priscila — só quando a landing, o CTA ou as páginas legais mudarem visualmente.
+- **Revisão independente (central):** Renan; não implementa a entrega que revisa — obrigatório em qualquer mudança de código, segurança ou produção.
+- **Skills locais:** `skills/` contém instruções específicas deste diretório.
 
 ## Critérios locais de conclusão
 
-- O escopo autorizado foi atendido, os comandos e validações aplicáveis têm evidência, acessibilidade/SEO técnico foram avaliados quando afetados e Caio revisou mudanças com código, segurança, produção ou risco relevante.
+- O escopo autorizado foi atendido, os comandos e validações aplicáveis têm evidência, acessibilidade/SEO técnico foram avaliados quando afetados e Renan revisou mudanças com código, segurança, produção ou risco relevante.
 
 ## Fontes complementares
 

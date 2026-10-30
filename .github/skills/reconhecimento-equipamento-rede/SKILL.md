@@ -22,12 +22,12 @@ Use para documentar um equipamento específico (ONT, roteador, AP, mesh) antes d
 3. mapeie somente endpoints/campos relevantes ao diagnóstico;
 4. registre tipo, unidade, semântica e disponibilidade de cada campo;
 5. compare com drivers/adapters já existentes no repo antes de criar suporte novo;
-6. produza field-map em `docs_ai/technical/` seguindo os exemplos existentes;
+6. produza field-map em `docs/technical/` seguindo os exemplos existentes;
 7. identifique o que é estável por família e o que é específico do firmware.
 
 ## Integração
 
-Reconhecimento não é implementação. Marcelo valida a utilidade diagnóstica dos campos; Rian implementa a integração Android quando local; Tiago revisa segurança/regressão.
+Reconhecimento não é implementação. Camillo valida a utilidade diagnóstica dos campos e implementa a integração Android quando local; Renan revisa segurança/regressão.
 
 Se o suporte exigir novo contrato, driver estrutural, API/Worker ou atravessar múltiplos módulos com nova responsabilidade, aplique o gate do Camillo antes de implementar.
 

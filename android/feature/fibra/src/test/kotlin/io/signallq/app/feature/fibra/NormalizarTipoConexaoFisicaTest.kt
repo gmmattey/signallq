@@ -8,7 +8,7 @@ import org.junit.Test
  * GH#983 Fase 4 — cobre [normalizarTipoConexaoFisica], a normalizacao do
  * `InterfaceType` cru do firmware Nokia (`device_cfg`, `lan_status.cgi?wlan`)
  * pro enum canonico [TipoConexaoFisica]. So o valor "Ethernet" esta confirmado
- * no field-map (`docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`); os demais casos
+ * no field-map (`docs/technical/NOKIA_GPON_FIELD_MAP.md`); os demais casos
  * cobrem variantes plausiveis de firmware e o fallback seguro.
  */
 class NormalizarTipoConexaoFisicaTest {

@@ -20,7 +20,7 @@ export const LK = {
   inverseSurface: '#313033', inverseOnSurface: '#F4EFF4',
   scrim: 'rgba(0,0,0,.5)',
 
-  // ---- Profundidade (4 níveis — ver docs_ai/DESIGN_SYSTEM.md seção 6) ----
+  // ---- Profundidade (4 níveis — ver docs/04-design-system.md seção 6) ----
   // level0 fundo · level1 conteúdo agrupado · level2 interativo/destacado · level3 sobreposto.
   // Sombra é reforço discreto, nunca a forma principal de separação — tint de superfície vem primeiro.
   depthLevel0Tint: '#FFFFFF', depthLevel0Shadow: 'none',

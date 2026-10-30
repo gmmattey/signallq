@@ -32,7 +32,7 @@
 
     <!-- Ping screen -->
     <!-- issue #1665: título/descrição lideram com significado ("tempo de resposta"), não com
-         o nome do protocolo — ver docs_ai/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md §4.3. -->
+         o nome do protocolo — ver docs/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md §4.3. -->
     <string name="ping_titulo">Tempo de resposta</string>
     <string name="ping_descricao">Mede quanto tempo o destino demora para responder a cada solicitação — essa medida também é chamada de latência.</string>
     <string name="ping_btn_iniciar">Iniciar teste de latência</string>

@@ -44,7 +44,7 @@ Se o handoff disser que código está disponível, o estado precisa estar commit
 Exemplo:
 
 ```text
-De: Claudete → Para: Camillo
+De: Marcelo → Para: Camillo
 Decisão: a feature deve diagnosticar falha de DNS sem rodar novo speedtest.
 Escopo: featureDiagnostico + contrato do diagnostic-worker.
 Validações: análise de produto; sem código nesta etapa.
@@ -56,9 +56,9 @@ Referência: issue #NNNN · .agents/architecture-plan.md
 ## Regras
 
 - Não invente aprovação ou validação de outro agente.
-- Não use handoff para transferir decisão de produto de Claudete/Luiz para engenharia.
+- Não use handoff para transferir decisão de produto de Marcelo/Luiz para engenharia.
 - Não use handoff para bypassar o gate de Camillo.
-- Tiago permanece independente de quem implementou.
+- Renan permanece independente de quem implementou.
 - Handoff para Luiz ocorre apenas quando existe decisão humana real: produto material, custo, publicação, privacidade sensível, risco crítico ou ação irreversível.
 
 A skill registra contexto; não faz merge, deploy, publicação, mudança de assignee ou aceite de risco.
