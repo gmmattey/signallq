@@ -5,7 +5,7 @@ import io.signallq.app.core.diagnostico.BandaWifi
 import io.signallq.app.sinalwifi.SinalWifiUiState
 
 /**
- * Telas do fluxo "WiFi Casa" (`docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, seção 6).
+ * Telas do fluxo "WiFi Casa" (`docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, seção 6).
  */
 enum class WifiCasaTela {
     INICIAL,

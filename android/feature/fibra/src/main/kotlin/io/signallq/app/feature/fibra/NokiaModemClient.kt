@@ -136,7 +136,7 @@ internal class NokiaModemClient(
 
     /**
      * Solicita reboot do equipamento (`reboot.cgi`, GH#934) — ação documentada em
-     * `docs_ai/technical/NOKIA_GPON_FIELD_MAP.md` ("apenas ação, sem campos de
+     * `docs/technical/NOKIA_GPON_FIELD_MAP.md` ("apenas ação, sem campos de
      * leitura adicionais"), mas **nunca validada contra hardware real** neste
      * levantamento (só o menu/rota foram confirmados, não o payload exato do
      * POST). Best-effort: o equipamento tende a derrubar a conexão no meio da

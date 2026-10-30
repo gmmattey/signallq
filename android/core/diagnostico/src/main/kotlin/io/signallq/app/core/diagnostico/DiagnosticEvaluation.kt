@@ -8,7 +8,7 @@ package io.signallq.app.core.diagnostico
  *
  * ## Por que o nome NAO e `DiagnosticResult` (assimetria intencional)
  * Existe uma colisao real de conceitos, documentada e resolvida em
- * [ADR-011](../../../../../../../../docs_ai/decisions/ADR-011-fase0-motor-canonico-diagnostico.md)
+ * [ADR-011](../../../../../../../../docs/archive/decisoes/ADR-011-fase0-motor-canonico-diagnostico.md)
  * (Decisao 3.2): `io.signallq.app.core.diagnostico.DiagnosticResult` (mesmo
  * pacote deste arquivo) ja existe, em producao, com **98 usos**, e representa
  * um conceito totalmente diferente -- **um achado individual** (titulo,

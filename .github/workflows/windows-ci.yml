@@ -5,14 +5,14 @@ on:
     paths:
       - 'windows/**'
       - 'docs/windows/**'
-      - 'docs_ai/decisions/ADR-019-signallq-windows-desktop.md'
+      - 'docs/DECISOES.md'
       - '.github/workflows/windows-ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'windows/**'
       - 'docs/windows/**'
-      - 'docs_ai/decisions/ADR-019-signallq-windows-desktop.md'
+      - 'docs/DECISOES.md'
       - '.github/workflows/windows-ci.yml'
   workflow_dispatch:
 

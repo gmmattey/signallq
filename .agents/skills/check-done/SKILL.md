@@ -19,7 +19,7 @@ A skill verifica o trabalho; não substitui as regras de merge/publicação do `
 4. **Qualidade estática** — lint/detekt/build conforme o escopo.
 5. **Documentação/contratos** — atualizados quando a mudança altera comportamento, arquitetura, API, schema ou operação.
 6. **Riscos** — limitações e partes não testadas estão declaradas.
-7. **Revisão independente** — Tiago revisou quando há código ou risco relevante.
+7. **Revisão independente** — Renan revisou quando há código ou risco relevante.
 8. **Gate arquitetural** — quando o `AGENTS.md` exige Camillo, existe Architecture Plan/revisão e a implementação está aderente.
 9. **Rastreabilidade** — diff/commit/PR correspondem ao que está sendo declarado pronto.
 
@@ -64,7 +64,7 @@ Testes: PASS/FAIL/NÃO EXECUTADO — comandos
 Qualidade: PASS/FAIL/NÃO EXECUTADO
 Docs/contratos: PASS/FAIL/N/A
 Riscos: declarados / faltando
-Tiago: PASSA/AJUSTA/BLOQUEIA/N/A
+Renan: PASSA/AJUSTA/BLOQUEIA/N/A
 Camillo: OK/PENDENTE/N/A
 Rastreabilidade: PASS/FAIL
 
@@ -74,4 +74,4 @@ Bloqueios restantes:
 
 `PASS` só quando não houver bloqueio real. Uma PR existente ou um build verde, isoladamente, não significam conclusão.
 
-A skill não faz merge, não fecha issue, não aceita risco crítico e não simula aprovação de Tiago, Camillo ou Luiz.
+A skill não faz merge, não fecha issue, não aceita risco crítico e não simula aprovação de Renan, Camillo ou Luiz.

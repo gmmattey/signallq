@@ -7,14 +7,14 @@ description: Auditoria profunda de UX, acessibilidade, arquitetura de informaç�
 
 Use para revisão multi-tela, fluxo completo, navegação ou problema de usabilidade que não cabe num `design-check` pontual.
 
-A skill é procedimento. Claudete pode acioná-la para produto, Rian para preparar uma implementação ampla e Tiago para revisão de qualidade.
+A skill é procedimento. Marcelo pode acioná-la para produto, Priscila para auditoria de experiência, Camillo para preparar uma implementação ampla e Renan para revisão de qualidade.
 
 ## Fontes
 
-- `docs_ai/DESIGN_SYSTEM.md` — sistema implementado;
-- `docs_ai/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md` — direção futura enquanto marcada como draft;
-- `docs_ai/FUNCIONAL.md` — fluxo implementado;
-- `docs_ai/functional/JORNADA_ANDROID_GUIADA_2_SPEC.md` — direção futura enquanto draft;
+- `docs/04-design-system.md` — sistema implementado;
+- `docs/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md` — direção futura enquanto marcada como draft;
+- `docs/01-funcional.md` — fluxo implementado;
+- `docs/functional/JORNADA_ANDROID_GUIADA_2_SPEC.md` — direção futura enquanto draft;
 - skill `SignallQ-design` — referência visual.
 
 Não trate draft como comportamento entregue.
@@ -83,7 +83,7 @@ Evidência: ...
 Severidade: crítico | importante | melhoria
 Problema: ...
 Recomendação: ...
-Responsável provável: Claudete | Rian | Marcelo | Camillo
+Responsável provável: Marcelo | Priscila | Camillo
 ```
 
 Feche com os 3–5 achados que realmente merecem prioridade. A skill não altera código nem aprova release.

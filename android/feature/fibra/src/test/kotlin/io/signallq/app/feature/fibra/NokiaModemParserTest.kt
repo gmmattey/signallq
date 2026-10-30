@@ -9,7 +9,7 @@ import org.junit.Test
 /**
  * GH#865 Fase 1 — cobre os campos novos de Wi-Fi/LAN extraidos a partir de
  * fixtures representativas do padrao JS real do firmware Nokia
- * (`docs_ai/technical/NOKIA_GPON_FIELD_MAP.md`, revisado apos revalidacao
+ * (`docs/technical/NOKIA_GPON_FIELD_MAP.md`, revisado apos revalidacao
  * contra equipamento real em 2026-07-10). `wlan_status` e um objeto indexado
  * por chave numerica (`{1:{...}, 2:{...}}`), nao um array — e vive na pagina
  * `lan_status.cgi?lan`, nao em `?wlan`. `Enable` (por SSID) tem prioridade

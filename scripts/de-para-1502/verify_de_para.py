@@ -45,7 +45,7 @@ KNOWN_MANUAL_IDS = {
     65,  # EXCECAO POR REVISAO DE CONFIABILIDADE (revisao independente da PR #1515) -- o
          # "Texto recomendado" da planilha mantinha "acima da referencia Anatel RQUAL",
          # mas essa citacao nao tem fonte normativa comprovada no repositorio (a unica
-         # documentacao real de "Anatel RQUAL" -- docs_ai/FUNCIONAL.md -- descreve um
+         # documentacao real de "Anatel RQUAL" -- docs/01-funcional.md -- descreve um
          # criterio diferente, % de velocidade do plano contratado, sem relacao com
          # latencia). A decisao aprovada na planilha foi superada: a mensagem aplicada
          # remove a alegacao regulatoria, mantendo limiar (100ms) e severidade

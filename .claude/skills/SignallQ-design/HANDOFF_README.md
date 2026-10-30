@@ -1,6 +1,6 @@
 # Handoff: SignallQ Design System → Claude Code
 
-> **Fonte de verdade estendida:** `docs_ai/DESIGN_SYSTEM.md` — catálogo completo de estados
+> **Fonte de verdade estendida:** `docs/04-design-system.md` — catálogo completo de estados
 > semânticos, sistema de profundidade (4 níveis), regras de gráficos, conteúdo simulado,
 > acessibilidade e mapeamento Compose. Este README é a referência rápida de tokens; para governança
 > e detalhe de componente, consultar o documento acima.
@@ -208,7 +208,7 @@ long 300ms · extra-long 400ms`.
 *(padding de tela + card — era `--space-lg` na escala antiga de 6 degraus)* · `--space-lg` 20
 *(novo degrau)* · `--space-xl` 24 · `--space-xxl` 32 · `--space-xxxl` 40 *(novo degrau — CTA de
 onboarding, rodapés)*. Toque mínimo: **48dp** (padrão MD3/Android — corrigido em 2026-07-19; o
-antigo `44px` aqui e o `56dp` de `PRODUCT.md` estavam ambos errados, ver `docs_ai/DESIGN_SYSTEM.md`
+antigo `44px` aqui e o `56dp` de `PRODUCT.md` estavam ambos errados, ver `docs/04-design-system.md`
 seção 11), CTAs full-width em geral 40px de altura.
 
 ### Forma por componente (specs literais do Fluxo de Telas)
@@ -240,7 +240,7 @@ fica sempre sobre um container com fundo **branco fixo** (`#FFFFFF`, hardcode �
 Motivo: o asset assume fundo claro e "some" no tema escuro se ficar exposto direto ao fundo do
 card. Fallback sem asset (monograma/sigla) usa fundo **sólido** da cor de marca ou `primary` +
 texto branco — nunca fundo translúcido (`alpha` baixo tem contraste insuficiente). Ver decisão
-completa em `docs_ai/design-system/DECISAO_CONTAINER_LOGO_MARCA_2026-07-17.md`.
+completa em `docs/design-system/DECISAO_CONTAINER_LOGO_MARCA_2026-07-17.md`.
 
 ### Alpha (convenção do codebase, fora do escopo MD3)
 Tints são cor-em-alpha por sufixo hex: `1A`=10% · `1F`=12% · `26`=15% · `33`=20% ·
@@ -306,7 +306,7 @@ fill + `primary @25–30%` borda; banner de alerta = `warning @12%` fill.
   sólida), CTA **outline violeta** (nunca sólido — sólido é exclusivo de CTA primário
   orgânico), sem foto/hero, ícone do anunciante em **chip quadrado** (nunca círculo).
   Componente inteiro é omitido (não vira placeholder) quando não há criativo carregado.
-- Referência completa: `docs_ai/design-system/COMPONENTS_ANDROID.md` (seção "Monetização —
+- Referência completa: `docs/design-system/COMPONENTS_ANDROID.md` (seção "Monetização —
   Anúncio Nativo").
 
 ---
@@ -337,4 +337,4 @@ Veja `_ref/` (capturas do app real, **não** para shipping) e `preview/` para os
 - `preview/*.html` — cards de cores, tipo, espaçamento, raios e componentes.
 - No seu codebase: `SignallQTheme.kt` (tokens), `…/ui/component/*.kt` (33+ composables,
   incluindo `…/ui/component/ads/` — anúncio nativo), `…/ui/screen/*.kt` (telas),
-  `docs_ai/design-system/*.md` (docs originais).
+  `docs/design-system/*.md` (docs originais).

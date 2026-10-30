@@ -19,7 +19,7 @@ object DiagnosticRunner {
      * @param gerarRecomendacoes Motor de recomendacoes praticas (REC-01..REC-14 no consumidor) —
      *   injetado por inversao de dependencia (issue #1157, Fase 1a) porque esse motor e
      *   especifico do consumidor final (linguagem simplificada) e por isso NAO mora neste modulo
-     *   Kotlin puro — ver docs_ai/plataforma/13_..._v1.md §3.1. Default retorna lista vazia
+     *   Kotlin puro — ver docs/plataforma/13_..._v1.md §3.1. Default retorna lista vazia
      *   (seguro para uso a partir do Pro, que ainda nao tem camada de apresentacao propria).
      *   O unico chamador de producao do consumidor (RemoteDiagnosticRepository, em
      *   :featureDiagnostico) DEVE passar `RecomendacaoPraticaEngine::recomendar` explicitamente

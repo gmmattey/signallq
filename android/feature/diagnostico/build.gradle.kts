@@ -86,7 +86,7 @@ dependencies {
     // SignallQOrchestrator.kt (motor SignallQ Pulse), que importava ExecutorSpeedtest/
     // ResultadoSpeedtest/ModoSpeedtest/SpeedtestQualityClassifier. Resolve a violacao
     // "feature nao pode depender de feature" (.claude/rules/higiene-e-padronizacao-
-    // repositorio.md §4.9) documentada em docs_ai/ARQUITETURA/MODULOS/feature-diagnostico.md.
+    // repositorio.md §4.9) documentada em docs/modulos/feature-diagnostico.md.
     implementation(project(":coreDatabase"))
     implementation(project(":coreDatastore"))
     implementation(project(":coreNetwork"))

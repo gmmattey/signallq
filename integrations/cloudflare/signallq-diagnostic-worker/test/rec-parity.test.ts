@@ -4,7 +4,7 @@
 // de `evaluateDerivedFindings`, diagnostic-engine.ts).
 //
 // Tabela de rastreabilidade completa (status COBERTA/PARCIAL/PENDENTE por REC, com motivo de
-// cada divergencia de threshold/logica): docs_ai/technical/PARIDADE_REC_WORKER_2026-07-26.md
+// cada divergencia de threshold/logica): docs/technical/PARIDADE_REC_WORKER_2026-07-26.md
 //
 // Regra desta suite: reaproveitar os MESMOS valores numericos dos casos dourados do Kotlin
 // sempre que o worker converge no mesmo threshold; quando os thresholds divergem (documentado

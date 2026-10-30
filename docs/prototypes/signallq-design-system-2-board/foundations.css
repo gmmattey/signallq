@@ -1,0 +1,415 @@
+/* ============================================================================
+   SignallQ — Design Foundations (colors + type) — MD3 (Fluxo de Telas To-Be)
+   Source of verdade ATUAL: "SignallQ App - Fluxo de Telas.dc.html"
+   (Claude Design, projeto e77ea465-291f-4bf5-930c-a267680da04e), o mesmo
+   projeto do manual "Migração para Material Design 3 (estrito)" usado na
+   migração de 2026-07-11 — mas com paleta e specs de componente diferentes.
+   Fluxo de Telas é o documento MAIS RECENTE do projeto e orientou a
+   implementação real do gêmeo digital React (Fase 1/Fase 2 de bottom sheets,
+   PRs #... anteriores a 2026-07-13) — por isso vira fonte de verdade agora.
+   Platform: Android (Kotlin / Jetpack Compose / Material Design 3)
+   ----------------------------------------------------------------------------
+   MIGRAÇÃO 2026-07-13 (correção de contradição, ver docs/design-system/
+   DECISAO_ALINHAMENTO_TOBE_2026-07-13.md e docs/operations/
+   AUDITORIA_DESIGN_TOBE_2026-07-13.md):
+   - primary muda de #6C2BFF para #5B21D6 (mesma chave violeta, tom diferente).
+   - secondary DEIXA de ser derivado da tríade tonal HCT do primary e vira um
+     azul fixo (#2851B8/#2563EB no dark) — mudança estrutural, não só de hex.
+   - Paleta de surface container ganha os 2 níveis que faltavam
+     (surface-container-lowest e surface-dim com valor real, não mais
+     "INFERIDO") e outline/outline-variant passam a ter hex confirmado pelo
+     Fluxo de Telas (antes eram herdados/inferidos do manual anterior).
+   - Escala tipográfica passa de 15 para 12 estilos: display-large,
+     display-medium e headline-medium são REMOVIDOS por não aparecerem em
+     nenhuma tela do Fluxo de Telas (maior estilo usado no app real é
+     displaySmall/34px) — se algum artefato novo precisar de um estilo maior,
+     validar com Claudete (via `/design-check`) antes de reintroduzir um valor extrapolado.
+   - on-surface-variant-2 (2º degrau de neutro) é REMOVIDO — o Fluxo de Telas
+     só define um onSurfaceVariant. Overline volta a usar onSurfaceVariant
+     puro (era on-surface-variant-2 na migração anterior).
+   - Escala de espaçamento (8dp) ganha 2 degraus novos (SPACE.lg=20 e
+     SPACE.xxxl=40) e o antigo --space-lg (16) é renomeado para --space-base
+     para não colidir com o novo lg=20 — ver bloco SPACING abaixo.
+   - Forma: Button passa a ter radius próprio de 20px, que não existe na
+     escala de 7 degraus herdada do manual anterior (none/xs/sm/md/lg/xl/full
+     = 0/4/8/12/16/28/999). Em vez de forçar um desses 7 valores, foi
+     adicionado 1 token novo (`--md-sys-shape-corner-button: 20px`) — decisão
+     documentada aqui porque altera a escala "fechada" da migração anterior.
+     Dialog (RestartDialog) também usa um raio próprio de 24px, fora da
+     escala — token novo `--md-sys-shape-corner-dialog: 24px`.
+   - Elevação tonal (5 níveis), state layers, motion e densidade de ícone:
+     o Fluxo de Telas NÃO redefine esses sistemas (documento é spec de telas,
+     não um manual de tokens sistêmicos) — MANTIDOS como estavam na migração
+     de 2026-07-11, só com os tints de elevação realinhados aos novos hex de
+     surface-container. Se o Fluxo de Telas vier a especificar esses sistemas
+     no futuro, revisar de novo.
+   - Tertiary: o Fluxo de Telas NÃO define um role tertiary (só usa
+     primary/secondary + semânticos + phases). Token mantido por
+     compatibilidade com aliases antigos, mas com o hex ANTERIOR (não
+     confirmado por nenhum dos dois documentos do projeto Claude Design) —
+     marcado abaixo como não-confirmado. Não usar em artefato novo sem
+     validar com Claudete (via `/design-check`).
+   - Tipografia: fonte única do app confirmada pelo Fluxo de Telas — 'Google
+     Sans Flex', 'Google Sans', 'Roboto', system-ui, sans-serif para TODOS os
+     estilos (não mais split Google Sans Flex/Roboto por camada). Consistente
+     com a decisão já registrada em 2026-07-11 de que Google Sans Flex fica
+     (PR #939, licença SIL OFL, arquivo embutido no APK).
+   ============================================================================ */
+
+:root {
+  /* ==========================================================================
+     MD3 SYS COLOR — paleta do Fluxo de Telas (light)
+     primary = chave violeta #5B21D6; secondary = azul fixo (NÃO é mais
+     derivado da tríade HCT do primary).
+     ========================================================================== */
+
+  /* ---- Primary (CTA, seleção, nav ativa) --------------------------------- */
+  --md-sys-color-primary:                #5B21D6;
+  --md-sys-color-on-primary:             #FFFFFF;
+  --md-sys-color-primary-container:      #EAE0FF;
+  --md-sys-color-on-primary-container:   #210A5C;
+
+  /* ---- Secondary (azul fixo — chip móvel, DNS privado, links) ------------ */
+  --md-sys-color-secondary:              #2851B8;
+  --md-sys-color-on-secondary:           #FFFFFF;
+  --md-sys-color-secondary-container:    #DCE6FF;
+  --md-sys-color-on-secondary-container: #001A41;
+
+  /* ---- Tertiary (NÃO especificado pelo Fluxo de Telas — legado do manual
+     MD3 anterior, mantido só por compatibilidade de alias; não usar em
+     artefato novo sem validação de Claudete via `/design-check`) ---------- */
+  --md-sys-color-tertiary:               #B03A5B; /* NÃO CONFIRMADO */
+  --md-sys-color-on-tertiary:            #FFFFFF; /* NÃO CONFIRMADO */
+  --md-sys-color-tertiary-container:     #FFE4EC; /* NÃO CONFIRMADO */
+  --md-sys-color-on-tertiary-container:  #5C1230; /* NÃO CONFIRMADO */
+
+  /* ---- Status semânticos (Fluxo de Telas §"TOKENS E COMPONENTES BASE") --- */
+  --md-sys-color-success:                #146C2E;
+  --md-sys-color-on-success:             #FFFFFF;
+  --md-sys-color-success-container:      #B6F2BE;
+  --md-sys-color-on-success-container:   #04210D;
+  --md-sys-color-warning:                #8A5000;
+  --md-sys-color-on-warning:             #FFFFFF;
+  --md-sys-color-warning-container:      #FFDDB3;
+  --md-sys-color-on-warning-container:   #2B1700;
+  --md-sys-color-error:                  #BA1A1A;
+  --md-sys-color-on-error:               #FFFFFF;
+  --md-sys-color-error-container:        #FFDAD6;
+  --md-sys-color-on-error-container:     #410002;
+  --md-sys-color-amber-surface:          #FFF3CD; /* alias legado, ver ALIASES DEPRECADOS */
+
+  /* ---- Fases do SpeedTest --------------------------------------------- */
+  --md-sys-color-phase-latencia: #2563EB;
+  --md-sys-color-phase-download: #146C2E;
+  --md-sys-color-phase-upload:   #8A5000;
+
+  /* ---- Neutral / Surface — Light (default) ------------------------------- */
+  --md-sys-color-background:             #FFFFFF;
+  --md-sys-color-on-background:          #1C1B1F;
+  --md-sys-color-surface:                #FFFFFF;
+  --md-sys-color-surface-dim:            #DED8E1;
+  --md-sys-color-surface-container-lowest:  #FFFFFF;
+  --md-sys-color-surface-container-low:     #F8F5FB;
+  --md-sys-color-surface-container:         #F3EEFA;
+  --md-sys-color-surface-container-high:    #ECE5F5;
+  --md-sys-color-surface-container-highest: #E6DDF2;
+  --md-sys-color-on-surface:             #1C1B1F;
+  --md-sys-color-on-surface-variant:     #49454F;
+  --md-sys-color-outline:                #79747E;
+  --md-sys-color-outline-variant:        #CAC4D0;
+  --md-sys-color-inverse-surface:        #313033;
+  --md-sys-color-inverse-on-surface:     #F4EFF4;
+
+  /* ---- SignallQ IA (DESCONTINUADA — mantida só como registro histórico do
+     As-Is; nenhuma rota/componente novo deve usar estes tokens, ver Fluxo de
+     Telas tela 7) -------------------------------------------------------- */
+  --SignallQ-black:                 #0D0D1A;
+  --SignallQ-dark-surface:          #1A0B2E;
+  --SignallQ-dark-card:             #1E1130;
+  --SignallQ-text-on-dark:          #F3F4F6;
+  --SignallQ-text-secondary-on-dark:#B9B2C4;
+
+  /* ==========================================================================
+     FORMA — escala herdada do manual MD3 (7 tokens) + 2 tokens de componente
+     adicionados nesta migração porque o Fluxo de Telas usa raios que não
+     existem nos 7 degraus fechados (Button=20px, Dialog=24px).
+     ========================================================================== */
+  --md-sys-shape-corner-none:  0px;
+  --md-sys-shape-corner-xs:    4px;
+  --md-sys-shape-corner-sm:    8px;
+  --md-sys-shape-corner-md:   12px;
+  --md-sys-shape-corner-lg:   16px;
+  --md-sys-shape-corner-xl:   28px;
+  --md-sys-shape-corner-full: 999px;
+  --md-sys-shape-corner-button: 20px; /* NOVO — Button (Fluxo de Telas), não cabe nos 7 degraus */
+  --md-sys-shape-corner-dialog: 24px; /* NOVO — RestartDialog (5b), idem */
+
+  /* ---- Aplicação por componente (specs literais do Fluxo de Telas) ------ */
+  --md-comp-card-shape:      var(--md-sys-shape-corner-lg);      /* 16px — Card */
+  --md-comp-sheet-shape:     var(--md-sys-shape-corner-xl);      /* 28px — SheetFrame, cantos superiores */
+  --md-comp-dialog-shape:    var(--md-sys-shape-corner-dialog);  /* 24px — RestartDialog */
+  --md-comp-button-shape:    var(--md-sys-shape-corner-button);  /* 20px — Button */
+  --md-comp-button-height:   40px;                               /* Button */
+  --md-comp-input-shape:     var(--md-sys-shape-corner-md);      /* 12px — Field */
+  --md-comp-chip-shape:      var(--md-sys-shape-corner-full);    /* 999px — Chip */
+  --md-comp-badge-shape:     var(--md-sys-shape-corner-full);    /* 999px — Badge */
+  --md-comp-icon-button-size: 40px;                              /* IconButton, circular */
+
+  /* ==========================================================================
+     ELEVAÇÃO — tonal elevation, 5 níveis. Não redefinida pelo Fluxo de
+     Telas (documento de telas, não de tokens sistêmicos); mantida da
+     migração 2026-07-11, só com os tints realinhados aos novos hex de
+     surface-container acima.
+     DEPRECATED (2026-07-19): substituído pelo modelo de PROFUNIDADE de 4
+     níveis abaixo (--depth-level0..3), documentado em
+     docs/04-design-system.md seção 6. Mantido só por compatibilidade com
+     artefatos ainda não migrados — não usar em artefato novo.
+     ========================================================================== */
+  --md-sys-elevation-level0-tint:   var(--md-sys-color-surface);
+  --md-sys-elevation-level0-shadow: none;
+  --md-sys-elevation-level1-tint:   var(--md-sys-color-surface-container-low);
+  --md-sys-elevation-level1-shadow: 0 1px 2px rgba(0,0,0,.08);
+  --md-sys-elevation-level2-tint:   var(--md-sys-color-surface-container);
+  --md-sys-elevation-level2-shadow: 0 1px 3px rgba(0,0,0,.12);
+  --md-sys-elevation-level3-tint:   var(--md-sys-color-surface-container-high);
+  --md-sys-elevation-level3-shadow: 0 2px 6px rgba(0,0,0,.16);
+  --md-sys-elevation-level4-tint:   var(--md-sys-color-surface-container-highest);
+  --md-sys-elevation-level4-shadow: 0 3px 8px rgba(0,0,0,.18);
+
+  /* ==========================================================================
+     PROFUNDIDADE — modelo novo de 4 níveis (2026-07-19), ver
+     docs/04-design-system.md seção 6. Aplicado de forma equivalente nos 3
+     produtos do ecossistema (consumer/Pro/Console), só os nomes de token
+     mudam por produto. Profundidade comunica hierarquia/interação, nunca
+     decoração — card não deve parecer elevado se não for interativo ou
+     prioritário.
+     ========================================================================== */
+  --depth-level0-tint:   var(--md-sys-color-surface);                  /* fundo da tela */
+  --depth-level0-shadow: none;
+  --depth-level1-tint:   var(--md-sys-color-surface-container);        /* conteúdo agrupado (card comum) */
+  --depth-level1-shadow: none;
+  --depth-level2-tint:   var(--md-sys-color-surface-container-high);   /* interativo/destacado (selecionado, prioritário) */
+  --depth-level2-shadow: 0 1px 3px rgba(0,0,0,.12);
+  --depth-level3-tint:   var(--md-sys-color-surface-container-highest);/* sobreposto (dialog, sheet, menu, tooltip) */
+  --depth-level3-shadow: 0 4px 12px rgba(0,0,0,.20);
+
+  /* Estado de superfície selecionada (nível 2 + destaque de marca) — token
+     novo, hoje resolvido ad hoc por componente no código Kotlin. */
+  --color-surface-selected-bg:     var(--md-sys-color-surface-container-high);
+  --color-surface-selected-border: rgba(91,33,214,.28); /* primary @28% */
+
+  /* Scrim — fundo de dialog/bottom sheet modal (nível 3). Documentado como
+     alvo; ainda NÃO implementado no Kotlin de produção (só existe hoje em
+     packages/design-system/src/tokens.ts). */
+  --color-scrim: rgba(0,0,0,.5);
+
+  /* ==========================================================================
+     STATE LAYERS — não redefinidos pelo Fluxo de Telas, mantidos da
+     migração 2026-07-11.
+     ========================================================================== */
+  --md-sys-state-hover-opacity:    0.08;
+  --md-sys-state-focus-opacity:    0.10;
+  --md-sys-state-pressed-opacity:  0.12;
+  --md-sys-state-dragged-opacity:  0.16;
+
+  /* ==========================================================================
+     MOTION — não redefinido pelo Fluxo de Telas, mantido da migração
+     2026-07-11.
+     ========================================================================== */
+  --md-sys-motion-easing-emphasized: cubic-bezier(.2,0,0,1);
+  --md-sys-motion-easing-standard:   cubic-bezier(.2,0,0,1);
+  --md-sys-motion-duration-short:       100ms;
+  --md-sys-motion-duration-medium:      200ms;
+  --md-sys-motion-duration-long:        300ms;
+  --md-sys-motion-duration-extra-long:  400ms;
+
+  /* ==========================================================================
+     ÍCONES — Material Symbols Outlined, eixos FILL 0|1 / wght 400|500|700 /
+     GRAD 0 / opsz 24 (Fluxo de Telas). Tamanho padrão 24px; variações
+     pontuais 13–64px conforme componente. FILL 1 só no ícone ativo da
+     Bottom Nav — resto FILL 0.
+     ========================================================================== */
+  --md-icon-size-default: 24px;
+  --md-icon-size-compact: 20px;
+  --md-icon-size-inline:  18px;
+
+  /* ==========================================================================
+     SPACING — grid 8dp, 8 degraus (Fluxo de Telas "Escala de espaçamento").
+     ATENÇÃO: --space-lg MUDA DE SIGNIFICADO nesta migração — era 16px
+     (padding padrão de tela/card) na escala antiga de 6 degraus; agora 16px
+     vira --space-base e --space-lg passa a ser 20px (novo degrau). Quem
+     usava --space-lg esperando 16px precisa migrar para --space-base.
+     ========================================================================== */
+  --space-xs:    4px;
+  --space-sm:    8px;   /* unidade fundamental */
+  --space-md:   12px;
+  --space-base: 16px;   /* padding de telas + cardContent — era --space-lg */
+  --space-lg:   20px;   /* NOVO degrau */
+  --space-xl:   24px;
+  --space-xxl:  32px;
+  --space-xxxl: 40px;   /* NOVO degrau — CTA de onboarding, rodapés */
+
+  /* ---- Type — família única do app (Fluxo de Telas: "Fonte única do app,
+     nenhuma segunda família em nenhuma tela") ------------------------------- */
+  --font-display: 'Google Sans Flex', 'Google Sans', 'Roboto', system-ui, sans-serif;
+  --font-sans:    'Google Sans Flex', 'Google Sans', 'Roboto', system-ui, sans-serif;
+
+  /* ==========================================================================
+     ALIASES DEPRECADOS — mantidos só por compatibilidade com artefatos
+     ainda não migrados (README antigo, ui_kits/android/*.jsx, previews não
+     tocados nesta migração, packages/design-system/). NÃO usar em artefato
+     novo.
+     ========================================================================== */
+  --accent:         var(--md-sys-color-primary);
+  --accent-on-dark: var(--md-sys-color-primary);
+  --accent-blue:    var(--md-sys-color-secondary);
+  --success:        var(--md-sys-color-success);
+  --warning:        var(--md-sys-color-warning);
+  --error:          var(--md-sys-color-error);
+  --phase-latencia: var(--md-sys-color-phase-latencia);
+  --phase-download: var(--md-sys-color-phase-download);
+  --phase-upload:   var(--md-sys-color-phase-upload);
+  --bg-primary:     var(--md-sys-color-background);
+  --bg-secondary:   var(--md-sys-color-surface-container-low);
+  --bg-card:        var(--md-sys-color-surface);
+  --text-primary:   var(--md-sys-color-on-surface);
+  --text-secondary: var(--md-sys-color-on-surface-variant);
+  --text-tertiary:  var(--md-sys-color-on-surface-variant); /* era on-surface-variant-2, removido nesta migração */
+  --border:         var(--md-sys-color-outline);
+  --warning-container:     var(--md-sys-color-warning-container);
+  --on-warning-container:  var(--md-sys-color-on-warning-container);
+  --amber-surface:         var(--md-sys-color-amber-surface);
+  --success-container:     var(--md-sys-color-success-container);
+  --on-success-container:  var(--md-sys-color-on-success-container);
+  --radius-card:   var(--md-comp-card-shape);
+  --radius-button: var(--md-comp-button-shape);
+  --radius-input:  var(--md-comp-input-shape);
+  --radius-pill:   var(--md-sys-shape-corner-full);
+}
+
+/* ============================================================================
+   DARK THEME (aplicar classe .dark ao container) — Fluxo de Telas, modo escuro
+   ============================================================================ */
+.dark {
+  --md-sys-color-primary:                #D0BCFF;
+  --md-sys-color-on-primary:             #38137E;
+  --md-sys-color-primary-container:      #4F2FA8;
+  --md-sys-color-on-primary-container:   #EADDFF;
+
+  --md-sys-color-secondary:              #AAC7FF;
+  --md-sys-color-on-secondary:           #002E69;
+  --md-sys-color-secondary-container:    #1E427A;
+  --md-sys-color-on-secondary-container: #D9E2FF;
+
+  --md-sys-color-success:                #83DA99;
+  --md-sys-color-on-success:             #00390F;
+  --md-sys-color-success-container:      #0A5321;
+  --md-sys-color-on-success-container:   #9DF4AC;
+  --md-sys-color-warning:                #FFB870;
+  --md-sys-color-on-warning:             #4A2900;
+  --md-sys-color-warning-container:      #693D00;
+  --md-sys-color-on-warning-container:   #FFDDB3;
+  --md-sys-color-error:                  #FFB4AB;
+  --md-sys-color-on-error:               #690005;
+  --md-sys-color-error-container:        #93000A;
+  --md-sys-color-on-error-container:     #FFDAD6;
+  --md-sys-color-amber-surface:          #2E2000;
+
+  --md-sys-color-phase-latencia: #AAC7FF;
+  --md-sys-color-phase-download: #83DA99;
+  --md-sys-color-phase-upload:   #FFB870;
+
+  --md-sys-color-background:             #131217;
+  --md-sys-color-on-background:          #E6E0E9;
+  --md-sys-color-surface:                #131217;
+  --md-sys-color-surface-dim:            #131217;
+  --md-sys-color-surface-container-lowest:  #0E0D12;
+  --md-sys-color-surface-container-low:     #1D1B20;
+  --md-sys-color-surface-container:         #211F26;
+  --md-sys-color-surface-container-high:    #2B2930;
+  --md-sys-color-surface-container-highest: #36343B;
+  --md-sys-color-on-surface:             #E6E0E9;
+  --md-sys-color-on-surface-variant:     #CAC4D0;
+  --md-sys-color-outline:                #948F99;
+  --md-sys-color-outline-variant:        #49454F;
+  --md-sys-color-inverse-surface:        #E6E0E9;
+  --md-sys-color-inverse-on-surface:     #313033;
+
+  /* PROFUNDIDADE — dark theme (ver docs/04-design-system.md seção 6):
+     superfícies mais elevadas ligeiramente mais claras, nunca preto
+     absoluto em toda camada, sombra sutil (não a forma principal de
+     separação). */
+  --depth-level0-tint:   var(--md-sys-color-surface);
+  --depth-level1-tint:   var(--md-sys-color-surface-container);
+  --depth-level2-tint:   var(--md-sys-color-surface-container-high);
+  --depth-level2-shadow: 0 1px 3px rgba(0,0,0,.24);
+  --depth-level3-tint:   var(--md-sys-color-surface-container-highest);
+  --depth-level3-shadow: 0 4px 12px rgba(0,0,0,.36);
+  --color-surface-selected-bg:     var(--md-sys-color-surface-container-high);
+  --color-surface-selected-border: rgba(208,188,255,.30); /* primary dark @30% */
+  --color-scrim: rgba(0,0,0,.6);
+}
+
+/* ============================================================================
+   SEMANTIC TYPE — Material Design 3, escala do Fluxo de Telas (12 estilos).
+   display-large, display-medium e headline-medium foram REMOVIDOS nesta
+   migração — nenhuma tela do Fluxo de Telas usa estilo maior que
+   displaySmall (34px). Fonte única: --font-display (= --font-sans, Google
+   Sans Flex com fallback Roboto) em todos os estilos.
+   ============================================================================ */
+.display-small   { font: 700 34px/40px var(--font-display); letter-spacing: 0px;    color: var(--md-sys-color-on-surface); }
+
+.headline-large  { font: 700 26px/32px var(--font-display); letter-spacing: 0px;    color: var(--md-sys-color-on-surface); }
+.headline-small  { font: 600 22px/28px var(--font-display); letter-spacing: 0px;    color: var(--md-sys-color-on-surface); }
+
+.title-large     { font: 600 20px/26px var(--font-display); letter-spacing: 0px;    color: var(--md-sys-color-on-surface); }
+.title-medium    { font: 500 16px/22px var(--font-display); letter-spacing: .1px;   color: var(--md-sys-color-on-surface); }
+.title-small     { font: 500 14px/20px var(--font-display); letter-spacing: .1px;   color: var(--md-sys-color-on-surface); }
+
+.body-large      { font: 400 16px/24px var(--font-sans);    letter-spacing: .15px;  color: var(--md-sys-color-on-surface); }
+.body-medium     { font: 400 14px/20px var(--font-sans);    letter-spacing: .2px;   color: var(--md-sys-color-on-surface-variant); }
+.body-small      { font: 400 12px/16px var(--font-sans);    letter-spacing: .25px;  color: var(--md-sys-color-on-surface-variant); }
+
+.label-large     { font: 500 14px/20px var(--font-sans);    letter-spacing: .1px;   color: var(--md-sys-color-on-surface); }
+.label-medium    { font: 500 12px/16px var(--font-sans);    letter-spacing: .3px;   color: var(--md-sys-color-on-surface-variant); }
+.label-small     { font: 500 11px/16px var(--font-sans);    letter-spacing: .4px;   color: var(--md-sys-color-on-surface-variant); }
+
+/* Overline — padrão recorrente do produto (não é estilo MD3 nomeado; label-small
+   + uppercase). Fluxo de Telas: "Overline: labelSmall/onSurfaceVariant +
+   uppercase" — volta a usar onSurfaceVariant puro (não mais o 2º degrau de
+   neutro removido nesta migração). */
+.overline {
+  font: 500 11px/16px var(--font-sans);
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ============================================================================
+   UTILITÁRIOS — elevação, state layer, forma (uso direto em artefatos)
+   ============================================================================ */
+.md-elevation-0 { background: var(--md-sys-elevation-level0-tint); box-shadow: var(--md-sys-elevation-level0-shadow); }
+.md-elevation-1 { background: var(--md-sys-elevation-level1-tint); box-shadow: var(--md-sys-elevation-level1-shadow); }
+.md-elevation-2 { background: var(--md-sys-elevation-level2-tint); box-shadow: var(--md-sys-elevation-level2-shadow); }
+.md-elevation-3 { background: var(--md-sys-elevation-level3-tint); box-shadow: var(--md-sys-elevation-level3-shadow); }
+.md-elevation-4 { background: var(--md-sys-elevation-level4-tint); box-shadow: var(--md-sys-elevation-level4-shadow); }
+
+/* State layer: aplicar em pseudo-elemento ::after posicionado absoluto sobre o
+   componente, cor = currentColor (onSurface/onPrimary conforme contexto),
+   opacidade some/aparece via transition com --md-sys-motion-easing-standard. */
+.md-state-layer {
+  position: relative;
+  isolation: isolate;
+}
+.md-state-layer::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+.md-state-layer:hover::after    { opacity: var(--md-sys-state-hover-opacity); }
+.md-state-layer:focus-visible::after { opacity: var(--md-sys-state-focus-opacity); }
+.md-state-layer:active::after   { opacity: var(--md-sys-state-pressed-opacity); }

@@ -16,8 +16,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 ALVOS=(
-  "docs_ai/TECNICO.md"
-  "docs_ai/ARQUITETURA/README.md"
+  "docs/03-especificacao-tecnica.md"
+  "docs/02-arquitetura.md"
 )
 
 CHECK_ONLY=false
@@ -81,7 +81,7 @@ N_TAB_DIAG=$(echo "$TAB_DIAG" | grep -c . || true)
 CONTRATOS=""
 N_PATHS_TOTAL=0
 N_CONTRATOS=0
-for y in docs_ai/CONTRATOS/openapi/*.yaml; do
+for y in docs/CONTRATOS/openapi/*.yaml; do
   [[ -e "$y" ]] || continue
   # paths = linhas com exatamente 2 espacos de indentacao comecando em /
   n=$(sed -n '/^paths:/,/^[a-z]/p' "$y" | grep -cE '^  /' || true)
@@ -123,7 +123,7 @@ bloco() {
 | Módulos Gradle | **$MOD_TOTAL** | \`$SETTINGS\` |
 | Workers Cloudflare | $N_WORKERS | \`integrations/cloudflare/*/wrangler.toml\` |
 | Tabelas D1 | $((N_TAB_ADMIN + N_TAB_DIAG)) — $N_TAB_ADMIN admin + $N_TAB_DIAG diagnostic | \`*/migrations/*.sql\`, \`*/schema.sql\` |
-| Contratos OpenAPI | $N_CONTRATOS contratos · **$N_PATHS_TOTAL** endpoints | \`docs_ai/CONTRATOS/openapi/\` |
+| Contratos OpenAPI | $N_CONTRATOS contratos · **$N_PATHS_TOTAL** endpoints | \`docs/CONTRATOS/openapi/\` |
 | Arquivos \`.kt\` em caminho legado \`io/veloo\` | $N_VELOO (sendo $N_VELOO_MAIN em \`src/main\`) | dívida conhecida — higiene §4.1 |
 
 **Módulos ($MOD_TOTAL):** $LISTA_MODULOS

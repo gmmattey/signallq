@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 private const val TEST_DB = "migration-21-22-test"
 
 /**
- * `docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`/`.agents/architecture-plan.md` (WiFi Casa) --
+ * `docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`/`.agents/architecture-plan.md` (WiFi Casa) --
  * migração real 21→22, rodando contra o schema 21 gerado (não um teste unitário da lógica).
  *
  * Cobre: banco existente (versão 21, sem as tabelas novas) sobrevive à migração e as duas

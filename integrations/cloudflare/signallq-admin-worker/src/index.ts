@@ -343,7 +343,7 @@ function nowSec(): number {
 // cache "última sincronização" em admin_settings.
 //
 // ATENÇÃO — trim de 2026-07-24 (revisão de arquitetura da Claudete, doc de decisão removido em
-// docs_ai/decisions/ na Fase 4d do épico #1623, git preserva por SHA): este helper é reservado
+// docs/archive/decisoes/ na Fase 4d do épico #1623, git preserva por SHA): este helper é reservado
 // EXCLUSIVAMENTE a métricas numéricas de série temporal genuína, com necessidade real (não
 // hipotética) de plotar tendência. Hoje isso é só Play Developer Reporting/ANR — único caller
 // autorizado é a linha ~3165. Firebase Management, Remote Config, App Check, App Distribution e
@@ -4176,7 +4176,7 @@ async function handleIngestDiagnostic(request: Request, env: Env): Promise<Respo
   return json({ ok: true, id: p.id }, 201, env);
 }
 
-// Preço por token (USD), por modelo. Ver docs_ai/decisions/ADR-005.
+// Preço por token (USD), por modelo. Ver docs/archive/decisoes/ADR-005.
 // Modelos do free tier (Gemini, Qwen/Workers AI) custam 0. Ao adotar um modelo
 // pago, adicione sua tarifa aqui (ex.: "gemini-2.5-pro": 0.0000003).
 const AI_MODEL_RATE_USD: Record<string, number> = {};

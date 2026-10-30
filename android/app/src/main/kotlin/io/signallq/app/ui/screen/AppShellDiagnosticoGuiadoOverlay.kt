@@ -31,7 +31,7 @@ import io.signallq.app.feature.speedtest.ResultadoSpeedtest
 //
 // Sem isso, `AppShellOverlayRegistry` sairia de 17 para ~35 parâmetros só com esta migração — o
 // registro viraria o próximo monolito, que é exatamente o que a decisão da #1698 evita. Ver
-// `docs_ai/technical/appshell-root-content-registry.md`, seção "um parâmetro por raiz".
+// `docs/technical/appshell-root-content-registry.md`, seção "um parâmetro por raiz".
 
 /**
  * Tudo que o overlay do diagnóstico guiado consome do shell, em três grupos coesos.

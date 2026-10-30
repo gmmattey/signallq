@@ -14,7 +14,7 @@ export interface TabsProps {
  * ficam no mesmo tom de superfície, então não há profundidade para diferenciar por tint.
  * É um divisor funcional entre a faixa de tabs e o conteúdo (mesmo papel do indicador de 3px
  * de cada aba, só que para o grupo inteiro) — permitido pela regra de profundidade
- * (ver docs_ai/DESIGN_SYSTEM.md, seção 6.4).
+ * (ver docs/04-design-system.md, seção 6.4).
  */
 export function Tabs({ options, value, onChange }: TabsProps) {
   const LK = useTokens();

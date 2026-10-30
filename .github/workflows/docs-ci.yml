@@ -1,7 +1,7 @@
 name: Docs CI
 
 # Guardrail da documentacao. Existe porque regra sem enforcement foi como
-# docs_ai/ chegou a 235 arquivos com inventario defasado — ver
+# docs/ chegou a 235 arquivos com inventario defasado — ver
 # .claude/rules/politica-documentacao-viva.md.
 #
 # Em PR valida so os .md alterados: exigir frontmatter da arvore inteira
@@ -68,10 +68,10 @@ jobs:
                  ---
 
             contagem do INDICE.md diverge do disco
-              → atualize o número na seção correspondente de docs_ai/INDICE.md
+              → atualize o número na seção correspondente de docs/INDICE.md
 
             pasta nova não citada
-              → adicione a pasta em docs_ai/INDICE.md ou docs_ai/README.md
+              → adicione a pasta em docs/INDICE.md ou docs/README.md
 
           Para rodar localmente o que o CI roda:
             bash scripts/validar-docs.sh --base origin/main

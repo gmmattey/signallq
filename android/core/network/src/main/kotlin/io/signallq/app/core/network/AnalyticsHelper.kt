@@ -5,7 +5,7 @@ package io.signallq.app.core.network
  *
  * Implementado por FirebaseAnalyticsHelper (:app) — mesma estrategia de
  * desacoplamento do AnalyticsTracker (SIG-134/feature_used), mas dedicado aos
- * 7 eventos do funil descrito em docs_ai/technical/analytics-events.md:
+ * 7 eventos do funil descrito em docs/technical/analytics-events.md:
  *
  * app_aberto -> speedtest_iniciado -> speedtest_concluido -> diag_iniciado
  *   -> diag_concluido -> ia_laudo_solicitado -> ia_laudo_recebido
@@ -14,7 +14,7 @@ package io.signallq.app.core.network
  * sao dois contratos distintos que podem compartilhar a mesma instancia de
  * FirebaseAnalytics internamente sem se misturar na API publica.
  *
- * Sem PII nos parametros — ver docs_ai/technical/analytics-events.md.
+ * Sem PII nos parametros — ver docs/technical/analytics-events.md.
  * `versao_app` e anexado automaticamente pela implementacao em todos os eventos
  * (nao faz parte da assinatura dos metodos abaixo).
  */

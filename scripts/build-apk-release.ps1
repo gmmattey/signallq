@@ -53,7 +53,7 @@ if ($hasSigning) {
     Write-Host "⚠ key.properties não encontrado em $keyProps" -ForegroundColor Yellow
     Write-Host "  ⚠ O APK gerado NÃO estará assinado." -ForegroundColor Yellow
     Write-Host "  Para release com assinatura, crie key.properties conforme:" -ForegroundColor Yellow
-    Write-Host "    - docs_ai/operations/ENVIRONMENT.md" -ForegroundColor Yellow
+    Write-Host "    - docs/operations/ENVIRONMENT.md" -ForegroundColor Yellow
     Write-Host ""
 }
 

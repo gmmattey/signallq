@@ -19,7 +19,7 @@ App Android de **diagnóstico de conectividade** com IA — analisa Wi-Fi, fibra
 
 ## Arquitetura
 
-Módulos Gradle listados em `android/settings.gradle.kts` (fonte de verdade); visão por módulo em [`docs_ai/ARQUITETURA/`](docs_ai/ARQUITETURA/README.md).
+Módulos Gradle listados em `android/settings.gradle.kts` (fonte de verdade); visão por módulo em [`docs/02-arquitetura.md`](docs/02-arquitetura.md).
 
 - **app** — shell, navegação por abas (Início, Velocidade, Histórico, Ferramentas; `AppShellNavigation.kt`), DI
 - **core** — infraestrutura e regras compartilhadas (rede, banco, datastore, telefonia, permissões, recomendação, diagnóstico, relatório, NDS, sonda de jogo, feature flags)
@@ -44,13 +44,13 @@ Requer JDK 17 e o `android/app/google-services.json` (já versionado).
 
 ## Release (resumo)
 
-Fluxo completo em [`docs_ai/operations/RELEASE.md`](docs_ai/operations/RELEASE.md) e checklist na skill `checar-release`. Em resumo: bump de `versionCode` em `libs.versions.toml` + `CHANGELOG.md`, depois `git tag vX.Y.Z && git push origin vX.Y.Z` dispara `release.yml` (publica na trilha `beta`). Produção é disparo manual do mesmo workflow. Publicação exige aprovação explícita do Luiz (ver `AGENTS.md`).
+Fluxo completo em [`docs/operations/RELEASE.md`](docs/operations/RELEASE.md) e checklist na skill `checar-release`. Em resumo: bump de `versionCode` em `libs.versions.toml` + `CHANGELOG.md`, depois `git tag vX.Y.Z && git push origin vX.Y.Z` dispara `release.yml` (publica na trilha `beta`). Produção é disparo manual do mesmo workflow. Publicação exige aprovação explícita do Luiz (ver `AGENTS.md`).
 
 Worker Cloudflare: mudança em `integrations/cloudflare/<worker>/src/` é deployada à parte com `npx wrangler deploy` na pasta do worker.
 
 ## CI
 
-`.github/workflows/android-ci.yml` roda em PR/push para `main` (quando `android/` muda): **ktlint**, **detekt**, **testes unitários** e **build debug**. `docs-ci.yml` valida a documentação. Detalhes em [`docs_ai/operations/ci-cd.md`](docs_ai/operations/ci-cd.md).
+`.github/workflows/android-ci.yml` roda em PR/push para `main` (quando `android/` muda): **ktlint**, **detekt**, **testes unitários** e **build debug**. `docs-ci.yml` valida a documentação. Detalhes em [`docs/operations/ci-cd.md`](docs/operations/ci-cd.md).
 
 ## Subprojetos no repositório
 
@@ -65,5 +65,5 @@ O painel Admin (React/Vite/TS) e o site/PWA pertencem aos repositórios `buildea
 
 ## Documentação
 
-Documentação viva para agentes em [`docs_ai/`](docs_ai/README.md). Personas de agentes legadas
+Documentação viva para agentes em [`docs/`](docs/README.md). Personas de agentes legadas
 arquivadas em `docs/archive/ai-governance/legacy-agents/` — não participam do roteamento ativo.

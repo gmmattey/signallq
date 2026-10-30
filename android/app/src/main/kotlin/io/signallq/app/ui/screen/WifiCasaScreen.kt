@@ -75,7 +75,7 @@ import java.util.Locale
 private val SUGESTOES_ROTULO = listOf("Sala", "Quarto", "Cozinha", "Escritório")
 
 /**
- * Tela "WiFi Casa" (`docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`) -- evolução da ferramenta
+ * Tela "WiFi Casa" (`docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`) -- evolução da ferramenta
  * "Encontrar um bom lugar" para mapeamento espacial de sinal Wi-Fi por cômodo, com comparação
  * Antes×Depois de reposicionamento de roteador/mesh.
  *

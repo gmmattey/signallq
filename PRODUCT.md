@@ -99,6 +99,6 @@ adequado, suporte a escala de fonte e status comunicado por palavra e ícone —
 
 ## Fontes canônicas
 
-- `docs_ai/POSICIONAMENTO_PRODUTO.md`
-- `docs_ai/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md`
-- `docs_ai/functional/JORNADA_ANDROID_GUIADA_2_SPEC.md`
+- `docs/POSICIONAMENTO_PRODUTO.md`
+- `docs/design-system/SIGNALLQ_DESIGN_SYSTEM_2_SPEC.md`
+- `docs/functional/JORNADA_ANDROID_GUIADA_2_SPEC.md`

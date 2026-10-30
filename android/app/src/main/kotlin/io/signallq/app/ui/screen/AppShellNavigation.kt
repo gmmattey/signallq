@@ -79,7 +79,7 @@ internal fun AppShellBackHandlers(
         //
         // Isto NÃO é um segundo motor de navegação: segue havendo um dispatcher, uma pilha de
         // overlays e um dono do back. O overlay não empilha nada aqui — só responde "consumi" ou
-        // "não consumi". Ver `docs_ai/technical/appshell-overlay-registry.md`, seção "Delegação de
+        // "não consumi". Ver `docs/technical/appshell-overlay-registry.md`, seção "Delegação de
         // back".
         if (navigator.consumirBackDoOverlayTopo()) return@BackHandler
         navigator.pop()?.let(onOverlayRemoved)

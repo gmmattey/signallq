@@ -9,8 +9,8 @@
    PRs #... anteriores a 2026-07-13) — por isso vira fonte de verdade agora.
    Platform: Android (Kotlin / Jetpack Compose / Material Design 3)
    ----------------------------------------------------------------------------
-   MIGRAÇÃO 2026-07-13 (correção de contradição, ver docs_ai/design-system/
-   DECISAO_ALINHAMENTO_TOBE_2026-07-13.md e docs_ai/operations/
+   MIGRAÇÃO 2026-07-13 (correção de contradição, ver docs/design-system/
+   DECISAO_ALINHAMENTO_TOBE_2026-07-13.md e docs/operations/
    AUDITORIA_DESIGN_TOBE_2026-07-13.md):
    - primary muda de #6C2BFF para #5B21D6 (mesma chave violeta, tom diferente).
    - secondary DEIXA de ser derivado da tríade tonal HCT do primary e vira um
@@ -23,7 +23,7 @@
      display-medium e headline-medium são REMOVIDOS por não aparecerem em
      nenhuma tela do Fluxo de Telas (maior estilo usado no app real é
      displaySmall/34px) — se algum artefato novo precisar de um estilo maior,
-     validar com Claudete (via `/design-check`) antes de reintroduzir um valor extrapolado.
+     validar com Marcelo (via `/design-check`) antes de reintroduzir um valor extrapolado.
    - on-surface-variant-2 (2º degrau de neutro) é REMOVIDO — o Fluxo de Telas
      só define um onSurfaceVariant. Overline volta a usar onSurfaceVariant
      puro (era on-surface-variant-2 na migração anterior).
@@ -48,7 +48,7 @@
      compatibilidade com aliases antigos, mas com o hex ANTERIOR (não
      confirmado por nenhum dos dois documentos do projeto Claude Design) —
      marcado abaixo como não-confirmado. Não usar em artefato novo sem
-     validar com Claudete (via `/design-check`).
+     validar com Marcelo (via `/design-check`).
    - Tipografia: fonte única do app confirmada pelo Fluxo de Telas — 'Google
      Sans Flex', 'Google Sans', 'Roboto', system-ui, sans-serif para TODOS os
      estilos (não mais split Google Sans Flex/Roboto por camada). Consistente
@@ -77,7 +77,7 @@
 
   /* ---- Tertiary (NÃO especificado pelo Fluxo de Telas — legado do manual
      MD3 anterior, mantido só por compatibilidade de alias; não usar em
-     artefato novo sem validação de Claudete via `/design-check`) ---------- */
+     artefato novo sem validação de Marcelo via `/design-check`) ---------- */
   --md-sys-color-tertiary:               #B03A5B; /* NÃO CONFIRMADO */
   --md-sys-color-on-tertiary:            #FFFFFF; /* NÃO CONFIRMADO */
   --md-sys-color-tertiary-container:     #FFE4EC; /* NÃO CONFIRMADO */
@@ -162,7 +162,7 @@
      surface-container acima.
      DEPRECATED (2026-07-19): substituído pelo modelo de PROFUNIDADE de 4
      níveis abaixo (--depth-level0..3), documentado em
-     docs_ai/DESIGN_SYSTEM.md seção 6. Mantido só por compatibilidade com
+     docs/04-design-system.md seção 6. Mantido só por compatibilidade com
      artefatos ainda não migrados — não usar em artefato novo.
      ========================================================================== */
   --md-sys-elevation-level0-tint:   var(--md-sys-color-surface);
@@ -178,7 +178,7 @@
 
   /* ==========================================================================
      PROFUNDIDADE — modelo novo de 4 níveis (2026-07-19), ver
-     docs_ai/DESIGN_SYSTEM.md seção 6. Aplicado de forma equivalente nos 3
+     docs/04-design-system.md seção 6. Aplicado de forma equivalente nos 3
      produtos do ecossistema (consumer/Pro/Console), só os nomes de token
      mudam por produto. Profundidade comunica hierarquia/interação, nunca
      decoração — card não deve parecer elevado se não for interativo ou
@@ -335,7 +335,7 @@
   --md-sys-color-inverse-surface:        #E6E0E9;
   --md-sys-color-inverse-on-surface:     #313033;
 
-  /* PROFUNDIDADE — dark theme (ver docs_ai/DESIGN_SYSTEM.md seção 6):
+  /* PROFUNDIDADE — dark theme (ver docs/04-design-system.md seção 6):
      superfícies mais elevadas ligeiramente mais claras, nunca preto
      absoluto em toda camada, sombra sutil (não a forma principal de
      separação). */

@@ -15,7 +15,7 @@ object StatusMapeamentoWifi {
 
 /**
  * Sessão de mapeamento espacial de Wi-Fi (feature "WiFi Casa",
- * `docs_ai/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, `.agents/architecture-plan.md`).
+ * `docs/functional/WIFI_CASA_MAPEAMENTO_SPEC.md`, `.agents/architecture-plan.md`).
  *
  * Tabela: mapeamento_wifi
  *

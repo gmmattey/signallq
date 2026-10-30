@@ -16,7 +16,7 @@ Leia os arquivos desta skill antes de desenhar:
 - `assets/` — marca;
 - `ui_kits/android/` — componentes/recriação de referência.
 
-A fonte implementada de Design System continua sendo `docs_ai/DESIGN_SYSTEM.md`; specs futuras marcadas como draft são direção, não comportamento já entregue.
+A fonte implementada de Design System continua sendo `docs/04-design-system.md`; specs futuras marcadas como draft são direção, não comportamento já entregue.
 
 ## Princípios
 
@@ -39,7 +39,7 @@ Antes de desenhar uma superfície nova, confirme com a direção de produto:
 - nível de detalhe técnico necessário;
 - o que acontece quando a evidência é incompleta.
 
-Claudete decide direção de produto; Rian implementa Compose; Marcelo valida semântica de diagnóstico quando a UI representa evidência/classificação; Tiago revisa qualidade. Mudança sistêmica segue o gate do Camillo.
+Marcelo decide direção de produto; Priscila define jornada, estados e visual; Camillo implementa Compose e valida a semântica de diagnóstico quando a UI representa evidência ou classificação; Renan revisa qualidade. Mudança sistêmica segue o gate do Camillo.
 
 ## Artefatos
 

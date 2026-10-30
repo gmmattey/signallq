@@ -2,7 +2,7 @@
 
 Este diretório é a **fonte canônica** das skills do SignallQ, usada pelo Claude Code.
 
-Skills descrevem procedimentos reutilizáveis e não personas. O roteamento entre Claudete, Rian, Marcelo, Tiago e Camillo é definido em [`AGENTS.md`](../../AGENTS.md) e [`.agents/WORKFLOW.md`](../../.agents/WORKFLOW.md).
+Skills descrevem procedimentos reutilizáveis e não personas. O roteamento entre Marcelo, Priscila, Camillo e Renan é definido em [`AGENTS.md`](../../AGENTS.md) e [`.agents/WORKFLOW.md`](../../.agents/WORKFLOW.md).
 
 Os diretórios `.agents/skills/` (Codex) e `.github/skills/` (GitHub/Copilot) são espelhos de compatibilidade.
 

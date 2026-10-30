@@ -3,7 +3,7 @@ name: regras-android
 description: Regras de plataforma Android (API levels, APIs deprecated, OEM quirks, restrições Play Store) e checklist de permissões do SignallQ. Consultar antes de implementar permissões, Wi-Fi, DNS, background service ou conectividade.
 ---
 
-Use esta skill para validar comportamento de plataforma Android antes de implementar ou revisar código sensível a API level, permissão, lifecycle, OEM ou execução em background. O roteamento entre Rian, Marcelo, Tiago e Camillo é definido em `AGENTS.md`.
+Use esta skill para validar comportamento de plataforma Android antes de implementar ou revisar código sensível a API level, permissão, lifecycle, OEM ou execução em background. O roteamento entre Marcelo, Priscila, Camillo e Renan é definido em `AGENTS.md`.
 
 Consulte também `oem-quirks-e-testes-device.md` quando comportamento real puder divergir da documentação oficial.
 
@@ -109,7 +109,7 @@ Se o comportamento precisa funcionar “sempre”, prove isso nas restrições r
 
 Permissões sensíveis, foreground services, localização em background, identificadores e acesso especial do sistema podem exigir declaração no Play Console e mudança de política pública.
 
-Se a tarefa altera dado coletado, finalidade ou permissão sensível, envolva Claudete e Tiago. Se houver impacto sistêmico, contrato ou nova integração, aplique também o gate do Camillo.
+Se a tarefa altera dado coletado, finalidade ou permissão sensível, envolva Marcelo e Renan. Se houver impacto sistêmico, contrato ou nova integração, aplique também o gate do Camillo.
 
 ---
 
@@ -138,4 +138,4 @@ Documentação oficial e comportamento OEM podem divergir. Quando houver incerte
 
 ## Limites
 
-Esta skill orienta a análise de plataforma. Rian normalmente implementa Android; Marcelo participa quando o dado alimenta diagnóstico; Tiago valida; Camillo entra somente quando o gate arquitetural do `AGENTS.md` for acionado.
+Esta skill orienta a análise de plataforma. Camillo normalmente implementa Android e responde pelo dado que alimenta o diagnóstico; Renan valida; o gate arquitetural do Camillo entra somente quando do `AGENTS.md` for acionado.

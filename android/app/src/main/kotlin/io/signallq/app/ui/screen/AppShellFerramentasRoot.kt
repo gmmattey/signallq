@@ -14,7 +14,7 @@ import androidx.compose.runtime.Stable
 //     em dois lugares (a tab e o `Overlay.Ferramentas`) e as duas listas de callbacks eram
 //     idênticas e duplicadas linha a linha em `AppShell.kt`.
 //
-// Ver `docs_ai/technical/appshell-root-content-registry.md` para o padrão completo.
+// Ver `docs/technical/appshell-root-content-registry.md` para o padrão completo.
 
 /**
  * Os 9 destinos de navegação do hub Ferramentas, agrupados.

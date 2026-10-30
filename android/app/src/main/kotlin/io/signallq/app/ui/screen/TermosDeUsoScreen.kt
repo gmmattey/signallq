@@ -28,7 +28,7 @@ import io.signallq.app.ui.LkTokens
 import io.signallq.app.ui.LocalLkTokens
 
 /**
- * Reproduz o texto integral de docs_ai/legal/TERMS_OF_USE.md (ultima atualizacao 28/06/2026).
+ * Reproduz o texto integral de docs/legal/TERMS_OF_USE.md (ultima atualizacao 28/06/2026).
  * Nao parafrasear nem resumir aqui -- qualquer mudanca de conteudo legal comeca no .md e e
  * replicada para este Composable, nunca o contrario.
  */

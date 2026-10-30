@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Gera docs_ai/features/INDEX.md e docs_ai/features/features.json a partir do
-# frontmatter de docs_ai/features/*.md (exceto README.md e INDEX.md).
+# Gera docs/features/INDEX.md e docs/features/features.json a partir do
+# frontmatter de docs/features/*.md (exceto README.md e INDEX.md).
 #
 # Existe para uma IA (ou pessoa) achar a pagina certa lendo ~40 linhas em vez de
 # varrer FUNCIONAL.md e 22 docs de modulo. Indice mantido a mao diverge da pagina
@@ -19,8 +19,8 @@ source scripts/lib-features.sh
 CHECK_ONLY=false
 [[ "${1:-}" == "--check" ]] && CHECK_ONLY=true
 
-DEST_MD="docs_ai/features/INDEX.md"
-DEST_JSON="docs_ai/features/features.json"
+DEST_MD="docs/features/INDEX.md"
+DEST_JSON="docs/features/features.json"
 
 # Escapa para string JSON: barra invertida e aspas (valores aqui nao tem quebra de linha).
 jstr() { local v=$1; v=${v//\\/\\\\}; v=${v//\"/\\\"}; printf '"%s"' "$v"; }

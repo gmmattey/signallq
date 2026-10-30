@@ -26,5 +26,5 @@ export * from './controls/index.js';
 
 // Telas/fluxos NÃO fazem parte do design system — são composições de produto,
 // vivem como protótipos (tobe/ + templates/ no Claude Design), não como componentes
-// reutilizáveis. Ver docs_ai/design-system/DECISAO_SEPARACAO_DS_PROTOTIPOS_2026-07-18.md.
+// reutilizáveis. Ver docs/design-system/DECISAO_SEPARACAO_DS_PROTOTIPOS_2026-07-18.md.
 // (src/screens/ mantido por ora; export removido para não entrar no bundle do DS.)

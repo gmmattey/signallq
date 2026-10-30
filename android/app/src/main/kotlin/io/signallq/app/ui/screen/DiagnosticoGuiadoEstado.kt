@@ -44,7 +44,7 @@ sealed interface EstadoChamadaNds {
  * Estas rotas **não** entram em `AppShellOverlay`. A pilha de overlays é set-like (`open()` ignora
  * duplicata) e este fluxo é cíclico — `Resultado → Orientacao → Reteste → Comparacao → Orientacao`
  * de novo. Além disso overlays acumulam em vez de substituir. Ver
- * `docs_ai/technical/appshell-overlay-registry.md`, seção "Delegação de back".
+ * `docs/technical/appshell-overlay-registry.md`, seção "Delegação de back".
  */
 enum class DiagnosticoGuiadoRota {
     /** Chamada direta ao NDS em curso, ou erro explícito de acesso ao serviço. */

@@ -129,7 +129,7 @@ class ExecutorFibra {
         val ppp = NokiaModemParser.parsePpp(pppJson)
         val devInfo = NokiaModemParser.parseDeviceInfo(deviceHtml)
 
-        // GH#865 Fase 1 — Wi-Fi/LAN reais (docs_ai/technical/NOKIA_GPON_FIELD_MAP.md).
+        // GH#865 Fase 1 — Wi-Fi/LAN reais (docs/technical/NOKIA_GPON_FIELD_MAP.md).
         // Leitura best-effort: falha nessas paginas novas nao deve derrubar o
         // resultado de fibra/WAN que ja funcionava.
         //

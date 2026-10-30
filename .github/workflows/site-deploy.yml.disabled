@@ -3,7 +3,7 @@ name: Site Deploy (Cloudflare Pages)
 # Publica o site institucional público no projeto Cloudflare Pages já
 # existente `signallq` (signallq.pages.dev) — reaproveitado, estava
 # desativado desde 2026-07-16 quando o Console migrou pra
-# signallq-admin-panel.pages.dev (ver docs_ai/operations/ADMIN_PANEL.md).
+# signallq-admin-panel.pages.dev (ver docs/operations/ADMIN_PANEL.md).
 # Nao confundir com o antigo pages-deploy.yml.disabled, que publicava o
 # Console sob /console nesse mesmo projeto — esse uso foi descontinuado;
 # agora o projeto serve o site institucional na raiz.
