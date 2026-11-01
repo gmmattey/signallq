@@ -88,19 +88,6 @@ interface AnalyticsHelper {
     )
 
     /**
-     * Resultado de uma consulta remota de diagnostico. `iaInvocada` somente e true quando
-     * o NDS retornou evidencia de IA; pedidos e falhas de transporte nao contam como
-     * invocacoes comprovadas. Sem pergunta, resposta ou identificadores de rede.
-     */
-    fun registrarDiagnosticoIaResultado(
-        origem: String,
-        outcome: String,
-        iaInvocada: Boolean,
-        modeloIa: String? = null,
-        duracaoMs: Long,
-    )
-
-    /**
      * NDS-02k (issue #1759, item 10) — disparado uma vez por chamada a
      * `NdsClient.evaluate()` feita por `NdsDiagnosticRepository`, quando a flag
      * `consumer_diagnostico_nds_live_enabled` esta ligada. Mede se o NDS
@@ -232,14 +219,6 @@ object NoOpAnalyticsHelper : AnalyticsHelper {
         completionTokens: Long?,
         totalTokens: Long?,
         latenciaMs: Long?,
-    ) = Unit
-
-    override fun registrarDiagnosticoIaResultado(
-        origem: String,
-        outcome: String,
-        iaInvocada: Boolean,
-        modeloIa: String?,
-        duracaoMs: Long,
     ) = Unit
 
     override fun registrarDiagNdsOutcome(
