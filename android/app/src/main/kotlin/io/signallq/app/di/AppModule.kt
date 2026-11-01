@@ -14,7 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.signallq.app.BuildConfig
 import io.signallq.app.ads.AdsRemoteConfigRepository
-import io.signallq.app.analytics.CompositeAnalyticsTracker
+import io.signallq.app.analytics.FirebaseAnalyticsTracker
 import io.signallq.app.analytics.FirebaseAnalyticsHelper
 import io.signallq.app.analytics.FirebaseRecommendationAnalyticsTracker
 import io.signallq.app.analytics.distributionChannel
@@ -355,7 +355,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAnalyticsTracker(tracker: CompositeAnalyticsTracker): AnalyticsTracker = tracker
+    fun provideAnalyticsTracker(tracker: FirebaseAnalyticsTracker): AnalyticsTracker = tracker
 
     /**
      * AnalyticsHelper (SIG-155) — funil principal de engajamento. Distinto do
