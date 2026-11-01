@@ -59,7 +59,7 @@ class DiagnosticOrchestrator(
     private val remoteDiagnosticRepository: RemoteDiagnosticRepository =
         RemoteDiagnosticRepository(baseUrl = BuildConfig.DIAGNOSTIC_WORKER_URL),
     private val ndsDiagnosticRepository: NdsDiagnosticRepository =
-        NdsDiagnosticRepository(ndsClient = NdsClientFactory.create()),
+        NdsDiagnosticRepository(ndsClient = NdsClientFactory.create(), analyticsHelper = analyticsHelper),
     private val featureFlagProvider: FeatureFlagProvider = DisabledFeatureFlagProvider,
 ) {
     /** Avaliação do SignallQ Assist pelo caminho NDS remoto dedicado.
