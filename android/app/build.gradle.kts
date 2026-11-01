@@ -1,4 +1,4 @@
-﻿import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
 import java.util.Properties
 
@@ -76,8 +76,8 @@ val playTrackAtual = providers.gradleProperty("playTrack").orElse("internal").ge
 val usarAdsDeTesteEmRelease = (playTrackAtual != "production").toString()
 // O bloqueio de monetizacao e independente dos IDs de teste/producao. A beta atual deve ser
 // publicada sem solicitar anuncios, mesmo que o Remote Config contenha alguma chave ativa.
-// Para uma futura release monetizada, usar explicitamente -PadsEnabled=true.
-val adsHabilitadosNoBuild = providers.gradleProperty("adsEnabled").orElse("false").get().toBoolean()
+// Para uma futura release monetizada, usar explicitamente -PadsEnabled=true (ou default true).
+val adsHabilitadosNoBuild = providers.gradleProperty("adsEnabled").orElse("true").get().toBoolean()
 
 android {
     namespace = "io.signallq.app"
@@ -436,6 +436,9 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.config)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
+    debugImplementation(libs.firebase.appcheck.debug)
 
     // Avaliacao nativa Google Play sem atrito (SIG-173/#664)
     implementation(libs.play.review)

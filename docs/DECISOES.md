@@ -33,6 +33,7 @@ version: "1.0.0"
 | [ADR-017](#adr-017) | Motor de diagnóstico e IA migram para o NDS | 2026-08-19 | Aceito |
 | [ADR-018](#adr-018) | Schema canônico `DiagnosticSnapshot` para o payload NDS | 2026-09-02 | Aceito |
 | [ADR-019](#adr-019) | SignallQ Windows Desktop | 2026-10-14 | Aceito |
+| [ADR-020](#adr-020) | Assist Direto com Firebase AI Logic nativo e App Check | 2026-11-01 | Aceito |
 
 ---
 
@@ -1852,3 +1853,34 @@ Não autoriza publicação na Microsoft Store, deploy de Workers, novo fornecedo
 autenticação do NDS ou coleta/transmissão adicional de dados sem decisão específica.
 
 *Arquivo original preservado em `docs/archive/decisoes/decisoes\ADR-019-signallq-windows-desktop.md`.*
+
+---
+
+<a id="adr-020"></a>
+## ADR-020 — Assist Direto com Firebase AI Logic nativo e App Check
+
+- **Status:** Aceito
+- **Data:** 2026-11-01
+- **Autor:** Luiz (CEO) / Squad SignallQ (Marcelo, Camillo, Priscila, Renan)
+- **Supersede parcialmente:** ADR-005 e ADR-017 no que tange ao funil guiado de diagnóstico na entrada do Assist e ao transporte de IA no cliente Android.
+
+### Contexto
+
+O fluxo de Assist anterior no SignallQ utilizava um diagnóstico guiado de quatro etapas (seleção de objetivo, questionário estruturado, processamento e laudo), acoplado ao NDS / Cloudflare Worker. Esse modelo gerava atrito e abandono.
+O Linka comprovou que a experiência de "Assist Direto" (chat livre com contexto da última medição, chips de perguntas frequentes e streaming progressivo) é superior em usabilidade, velocidade e resolução do problema.
+
+### Decisão
+
+1. **Jornada Assist Direto:** Reproduzir no SignallQ a jornada do Assist Direto do Linka em Material 3 Jetpack Compose. O usuário entra direto no chat; se houver medição recente, o card com as métricas (download, upload, latência) aparece no topo e os dados são injetados no contexto do sistema.
+2. **Integração nativa:** Utilizar Firebase AI Logic (`firebase-vertexai`) com modelo Gemini Flash para o chat conversacional, aproveitando o suporte nativo a `startChat()` e `sendMessageStream()`.
+3. **App Check:** Validação de autenticidade obrigatória via Firebase App Check (Play Integrity em produção e Debug Provider em desenvolvimento).
+4. **Sessão efêmera:** O histórico do chat reside apenas na sessão em memória do `AssistViewModel`. Ao fechar a tela, a conversa é encerrada.
+5. **Preservação de regras e motores:** Os motores determinísticos locais e de speedtest continuam intactos e são a fonte da verdade para as evidências fornecidas ao Assist. O NDS continua ativo para diagnósticos estruturados em lote.
+6. **Controle de rollout:** O modelo e a disponibilidade da nova interface são controlados via Firebase Remote Config (`assist_chat_enabled`, `assist_model_name`).
+
+### Consequências
+
+- Substitui o funil de perguntas fixas na entrada principal do Assist por chat direto com streaming.
+- Elimina a necessidade de gerenciar transporte SSE manual no app.
+- Requer App Check (Play Integrity) configurado no Firebase Console do projeto `signallq-app`.
+- A IA sempre recebe o contexto medido estruturado no prompt de sistema para evitar alucinações sobre a velocidade ou diagnóstico da rede.

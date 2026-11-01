@@ -4,7 +4,7 @@ description: "Lista os aparelhos conectados à rede Wi-Fi local, com nome honest
 type: "feature"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-10-04"
+last_updated: "2026-11-01"
 version: "1.0.0"
 feature: "dispositivos-rede"
 tipo: "jornada"
@@ -49,7 +49,7 @@ Migrado de `FUNCIONAL.md` (§5.4) e `ARQUITETURA/MODULOS/feature-devices.md`. Fa
 
 ### 1. Problema e promessa
 
-Responde "quais aparelhos estão na minha rede?". Card do hub Ferramentas: **"Quem está usando sua rede"** / "Veja os aparelhos conectados" (`FerramentasScreen.kt`). Promete a lista descoberta e identificada com honestidade; **nunca inventa marca ou tipo**.
+Responde "quais aparelhos estão na minha rede?". Card do hub Ferramentas: **"Aparelhos da rede"** / "Encontre dispositivos na sua rede" (`FerramentasScreen.kt`). Promete a lista descoberta e identificada com honestidade; **nunca inventa marca ou tipo**.
 
 ### 2. Quando aparece e para quem
 

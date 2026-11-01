@@ -1,4 +1,4 @@
-﻿package io.signallq.app
+package io.signallq.app
 
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
@@ -77,6 +77,29 @@ class SignallQApplication :
             }
         } else {
             Timber.plant(ReleaseTree(analyticsTracker))
+        }
+
+        // ADR-020: Inicialização do Firebase App Check (Play Integrity em release, Debug provider em debug).
+        runCatching {
+            val appCheck =
+                com.google.firebase.appcheck.FirebaseAppCheck
+                    .getInstance()
+            if (BuildConfig.DEBUG) {
+                runCatching {
+                    val factoryClass = Class.forName("com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory")
+                    val factory = factoryClass.getMethod("getInstance").invoke(null) as com.google.firebase.appcheck.AppCheckProviderFactory
+                    appCheck.installAppCheckProviderFactory(factory)
+                }.onFailure {
+                    Timber.w(it, "DebugAppCheckProviderFactory não encontrado no classpath")
+                }
+            } else {
+                appCheck.installAppCheckProviderFactory(
+                    com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+                        .getInstance(),
+                )
+            }
+        }.onFailure { erro ->
+            Timber.w(erro, "Firebase App Check não inicializado (esperado em testes unitários)")
         }
 
         // Canais de notificacao: criados em IO para nao bloquear o main thread no startup.

@@ -4,7 +4,7 @@ description: "Teste de velocidade (modo automático por rede, execução em tela
 type: "feature"
 status: "ativo"
 owner: "Camillo"
-last_updated: "2026-10-04"
+last_updated: "2026-11-01"
 version: "1.0.0"
 feature: "velocidade-resultado"
 tipo: "jornada"

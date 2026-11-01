@@ -22,7 +22,7 @@ class AdsFlagsManager
         private val repository: AdsRemoteConfigRepository,
         private val telemetry: AdsTelemetry,
     ) {
-        private val _flags = MutableStateFlow(AdsFlags.DESLIGADO)
+        private val _flags = MutableStateFlow(AdsFlags.LIGADO)
         val flags: StateFlow<AdsFlags> = _flags
 
         fun inicializar(scope: CoroutineScope) {

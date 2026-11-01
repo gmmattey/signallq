@@ -171,15 +171,15 @@ class AppShellRootRegistryTest {
             }
         }
         listOf(
-            "Wi-Fi e rede móvel" to "sinal_canais",
-            "WiFi Casa" to "sinal_wifi",
-            "Quem está usando sua rede" to "dispositivos",
-            "Seu equipamento" to "equipamento",
-            "Tempo de resposta" to "ping",
-            "Abertura de sites" to "dns",
-            "Relatório para sua operadora" to "laudo",
-            "Acompanhar conexão" to "monitoramento",
-            "Jogos online" to "modo_gamer",
+            "Sinal e canais" to "sinal_canais",
+            "Mapa do Wi-Fi" to "sinal_wifi",
+            "Aparelhos da rede" to "dispositivos",
+            "Modem e roteador" to "equipamento",
+            "Ping" to "ping",
+            "Teste de DNS" to "dns",
+            "Relatório" to "laudo",
+            "Monitoramento" to "monitoramento",
+            "Conexão para jogos" to "modo_gamer",
         ).forEach { (rotulo, _) ->
             composeRule.onNode(hasScrollAction()).performScrollToNode(hasText(rotulo))
             composeRule.onNodeWithText(rotulo).performClick()
@@ -228,11 +228,11 @@ class AppShellRootRegistryTest {
                 )
             }
         }
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Tempo de resposta"))
-        composeRule.onNodeWithText("Tempo de resposta").performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Ping"))
+        composeRule.onNodeWithText("Ping").performClick()
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Reconecte-se."))
         composeRule.onNodeWithText("Reconecte-se.").assertExists()
-        composeRule.runOnIdle { assertTrue("Tempo de resposta offline nao pode ter navegado", abertas.isEmpty()) }
+        composeRule.runOnIdle { assertTrue("Ping offline nao pode ter navegado", abertas.isEmpty()) }
     }
 
     // ─── Por registro (a entrada existe dentro do agregador) ────────────────────
@@ -246,7 +246,7 @@ class AppShellRootRegistryTest {
     @Test
     fun `registro compoe ferramentas quando a raiz e Tools`() {
         composeRule.setContent { RegistroDeTeste(root = AppShellRoot.Tools) }
-        composeRule.onNodeWithText("Wi-Fi e rede móvel").assertExists()
+        composeRule.onNodeWithText("Sinal e canais").assertExists()
     }
 
     @Test
@@ -280,8 +280,8 @@ class AppShellRootRegistryTest {
                     ),
             )
         }
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Tempo de resposta"))
-        composeRule.onNodeWithText("Tempo de resposta").performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Ping"))
+        composeRule.onNodeWithText("Ping").performClick()
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Reconecte-se."))
         composeRule.onNodeWithText("Reconecte-se.").assertExists()
     }
@@ -345,8 +345,8 @@ class AppShellRootRegistryTest {
                 ferramentas = ferramentasEntry(onRegistrarAbertura = { registradas += it.screenName() }),
             )
         }
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Abertura de sites"))
-        composeRule.onNodeWithText("Abertura de sites").performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Teste de DNS"))
+        composeRule.onNodeWithText("Teste de DNS").performClick()
         composeRule.runOnIdle { assertEquals(listOf("dns"), registradas) }
     }
 

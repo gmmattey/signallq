@@ -1,4 +1,4 @@
-﻿# Changelog — SignallQ Android
+# Changelog — SignallQ Android
 
 Todas as mudanças notáveis do app Android serão documentadas aqui.
 
@@ -8,6 +8,21 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 > Identificadores técnicos (`io.signallq.app`, repo `linka-android`) permanecem por compatibilidade.
 
 ---
+
+## [Unreleased]
+
+### Adicionado
+- **Assist Direto com Firebase AI Logic (ADR-020)**: substituição do funil guiado de 4 etapas por conversa em linguagem natural com streaming nativo via Gemini Flash.
+- Injeção das medições reais de rede no prompt do sistema (download, upload, ping, jitter, perda, Wi-Fi e sinal) para respostas fundamentadas em fatos.
+- Card com a última medição e chips de perguntas frequentes na entrada do Assist.
+- Inicialização do Firebase App Check com Play Integrity e Debug Provider.
+- Conversa efêmera encerrada ao fechar a tela.
+
+### Alterado
+- **Simplificação do Resultado de Velocidade**: resultado primeiro com cards de Download e Upload lado a lado, latência (ping) diretamente visível, avaliações determinísticas de uso e acesso direto ao Assist com os dados do teste.
+- **Menu Ferramentas em 3 grupos objetivos**: ferramentas reorganizadas em "Sua rede", "Testes" e "Acompanhar" com nomes diretos e sem títulos redundantes.
+- **Interface do Assist mais limpa**: respostas fluidas no canvas sem balões pesados, indicador sutil de digitação e barra de envio em pílula compacta.
+- **Monetização AdMob ligada por padrão**: anúncios nativos ativados por padrão no build (`adsEnabled=true`), defaults locais do Remote Config configurados como ligados (`CHAVE_MASTER=true`) e gates inicializados ativos.
 
 ## [1.0.8] — 2026-09-13
 

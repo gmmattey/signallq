@@ -43,18 +43,30 @@ object CatalogoFerramentas {
     val maisUsadas: List<TipoFerramenta> =
         listOf(TipoFerramenta.DNS, TipoFerramenta.MODO_JOGOS, TipoFerramenta.MONITORAMENTO)
 
-    private val ordemPadrao: List<TipoFerramenta> =
-        listOf(
-            TipoFerramenta.SINAL_CANAIS_MOVEL,
-            TipoFerramenta.SINAL_WIFI,
-            TipoFerramenta.DISPOSITIVOS,
-            TipoFerramenta.EQUIPAMENTO_INTERNET,
-            TipoFerramenta.PING,
-            TipoFerramenta.DNS,
-            TipoFerramenta.LAUDO,
-            TipoFerramenta.MONITORAMENTO,
-            TipoFerramenta.MODO_JOGOS,
+    /** Grupos organizados por finalidade (SUA REDE, TESTES, ACOMPANHAR). */
+    val grupos: Map<String, List<TipoFerramenta>> =
+        mapOf(
+            "SUA REDE" to
+                listOf(
+                    TipoFerramenta.SINAL_CANAIS_MOVEL,
+                    TipoFerramenta.SINAL_WIFI,
+                    TipoFerramenta.DISPOSITIVOS,
+                    TipoFerramenta.EQUIPAMENTO_INTERNET,
+                ),
+            "TESTES" to
+                listOf(
+                    TipoFerramenta.PING,
+                    TipoFerramenta.DNS,
+                    TipoFerramenta.MODO_JOGOS,
+                ),
+            "ACOMPANHAR" to
+                listOf(
+                    TipoFerramenta.MONITORAMENTO,
+                    TipoFerramenta.LAUDO,
+                ),
         )
+
+    private val ordemPadrao: List<TipoFerramenta> = grupos.values.flatten()
 
     /** Lista aberta 2.0: fonte canônica única dos nove destinos. */
     val todos: List<TipoFerramenta> = ordemPadrao

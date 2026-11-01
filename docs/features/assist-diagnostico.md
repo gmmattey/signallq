@@ -4,8 +4,8 @@ description: "Diagnóstico guiado por objetivo (Assist), detalhes técnicos e di
 type: "feature"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-10-04"
-version: "1.1.0"
+last_updated: "2026-11-01"
+version: "1.2.0"
 feature: "assist-diagnostico"
 tipo: "jornada"
 modulos:

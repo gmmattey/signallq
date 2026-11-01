@@ -104,17 +104,15 @@ class AdsRemoteConfigRepository(
         const val CHAVE_HISTORICO = "ads_native_historico_enabled"
         const val CHAVE_JOGOS = "ads_native_jogos_enabled"
 
-        /** Defaults locais do proprio Remote Config -- distintos do fallback de erro:
-         *  aqui a config foi lida com sucesso mas as chaves ainda nao existem no console
-         *  (primeiro deploy). Mantido desligado ate o Luiz criar as chaves no Firebase. */
+        /** Defaults locais do proprio Remote Config: mantido ligado por padrão no app. */
         val DEFAULTS_REMOTE_CONFIG: Map<String, Any> =
             mapOf(
-                CHAVE_MASTER to false,
-                CHAVE_VELOCIDADE to false,
-                CHAVE_RESULTADO to false,
-                CHAVE_DISPOSITIVOS to false,
-                CHAVE_HISTORICO to false,
-                CHAVE_JOGOS to false,
+                CHAVE_MASTER to true,
+                CHAVE_VELOCIDADE to true,
+                CHAVE_RESULTADO to true,
+                CHAVE_DISPOSITIVOS to true,
+                CHAVE_HISTORICO to true,
+                CHAVE_JOGOS to true,
             )
     }
 }

@@ -49,15 +49,15 @@ class FerramentasScreenTest {
             }
         }
         listOf(
-            "Wi-Fi e rede móvel",
-            "WiFi Casa",
-            "Quem está usando sua rede",
-            "Seu equipamento",
-            "Tempo de resposta",
-            "Abertura de sites",
-            "Relatório para sua operadora",
-            "Acompanhar conexão",
-            "Jogos online",
+            "Sinal e canais",
+            "Mapa do Wi-Fi",
+            "Aparelhos da rede",
+            "Modem e roteador",
+            "Ping",
+            "Teste de DNS",
+            "Relatório",
+            "Monitoramento",
+            "Conexão para jogos",
         ).forEach { label ->
             composeRule.onNode(hasScrollAction()).performScrollToNode(hasText(label))
             composeRule.onNodeWithText(label).assertHeightIsAtLeast(48.dp)
@@ -97,17 +97,17 @@ class FerramentasScreenTest {
             }
         }
 
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Abertura de sites"))
-        composeRule.onNodeWithText("Abertura de sites").performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Teste de DNS"))
+        composeRule.onNodeWithText("Teste de DNS").performClick()
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Tente depois."))
         composeRule.onNodeWithText("Tente depois.").assertExists()
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Tempo de resposta"))
-        composeRule.onNodeWithText("Tempo de resposta").performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Ping"))
+        composeRule.onNodeWithText("Ping").performClick()
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Reconecte-se."))
         composeRule.onNodeWithText("Reconecte-se.").assertExists()
-        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Quem está usando sua rede"))
-        composeRule.onNodeWithText("Quem está usando sua rede").performClick()
-        composeRule.onNodeWithText("Jogos online").assertDoesNotExist()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Aparelhos da rede"))
+        composeRule.onNodeWithText("Aparelhos da rede").performClick()
+        composeRule.onNodeWithText("Conexão para jogos").assertDoesNotExist()
         composeRule.onNode(hasText("Não disponível nesta versão.", substring = true)).assertDoesNotExist()
 
         assertEquals(listOf("dns-gate", "permission"), opened)

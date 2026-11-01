@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +50,8 @@ internal data class AppShellDiagnosticoGuiadoEntry(
     /** Rota `Analise` — GH#1704 parte 4/4. Quarto grupo, e não campos dentro de [dados], porque
      *  tem dono diferente dos outros três: sai do `ExecutorSpeedtest`, não dos snapshots. */
     val analise: AnaliseGuiadaContrato,
+    /** ADR-020 — Assist Direto com chat nativo (Firebase AI Logic). */
+    val assistChatEnabled: Boolean = true,
 )
 
 /** Dados de diagnóstico e contexto de rede que a tela exibe. */
@@ -136,44 +139,66 @@ internal fun AppShellDiagnosticoGuiadoOverlay(
         // overlays de resultado, que consomem o `ResultadoSpeedtest` inteiro e não têm como
         // regenerá-lo.
         val resultado = dados.resultado
-        DiagnosticoGuiadoScreen(
-            input = dados.input,
-            diagnosticReport = dados.diagnosticReport,
-            contextoDoPlano = dados.contextoDoPlano,
-            onPlanoIniciado = entry.acoes.onPlanoIniciado,
-            statusMedicao = resultado?.status,
-            entradaAssist = dados.entradaAssist,
-            tipoMidiaAssist = dados.tipoMidiaAssist,
-            onAvaliarAssist = entry.acoes.onAvaliarAssist,
-            medidasConfiaveis = medidasConfiaveis(resultado),
-            analise = entry.analise,
-            onBackHandlerReady = { backHandler = it },
-            objetivoPreSelecionado = dados.objetivoPreSelecionado,
-            analisadorState = dados.analisadorState,
-            onAnalisarProblema = entry.acoes.onAnalisarProblema,
-            onResetarAnalisador = entry.acoes.onResetarAnalisador,
-            onVoltar = entry.acoes.onVoltar,
-            onAbrirPerfil = entry.acoes.onAbrirPerfil,
-            onAlternarTema = entry.acoes.onAlternarTema,
-            onIrParaHome = entry.acoes.onIrParaHome,
-            categoria = dados.categoria,
-            ispNome = dados.ispNome,
-            connectionType = resultado?.connectionType,
-            operadoraMovel = dados.operadoraMovel,
-            recommendationDecision = dados.recommendationDecision,
-            recommendationFeedback = dados.recommendationFeedback,
-            onRecommendationShown = entry.acoes.onRecommendationShown,
-            onRecommendationClicked = entry.acoes.onRecommendationClicked,
-            onRecommendationFeedback = entry.acoes.onRecommendationFeedback,
-            resolveOperadoraIdentidadeLocal = entry.operadora.identidadeLocal,
-            resolveOperadoraContatoLocal = entry.operadora.contatoLocal,
-            resolveOperadoraIdentidadeRemota = entry.operadora.identidadeRemota,
-            resolveOperadoraContatoRemoto = entry.operadora.contatoRemoto,
-            onIniciarModoGamer = entry.acoes.onIniciarModoGamer,
-            onAbrirFerramentaSugerida = entry.acoes.onAbrirFerramentaSugerida,
-            onTestarNovamenteVinculado = entry.acoes.onTestarNovamenteVinculado,
-            comparacaoRetesteState = dados.comparacaoRetesteState,
-        )
+        if (entry.assistChatEnabled) {
+            val contextoRede =
+                remember(resultado, dados.input, dados.ispNome, dados.operadoraMovel) {
+                    io.signallq.app.assist.data.AssistContextoMapper.map(
+                        resultado = resultado,
+                        input = dados.input,
+                        ispNome = dados.ispNome,
+                        operadoraMovel = dados.operadoraMovel,
+                    )
+                }
+            LaunchedEffect(Unit) {
+                backHandler = {
+                    entry.acoes.onVoltar()
+                    true
+                }
+            }
+            io.signallq.app.assist.ui.AssistChatScreen(
+                contexto = contextoRede,
+                onFechar = entry.acoes.onVoltar,
+            )
+        } else {
+            DiagnosticoGuiadoScreen(
+                input = dados.input,
+                diagnosticReport = dados.diagnosticReport,
+                contextoDoPlano = dados.contextoDoPlano,
+                onPlanoIniciado = entry.acoes.onPlanoIniciado,
+                statusMedicao = resultado?.status,
+                entradaAssist = dados.entradaAssist,
+                tipoMidiaAssist = dados.tipoMidiaAssist,
+                onAvaliarAssist = entry.acoes.onAvaliarAssist,
+                medidasConfiaveis = medidasConfiaveis(resultado),
+                analise = entry.analise,
+                onBackHandlerReady = { backHandler = it },
+                objetivoPreSelecionado = dados.objetivoPreSelecionado,
+                analisadorState = dados.analisadorState,
+                onAnalisarProblema = entry.acoes.onAnalisarProblema,
+                onResetarAnalisador = entry.acoes.onResetarAnalisador,
+                onVoltar = entry.acoes.onVoltar,
+                onAbrirPerfil = entry.acoes.onAbrirPerfil,
+                onAlternarTema = entry.acoes.onAlternarTema,
+                onIrParaHome = entry.acoes.onIrParaHome,
+                categoria = dados.categoria,
+                ispNome = dados.ispNome,
+                connectionType = resultado?.connectionType,
+                operadoraMovel = dados.operadoraMovel,
+                recommendationDecision = dados.recommendationDecision,
+                recommendationFeedback = dados.recommendationFeedback,
+                onRecommendationShown = entry.acoes.onRecommendationShown,
+                onRecommendationClicked = entry.acoes.onRecommendationClicked,
+                onRecommendationFeedback = entry.acoes.onRecommendationFeedback,
+                resolveOperadoraIdentidadeLocal = entry.operadora.identidadeLocal,
+                resolveOperadoraContatoLocal = entry.operadora.contatoLocal,
+                resolveOperadoraIdentidadeRemota = entry.operadora.identidadeRemota,
+                resolveOperadoraContatoRemoto = entry.operadora.contatoRemoto,
+                onIniciarModoGamer = entry.acoes.onIniciarModoGamer,
+                onAbrirFerramentaSugerida = entry.acoes.onAbrirFerramentaSugerida,
+                onTestarNovamenteVinculado = entry.acoes.onTestarNovamenteVinculado,
+                comparacaoRetesteState = dados.comparacaoRetesteState,
+            )
+        }
     }
 }
 

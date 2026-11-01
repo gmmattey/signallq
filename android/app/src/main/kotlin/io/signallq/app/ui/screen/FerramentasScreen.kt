@@ -39,7 +39,9 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import io.signallq.app.ui.LkSpacing
 import io.signallq.app.ui.LocalLkTokens
 import io.signallq.app.ui.SignallQTheme
@@ -140,44 +142,53 @@ fun FerramentasScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(horizontal = LkSpacing.lg, vertical = LkSpacing.lg),
+            contentPadding = PaddingValues(horizontal = LkSpacing.lg, vertical = LkSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(LkSpacing.sm),
         ) {
-            item {
-                Text(
-                    text = "Ferramentas de rede",
-                    modifier = Modifier.semantics { heading() },
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Text(
-                    "Use quando precisar investigar um ponto específico.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = c.onSurfaceVariant,
-                )
-            }
-            items(ferramentasVisiveis, key = { (tipo, _) -> tipo.name }) { (tipo, estado) ->
-                val visual = tipo.visual()
-                SignallQListRow(
-                    title = visual.titulo,
-                    subtitle = estado.subtitle(visual.descricao, tipo == ferramentaRecomendada),
-                    icon = visual.icon,
-                    onClick = {
-                        when (estado) {
-                            FerramentaDisponibilidade.Disponivel,
-                            is FerramentaDisponibilidade.PermissaoNecessaria,
-                            -> {
-                                onRegistrarAbertura(tipo)
-                                callbacks.getValue(tipo).invoke()
-                            }
-                            is FerramentaDisponibilidade.IndisponivelRemotamente -> {
-                                callbacks.getValue(tipo).invoke()
-                                feedback = estado.proximoPasso
-                            }
-                            is FerramentaDisponibilidade.Offline -> feedback = estado.proximoPasso
-                            is FerramentaDisponibilidade.Oculta -> Unit
-                        }
-                    },
-                )
+            CatalogoFerramentas.grupos.forEach { (tituloGrupo, tipos) ->
+                val itensDoGrupo =
+                    tipos
+                        .map { tipo -> tipo to disponibilidade(tipo) }
+                        .filterNot { (_, estado) -> estado is FerramentaDisponibilidade.Oculta }
+
+                if (itensDoGrupo.isNotEmpty()) {
+                    item(key = "header_$tituloGrupo") {
+                        Text(
+                            text = tituloGrupo,
+                            modifier =
+                                Modifier
+                                    .semantics { heading() }
+                                    .padding(top = 12.dp, bottom = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = c.onSurfaceVariant,
+                        )
+                    }
+                    items(itensDoGrupo, key = { (tipo, _) -> tipo.name }) { (tipo, estado) ->
+                        val visual = tipo.visual()
+                        SignallQListRow(
+                            title = visual.titulo,
+                            subtitle = estado.subtitle(visual.descricao, tipo == ferramentaRecomendada),
+                            icon = visual.icon,
+                            onClick = {
+                                when (estado) {
+                                    FerramentaDisponibilidade.Disponivel,
+                                    is FerramentaDisponibilidade.PermissaoNecessaria,
+                                    -> {
+                                        onRegistrarAbertura(tipo)
+                                        callbacks.getValue(tipo).invoke()
+                                    }
+                                    is FerramentaDisponibilidade.IndisponivelRemotamente -> {
+                                        callbacks.getValue(tipo).invoke()
+                                        feedback = estado.proximoPasso
+                                    }
+                                    is FerramentaDisponibilidade.Offline -> feedback = estado.proximoPasso
+                                    is FerramentaDisponibilidade.Oculta -> Unit
+                                }
+                            },
+                        )
+                    }
+                }
             }
             feedback?.let { message ->
                 item {
@@ -211,15 +222,15 @@ private fun FerramentaDisponibilidade.subtitle(
 
 private fun TipoFerramenta.visual(): FerramentaVisual =
     when (this) {
-        TipoFerramenta.SINAL_CANAIS_MOVEL -> FerramentaVisual("Wi-Fi e rede móvel", "Veja o sinal e os canais da sua rede", Icons.Outlined.SignalCellularAlt)
-        TipoFerramenta.SINAL_WIFI -> FerramentaVisual("WiFi Casa", "Mapeie o sinal em cada cômodo e compare antes e depois de mudar o roteador", Icons.Outlined.NetworkWifi)
-        TipoFerramenta.DISPOSITIVOS -> FerramentaVisual("Quem está usando sua rede", "Veja os aparelhos conectados", Icons.Outlined.Devices)
-        TipoFerramenta.EQUIPAMENTO_INTERNET -> FerramentaVisual("Seu equipamento", "Veja o estado do modem ou da ONT", Icons.Outlined.Router)
-        TipoFerramenta.PING -> FerramentaVisual("Tempo de resposta", "Veja se há atraso até um endereço", Icons.Outlined.NetworkCheck)
-        TipoFerramenta.DNS -> FerramentaVisual("Abertura de sites", "Compare servidores que ajudam a encontrar sites", Icons.Outlined.Dns)
-        TipoFerramenta.LAUDO -> FerramentaVisual("Relatório para sua operadora", "Gere um resumo completo da conexão", Icons.Outlined.Description)
-        TipoFerramenta.MONITORAMENTO -> FerramentaVisual("Acompanhar conexão", "Receba alertas quando algo mudar", Icons.Outlined.MonitorHeart)
-        TipoFerramenta.MODO_JOGOS -> FerramentaVisual("Jogos online", "Veja se sua conexão pode causar atrasos", Icons.Outlined.SportsEsports)
+        TipoFerramenta.SINAL_CANAIS_MOVEL -> FerramentaVisual("Sinal e canais", "Analise o Wi-Fi e o sinal móvel", Icons.Outlined.SignalCellularAlt)
+        TipoFerramenta.SINAL_WIFI -> FerramentaVisual("Mapa do Wi-Fi", "Verifique a cobertura por cômodo", Icons.Outlined.NetworkWifi)
+        TipoFerramenta.DISPOSITIVOS -> FerramentaVisual("Aparelhos da rede", "Encontre dispositivos na sua rede", Icons.Outlined.Devices)
+        TipoFerramenta.EQUIPAMENTO_INTERNET -> FerramentaVisual("Modem e roteador", "Consulte seu equipamento de internet", Icons.Outlined.Router)
+        TipoFerramenta.PING -> FerramentaVisual("Ping", "Meça o atraso até um endereço", Icons.Outlined.NetworkCheck)
+        TipoFerramenta.DNS -> FerramentaVisual("Teste de DNS", "Compare servidores DNS", Icons.Outlined.Dns)
+        TipoFerramenta.MODO_JOGOS -> FerramentaVisual("Conexão para jogos", "Avalie sua conexão para jogar", Icons.Outlined.SportsEsports)
+        TipoFerramenta.MONITORAMENTO -> FerramentaVisual("Monitoramento", "Acompanhe mudanças e instabilidades", Icons.Outlined.MonitorHeart)
+        TipoFerramenta.LAUDO -> FerramentaVisual("Relatório", "Gere um documento da conexão", Icons.Outlined.Description)
     }
 
 @Preview(name = "Ferramentas claro", showBackground = true)

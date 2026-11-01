@@ -28,7 +28,18 @@ data class AdsFlags(
     }
 
     companion object {
-        /** Fallback local seguro -- usado antes do primeiro fetch e se o fetch falhar. */
+        /** Fallback local desligado -- usado se o fetch falhar e leitura falhar. */
         val DESLIGADO = AdsFlags()
+
+        /** Estado padrao com todos os slots e chave mestra ligados. */
+        val LIGADO =
+            AdsFlags(
+                masterEnabled = true,
+                velocidade = true,
+                resultado = true,
+                dispositivos = true,
+                historico = true,
+                jogos = true,
+            )
     }
 }

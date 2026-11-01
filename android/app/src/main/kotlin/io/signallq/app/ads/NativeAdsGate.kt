@@ -8,7 +8,7 @@ import io.signallq.app.ui.ads.NativeAdEligibility
 data class NativeAdsGate(
     val buildEnabled: Boolean = false,
     val umpCanRequestAds: Boolean = false,
-    val flags: AdsFlags = AdsFlags.DESLIGADO,
+    val flags: AdsFlags = AdsFlags.LIGADO,
 ) {
     fun eligibilityFor(slot: AdSlot): NativeAdEligibility =
         NativeAdEligibility(

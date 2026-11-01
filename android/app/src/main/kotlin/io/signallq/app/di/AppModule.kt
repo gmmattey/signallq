@@ -1,4 +1,4 @@
-﻿package io.signallq.app.di
+package io.signallq.app.di
 
 import android.content.Context
 import android.net.wifi.WifiManager
@@ -14,8 +14,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.signallq.app.BuildConfig
 import io.signallq.app.ads.AdsRemoteConfigRepository
-import io.signallq.app.analytics.CompositeAnalyticsTracker
 import io.signallq.app.analytics.FirebaseAnalyticsHelper
+import io.signallq.app.analytics.FirebaseAnalyticsTracker
 import io.signallq.app.analytics.FirebaseRecommendationAnalyticsTracker
 import io.signallq.app.analytics.distributionChannel
 import io.signallq.app.core.database.CoreDatabaseModulo
@@ -355,7 +355,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAnalyticsTracker(tracker: CompositeAnalyticsTracker): AnalyticsTracker = tracker
+    fun provideAnalyticsTracker(tracker: FirebaseAnalyticsTracker): AnalyticsTracker = tracker
 
     /**
      * AnalyticsHelper (SIG-155) — funil principal de engajamento. Distinto do
@@ -452,4 +452,10 @@ object AppModule {
             ispInfoCache = ispInfoCache,
             applicationScope = applicationScope,
         )
+
+    @Provides
+    @Singleton
+    fun provideAssistChatRepository(
+        impl: io.signallq.app.assist.data.FirebaseAssistChatRepository,
+    ): io.signallq.app.assist.data.AssistChatRepository = impl
 }
