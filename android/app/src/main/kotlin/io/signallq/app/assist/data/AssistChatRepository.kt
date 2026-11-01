@@ -17,7 +17,7 @@ interface AssistChatRepository {
     ): AssistChatSession
 
     companion object {
-        const val MODEL_DEFAULT = "gemini-2.0-flash"
+        const val MODEL_DEFAULT = "gemini-3.8-flash"
     }
 }
 

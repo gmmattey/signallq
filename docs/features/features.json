@@ -78,7 +78,7 @@
       "eventos": ["feature_used (feature_id=historico)", "screen_view (screen_name=historico | laudo)", "diagnostico_reteste_iniciado", "diagnostico_comparacao_concluida"],
       "flags": ["consumer_history_enabled", "consumer_diagnostico_enabled"],
       "testes": ["android/app/src/test/kotlin/io/signallq/app/ui/screen/HistoricoConclusaoMapperTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/HistoricoConclusaoLayoutTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/HistoricoScreenHelpersTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/HistoricoScreenBufferbloatVereditoTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/HistoricoUptimeWiringCaracterizacaoTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/LaudoScreenExecutionVersioningTest.kt", "android/app/src/test/kotlin/io/signallq/app/MainViewModelHistoricoTest.kt", "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportadorHistoricoCSVTest.kt", "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportadorHistoricoPDFTest.kt", "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportHistoricoFlowTest.kt"],
-      "adrs": [],
+      "adrs": ["ADR-022"],
       "thresholds_em": "android/feature/history/src/main/kotlin/io/signallq/app/feature/history/VereditoReteste.kt"
     },
     {
@@ -94,7 +94,7 @@
       "eventos": [],
       "flags": ["consumer_home_enabled"],
       "testes": ["android/app/src/test/kotlin/io/signallq/app/conectividade/StatusConectividadeAoVivoCoordinatorTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2ConnectionTrailTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2StatusAoVivoMapperTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2UiStateTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2ScreenTest.kt", "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2HelpersTest.kt", "android/core/network/src/test/kotlin/io/signallq/app/core/network/topologia/engine/TopologiaRedeEngineTest.kt"],
-      "adrs": [],
+      "adrs": ["ADR-021"],
       "thresholds_em": "android/core/network/src/main/kotlin/io/signallq/app/core/network/topologia/engine/TopologiaRedeEngine.kt"
     },
     {

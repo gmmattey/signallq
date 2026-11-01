@@ -15,9 +15,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.signallq.app.core.diagnostico.EstagioRede
+import io.signallq.app.feature.home.MetricasMedicaoHome
+import io.signallq.app.feature.home.OrigemMedicaoHome
+import io.signallq.app.feature.home.ResolvedHomeMeasurement
 import io.signallq.app.ui.SignallQTheme
 import io.signallq.app.ui.component.SignallQFeedbackTone
 import org.junit.Assert.assertEquals
@@ -34,7 +38,7 @@ class Inicio2ScreenTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun `trilha de conexao nao exibe titulo adicional`() {
+    fun `trilha de conexao nao exibe titulo adicional legado`() {
         composeRule.setContent {
             SignallQTheme {
                 Inicio2Screen(
@@ -51,10 +55,12 @@ class Inicio2ScreenTest {
         }
 
         composeRule.onNodeWithText("Caminho da rede").assertDoesNotExist()
+        composeRule.onNodeWithText("Sua rede").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Ver detalhes").performScrollTo().assertIsDisplayed()
     }
 
     @Test
-    fun `offline em font scale 2 mostra contexto e um CTA acessivel disparado uma vez`() {
+    fun `offline em font scale 2 mostra contexto e CTA acessivel disparado uma vez`() {
         var analyses = 0
         composeRule.setContent {
             SignallQTheme {
@@ -74,14 +80,12 @@ class Inicio2ScreenTest {
         composeRule.onNodeWithText("Sem internet").assertIsDisplayed()
         composeRule.onNodeWithText("Internet lenta").assertIsDisplayed()
         composeRule
-            .onNodeWithText("Analisar minha conexão")
+            .onNodeWithText("Fazer teste de velocidade")
             .assertIsDisplayed()
             .assertHasClickAction()
             .assertHeightIsAtLeast(48.dp)
             .performClick()
         assertEquals(1, analyses)
-        composeRule.onNodeWithText("Download").assertDoesNotExist()
-        composeRule.onNodeWithText("Ferramentas").assertDoesNotExist()
     }
 
     @Test
@@ -101,7 +105,7 @@ class Inicio2ScreenTest {
             }
         }
 
-        val cta = composeRule.onNodeWithText("Analisar minha conexão")
+        val cta = composeRule.onNodeWithText("Fazer teste de velocidade")
         val clickAction = cta.fetchSemanticsNode().config[SemanticsActions.OnClick].action
         composeRule.runOnIdle {
             clickAction?.invoke()
@@ -122,7 +126,7 @@ class Inicio2ScreenTest {
                 geracaoDiagnostico = 1L,
             )
         composeRule.waitForIdle()
-        val novoCta = composeRule.onNodeWithText("Analisar minha conexão").assertIsEnabled()
+        val novoCta = composeRule.onNodeWithText("Fazer teste de velocidade").assertIsEnabled()
         val novaClickAction = novoCta.fetchSemanticsNode().config[SemanticsActions.OnClick].action
         composeRule.runOnIdle { novaClickAction?.invoke() }
         assertEquals(2, analyses)
@@ -157,7 +161,7 @@ class Inicio2ScreenTest {
         fun clicarCta() {
             val action =
                 composeRule
-                    .onNodeWithText("Analisar minha conexão")
+                    .onNodeWithText("Fazer teste de velocidade")
                     .fetchSemanticsNode()
                     .config[SemanticsActions.OnClick]
                     .action
@@ -206,9 +210,9 @@ class Inicio2ScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("Analisar minha conexão").performClick()
+        composeRule.onNodeWithText("Fazer teste de velocidade").performClick()
         restorationTester.emulateSavedInstanceStateRestore()
-        composeRule.onNodeWithText("Analisar minha conexão").assertIsEnabled().performClick()
+        composeRule.onNodeWithText("Fazer teste de velocidade").assertIsEnabled().performClick()
         composeRule.waitForIdle()
         assertEquals(2, analyses)
     }
@@ -231,38 +235,133 @@ class Inicio2ScreenTest {
     }
 
     @Test
-    fun `atalho de videos abre o SignallQ Assist`() {
-        var videos = 0
+    fun `botao conversar com assist dispara callback`() {
+        var assistClicado = 0
         composeRule.setContent {
             SignallQTheme {
                 Inicio2Screen(
                     uiState = Inicio2UiState(Inicio2Conexao.Wifi, "Casa", Inicio2Analise.SemAnalise),
-                    onAnalisarConexao = {
-                        1L
-                    },
+                    onAnalisarConexao = { 1L },
                     onAbrirPerfil = {},
-                    onAbrirVideos = { videos++ },
+                    onConversarAssist = { assistClicado++ },
                 )
             }
         }
 
-        val videoAction =
-            composeRule
-                .onNodeWithText("Vídeos ou chamadas travam")
-                .fetchSemanticsNode()
-                .config[SemanticsActions.OnClick]
-                .action
-        composeRule.runOnIdle {
-            videoAction?.invoke()
-        }
+        composeRule
+            .onNodeWithText("Conversar com Assist")
+            .performClick()
 
-        assertEquals(1, videos)
+        assertEquals(1, assistClicado)
     }
 
-    // Architecture Plan "Status de conectividade ao vivo na Home", decisão 4.4 -- teste de
-    // caracterização: Carregando/Interrompida NUNCA usam o tom ambiente (mesmo em Wi-Fi com
-    // statusAoVivo disponível); SemAnalise/StatusEmTempoReal passam a usar o pior caso da
-    // trilha quando statusAoVivo está disponível e a conexão é Wi-Fi.
+    @Test
+    fun `card de ultimo teste exibe metricas e acao quando disponivel`() {
+        var resultadoClicado = 0
+        val medicao =
+            ResolvedHomeMeasurement(
+                metricas =
+                    MetricasMedicaoHome(
+                        downloadMbps = 450.0,
+                        uploadMbps = 120.0,
+                        latenciaMs = 14.0,
+                        jitterMs = 2.0,
+                        perdaPercentual = 0.0,
+                        timestampEpochMs = 1700000000000L,
+                        connectionType = "Wi-Fi",
+                        ssid = "Casa",
+                        vereditoGamer = null,
+                        gargaloPrimario = null,
+                        utilizavel = true,
+                    ),
+                origem = OrigemMedicaoHome.ANTERIOR,
+            )
+
+        composeRule.setContent {
+            SignallQTheme {
+                Inicio2Screen(
+                    uiState =
+                        Inicio2UiState(
+                            conexao = Inicio2Conexao.Wifi,
+                            nomeConexao = "Casa",
+                            analise = Inicio2Analise.StatusEmTempoReal("Excelente", "Conexão ótima"),
+                            ultimaMedicao = medicao,
+                        ),
+                    onAnalisarConexao = { null },
+                    onAbrirPerfil = {},
+                    onVerResultado = { resultadoClicado++ },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Último teste").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("450").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("120").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("14").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Download").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Upload").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Ping").performScrollTo().assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Ver resultado")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, resultadoClicado)
+    }
+
+    @Test
+    fun `card de ultimo teste exibe convite amigavel quando sem medicoes`() {
+        composeRule.setContent {
+            SignallQTheme {
+                Inicio2Screen(
+                    uiState =
+                        Inicio2UiState(
+                            conexao = Inicio2Conexao.Wifi,
+                            nomeConexao = "Casa",
+                            analise = Inicio2Analise.StatusEmTempoReal("Excelente", "Conexão ótima"),
+                            ultimaMedicao = null,
+                        ),
+                    onAnalisarConexao = { null },
+                    onAbrirPerfil = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Último teste").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Nenhum teste recente").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Ver resultado").assertDoesNotExist()
+    }
+
+    @Test
+    fun `secao explorar exibe atalhos de wifi e jogos e sao clicaveis`() {
+        var wifiClicado = 0
+        var jogosClicado = 0
+        composeRule.setContent {
+            SignallQTheme {
+                Inicio2Screen(
+                    uiState = Inicio2UiState(Inicio2Conexao.Wifi, "Casa", Inicio2Analise.SemAnalise),
+                    onAnalisarConexao = { null },
+                    onAbrirPerfil = {},
+                    onAbrirSinalWifi = { wifiClicado++ },
+                    onAbrirJogos = { jogosClicado++ },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Explorar").performScrollTo().assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Sinal do Wi-Fi")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, wifiClicado)
+        composeRule
+            .onNodeWithText("Conexão para jogos")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, jogosClicado)
+    }
 
     private val statusAmbienteErroWifi =
         Inicio2StatusAoVivo(
@@ -336,7 +435,6 @@ class Inicio2ScreenTest {
         }
 
         composeRule.onNodeWithText("Problema no seu Wi-Fi").assertIsDisplayed()
-        composeRule.onNodeWithText("Conexão boa").assertDoesNotExist()
     }
 
     @Test

@@ -34,6 +34,8 @@ version: "1.0.0"
 | [ADR-018](#adr-018) | Schema canônico `DiagnosticSnapshot` para o payload NDS | 2026-09-02 | Aceito |
 | [ADR-019](#adr-019) | SignallQ Windows Desktop | 2026-10-14 | Aceito |
 | [ADR-020](#adr-020) | Assist Direto com Firebase AI Logic nativo e App Check | 2026-11-01 | Aceito |
+| [ADR-021](#adr-021) | Redesenho da Home: Painel de Conexão com Hero Compacto, Ações Diretas e Última Medição | 2026-11-01 | Aceito |
+| [ADR-022](#adr-022) | Redesenho do Histórico: Linha do Tempo com Resumo Compacto e Filtros Rápidos | 2026-11-01 | Aceito |
 
 ---
 
@@ -1884,3 +1886,69 @@ O Linka comprovou que a experiência de "Assist Direto" (chat livre com contexto
 - Elimina a necessidade de gerenciar transporte SSE manual no app.
 - Requer App Check (Play Integrity) configurado no Firebase Console do projeto `signallq-app`.
 - A IA sempre recebe o contexto medido estruturado no prompt de sistema para evitar alucinações sobre a velocidade ou diagnóstico da rede.
+
+---
+
+<a id="adr-021"></a>
+## ADR-021 — Redesenho da Home: Painel de Conexão com Hero Compacto, Ações Diretas e Última Medição
+
+- **Status:** Aceito
+- **Data:** 2026-11-01
+- **Autor:** Luiz (CEO) / Squad SignallQ (Marcelo, Camillo, Priscila, Renan)
+
+### Contexto
+
+A Home anterior operava primariamente como um funil de diagnóstico preliminar:
+1. A trilha de rede ocupava a primeira visualização no topo, roubando espaço de celulares médios e compactos.
+2. O círculo de status central de 112 dp chamava muita atenção visual sem agregar densidade de informação frente ao título.
+3. O botão "Analisar minha conexão" era ambíguo, confundindo o teste de velocidade com o diagnóstico assistido por IA.
+4. Faltava um resumo evidente da última medição realizada (download, upload e ping), apesar de a infraestrutura de dados já existir.
+5. O atalho "Vídeos ou chamadas travam" era excessivamente estreito e técnico.
+
+### Decisão
+
+Organizar a Home em torno de três perguntas claras para a pessoa usuária: "Como está minha internet?", "Quero medir?" e "Preciso de ajuda?".
+
+1. **Hero Compacto:** Apresenta o status da conexão no topo (Wi-Fi, dados móveis, ethernet ou sem conexão), substituindo o círculo de 112 dp por um ícone sutil alinhado ao título do veredito leve ("Sua conexão está disponível", "Sua conexão pode estar instável", etc.), descrição direta e timestamp do check ("Verificado agora"). Remove o badge "Beta" da Home pública.
+2. **Dupla de Ações Primárias:**
+   - Botão principal: **Fazer teste de velocidade** (com ícone de velocímetro). Ao tocar, navega imediatamente para a aba de Velocidade e inicia a medição do speedtest direto.
+   - Botão secundário: **Conversar com Assist** (com ícone de brilho/estrela). Ao tocar, abre a jornada do Assist Direto (ADR-020).
+3. **Card da Última Medição:** Apresenta o resumo do último teste com contexto temporal e de conexão (ex: "Ontem, 15:20 · Wi-Fi"), link "Ver resultado" e colunas claras para Download (Mbps), Upload (Mbps) e Ping (ms). Em caso de primeiro uso ou sem testes no histórico, mantém o card com convite amigável ("Nenhum teste recente · Toque para medir").
+4. **Hierarquia Secundarizada:** A trilha de rede ("Sua rede" com link "Ver detalhes") e os atalhos de exploração contextuais ("Sinal do Wi-Fi" e "Conexão para jogos") passam a se posicionar abaixo das ações e do último teste.
+
+### Consequências
+
+- Transforma a Home de uma coleção de ferramentas em um painel claro de conectividade para tomada de decisões.
+- Conecta diretamente as três jornadas centrais do produto: Home → Speedtest → Resultado → Assist.
+- Preserva integralmente a integridade dos contratos de telemetria leve (`MonitorConexaoLeveUseCase`, `StatusConectividadeAoVivoCoordinator` e `ResolvedorMedicaoHome`).
+
+---
+
+<a id="adr-022"></a>
+## ADR-022 — Redesenho do Histórico: Linha do Tempo com Resumo Compacto e Filtros Rápidos
+
+- **Status:** Aceito
+- **Data:** 2026-11-01
+- **Autor:** Luiz (CEO) / Squad SignallQ (Marcelo, Camillo, Priscila, Renan)
+
+### Contexto
+
+A tela de Histórico anterior acumulava ruído antes do conteúdo principal: título repetitivo, resumo de médias gerais sem contexto de período, anúncio publicitário fixo e barra de comparação no topo. Os cards eram volumosos, repetitivos ao expandir e o resultado da comparação ficava inserido após toda a lista, dificultando a leitura quando havia muitos testes.
+
+### Decisão
+
+Transformar o Histórico em uma linha do tempo clara de medições com resumo de período contextual e comparação desacoplada:
+
+1. **Filtro de Período no Topo:** Pills de navegação temporal rápida (`7 dias`, `30 dias`, `Tudo`), com `7 dias` ativo por padrão.
+2. **Resumo Discreto do Período:** Bloco enxuto exibindo o total de testes encontrados no período e a velocidade do último download registrado.
+3. **Filtros Rápidos de Conexão:** Pills de fácil alcance junto ao cabeçalho "Medições" (`Todas`, `Wi-Fi`, `Móvel`), com `Todas` ativo por padrão.
+4. **Cards Compactos por Data:** Registros cronológicos destacando Download (Mbps), Ping (ms), ícone e nome da conexão ("Wi-Fi" ou "Rede móvel"), contexto temporal ("Hoje · 15:20") e status de qualidade ("Bom para streaming", "Teste concluído", etc.).
+5. **Detalhe Consistente:** O toque no card abre um detalhamento completo alinhado ao laudo do Speedtest, permitindo ver todos os dados técnicos e iniciar conversa com o Assist sobre aquele teste.
+6. **Comparação Secundária:** Acesso à comparação através de card dedicado ao final ou fluxo específico, garantindo que a comparação não compita com a busca e leitura de testes anteriores.
+7. **Posicionamento de Anúncio:** Anúncio nativo AdMob deslocado para o meio da lista de registros quando elegível, nunca antes do primeiro teste.
+
+### Consequências
+
+- Resolve a sobrecarga cognitiva ao abrir a aba de Histórico.
+- Mantém o foco do Histórico em acompanhar a evolução da conexão ao longo do tempo.
+- Preserva todas as entidades de banco Room (`MedicaoEntity`) e contratos de exportação CSV/compartilhamento.

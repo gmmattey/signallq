@@ -3,9 +3,11 @@ package io.signallq.app.ui.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -52,6 +54,7 @@ fun SignallQButton(
             ) {
                 if (leadingIcon != null) {
                     Icon(leadingIcon, contentDescription = null, modifier = Modifier.size(LkSpacing.lg))
+                    Spacer(Modifier.width(LkSpacing.sm))
                 }
                 Text(text = label, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }

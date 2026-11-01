@@ -4,8 +4,8 @@ description: "Tela Início: veredito humano, trilha de nós da rede com status a
 type: "feature"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-10-04"
-version: "1.1.0"
+last_updated: "2026-11-01"
+version: "1.2.0"
 feature: "inicio-status"
 tipo: "jornada"
 modulos:
@@ -32,7 +32,8 @@ testes:
   - "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2ScreenTest.kt"
   - "android/app/src/test/kotlin/io/signallq/app/ui/screen/Inicio2HelpersTest.kt"
   - "android/core/network/src/test/kotlin/io/signallq/app/core/network/topologia/engine/TopologiaRedeEngineTest.kt"
-adrs: []
+adrs:
+  - "ADR-021"
 thresholds_em: "android/core/network/src/main/kotlin/io/signallq/app/core/network/topologia/engine/TopologiaRedeEngine.kt"
 ---
 
@@ -48,7 +49,16 @@ Responde "minha internet está bem agora?" sem exigir que a pessoa entenda de re
 
 ### 2. Quando aparece e para quem
 
-`Inicio2Screen` (aba 0) é a única Home. O topo mostra o estado da conexão (Wi-Fi, móvel, Ethernet, offline ou ainda sendo identificada), o veredito humano, uma explicação curta e exatamente um CTA, **Analisar minha conexão**. Cobre os estados: sem análise, último estado conhecido em memória, medição persistida tratada como resultado anterior, carregamento e análise interrompida. Abaixo, uma trilha horizontal de até cinco nós (Internet, equipamento principal, mesh quando confirmado, Wi-Fi e este aparelho). Há o atalho "Vídeos ou chamadas travam"; o antigo card "Outro problema" foi removido por duplicar a entrada. Não há grade técnica, catálogo de ferramentas, diagnóstico completo nem anúncio AdMob na Início. O aviso regulatório da Anatel também não aparece aqui.
+`Inicio2Screen` (aba 0) é a única Home do SignallQ, estruturada como um painel simples de conectividade em torno de três perguntas essenciais: Como está minha internet? Quero medir? Preciso de ajuda? (ADR-021).
+
+O layout organiza-se na seguinte hierarquia vertical:
+1. **Hero compacto:** Mostra o estado da conexão (Wi-Fi, dados móveis, Ethernet, offline), ícone discreto de status, veredito humano ("Sua conexão está disponível", "Wi-Fi pode estar instável", "Sem internet", etc.), explicação direta e timestamp da verificação ("Verificado agora"). O badge "Beta" foi removido da Home pública.
+2. **Dupla de ações principais:**
+   - Botão primário: **Fazer teste de velocidade** (com ícone de velocímetro), que navega para a aba de Velocidade e inicia a medição imediatamente.
+   - Botão secundário: **Conversar com Assist** (com ícone de brilho), que abre diretamente o SignallQ Assist (ADR-020).
+3. **Card do Último teste:** Resumo da medição mais recente com Download (Mbps), Upload (Mbps), Ping (ms), contexto de rede e horário (ex: "Ontem, 15:20 · Wi-Fi") e atalho "Ver resultado". Em primeiro uso ou sem medições anteriores, exibe convite amigável ("Nenhum teste recente · Faça seu primeiro teste").
+4. **Sua rede:** Trilha horizontal de até cinco nós com link "Ver detalhes" e legenda explicativa de esquema de rede.
+5. **Explorar:** Cards lado a lado para "Sinal do Wi-Fi" (verificar qualidade) e "Conexão para jogos" (avaliar desempenho).
 
 ### 3. Regras de decisão
 

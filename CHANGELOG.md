@@ -14,6 +14,16 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/) e este p
 
 ---
 
+## [1.1.0] — 2026-11-01
+
+### Adicionado (Android)
+- **Nova Home (ADR-021)**: painel de conexão claro e objetivo com Hero compacto, ações diretas (Fazer teste de velocidade / Conversar com Assist), card do último teste visível e atalhos úteis.
+- **Novo Histórico (ADR-022)**: linha do tempo em ordem cronológica com resumo do período (7 dias, 30 dias, Tudo), filtros rápidos de conexão, detalhe completo do teste e comparação honesta de testes.
+- **Assist Direto com Firebase AI Logic (ADR-020)**: conversa em streaming nativo via Gemini 3.8 Flash e validação de autenticidade via Firebase App Check (Play Integrity).
+- **Simplificação do Resultado de Velocidade**: resultado primeiro com cards de Download e Upload lado a lado, latência (ping) diretamente visível e acesso direto ao Assist.
+
+---
+
 ## [Unreleased] — Site, Workers e host (2026-10-10)
 
 ### Adicionado

@@ -10,13 +10,20 @@ version: "2.0.0"
 
 # Histórico de Releases — SignallQ Android
 
-**Versão atual no código:** `1.0.9` (`versionCode 89`, `android/gradle/libs.versions.toml`).
+**Versão atual no código:** `1.1.0` (`versionCode 90`, `android/gradle/libs.versions.toml`).
 **Fontes:** tags git `vX.Y.Z`, `android/CHANGELOG.md` e `CHANGELOG.md` (raiz). Em divergência, valem o código e as tags.
 Identificadores técnicos preservados: `io.signallq.app`, `buildea-labs/signallq`.
 
 Marca: Linka (até 0.14.x) → Veloo (0.15.0) → SignallQ (0.16.0+).
 
 ---
+
+## v1.1.0 (versionCode 90) — 2026-11-01 (tag `v1.1.0`)
+
+- **Home:** novo painel de conexão com Hero compacto, ações diretas (Medir / Conversar com Assist) e resumo do último teste (ADR-021).
+- **Histórico:** nova linha do tempo de testes com filtros de período (7d, 30d, Tudo) e rede, resumo de volume/download e comparação clara (ADR-022).
+- **Assist Direto:** conversa com streaming nativo via Firebase AI Logic e Gemini 3.8 Flash, com App Check (Play Integrity) (ADR-020).
+- **Resultado de Velocidade:** apresentação limpa lado a lado de Download e Upload com latência explícita e atalhos objetivos.
 
 ## v1.0.9 (versionCode 89) — 2026-09-27 (tag `v1.0.9`)
 

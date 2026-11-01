@@ -1,3 +1,3 @@
-Chegou o WiFi Casa: mapeie o sinal Wi-Fi cômodo a cômodo num grid da sua casa e compare antes e depois de mudar o roteador de lugar.
-
-Também trouxemos o status de conectividade ao vivo na tela inicial, mostrando na hora se o problema é no seu Wi-Fi ou no provedor.
+• Nova tela inicial: painel simples com o estado da sua conexão, atalho direto para medir e resumo do último teste.
+• Novo histórico: registros em linha do tempo, resumo do período e comparação clara entre testes.
+• Assist Direto: converse de forma rápida para entender a sua conexão, com inteligência artificial atualizada.

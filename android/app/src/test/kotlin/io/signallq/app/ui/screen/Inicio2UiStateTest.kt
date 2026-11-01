@@ -55,6 +55,13 @@ class Inicio2UiStateTest {
         )
     }
 
+    @Test
+    fun `propaga medicao resolvida para ultimaMedicao no estado`() {
+        val medicao = medicaoAnterior()
+        val state = map(rede(EstadoConexao.wifi), idle, medicao = medicao)
+        assertEquals(medicao, state.ultimaMedicao)
+    }
+
     private fun map(
         rede: SnapshotRede,
         diagnostico: SnapshotDiagnostico,

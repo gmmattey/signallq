@@ -920,6 +920,26 @@ fun AppShell(
                                 },
                                 statusAoVivo = statusConectividadeAoVivo,
                                 diagnosticoBruto = ultimoDiagnosticoConectividade,
+                                onIniciarSpeedtest = {
+                                    navigator.select(AppShellRoot.Speed)
+                                    onNovoTeste(modoAutomatico)
+                                },
+                                onConversarAssist = {
+                                    onAbrirDiagnosticoGuiado(EntradaAssist.Padrao, null, null)
+                                },
+                                onVerResultado = {
+                                    if (snapshotSpeedtest.resultado != null) {
+                                        if (Overlay.ResultadoVelocidade !in overlayStack) {
+                                            overlayStack.add(Overlay.ResultadoVelocidade)
+                                        }
+                                    } else if (primeiraHistoria != null) {
+                                        onAbrirLaudoOverlay()
+                                    } else {
+                                        navigator.select(AppShellRoot.History)
+                                    }
+                                },
+                                onAbrirSinalWifi = acoesFerramentas.onAbrirSinalWifi,
+                                onAbrirJogos = acoesFerramentas.onAbrirModoGamer,
                             )
                         // NAV-E: raiz 1 — Velocidade (SpeedTestScreen como raiz fixa)
                         AppShellRoot.Speed ->

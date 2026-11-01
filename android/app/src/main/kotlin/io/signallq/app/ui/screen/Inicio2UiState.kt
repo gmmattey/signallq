@@ -30,6 +30,7 @@ internal data class Inicio2UiState(
     val nomeConexao: String?,
     val analise: Inicio2Analise,
     val geracaoDiagnostico: Long = 0L,
+    val ultimaMedicao: ResolvedHomeMeasurement? = null,
 )
 
 internal object Inicio2UiStateMapper {
@@ -71,6 +72,7 @@ internal object Inicio2UiStateMapper {
             nomeConexao = snapshotRede.wifiLinkSnapshot?.ssid?.ifBlank { null },
             analise = analise,
             geracaoDiagnostico = diagnostico.geracao,
+            ultimaMedicao = medicao,
         )
     }
 }

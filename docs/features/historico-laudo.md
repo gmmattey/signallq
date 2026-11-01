@@ -4,8 +4,8 @@ description: "Lista, comparação, filtro e exportação (CSV/PDF) das mediçõe
 type: "feature"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-10-04"
-version: "1.1.1"
+last_updated: "2026-11-01"
+version: "1.2.0"
 feature: "historico-laudo"
 tipo: "jornada"
 modulos:
@@ -44,7 +44,8 @@ testes:
   - "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportadorHistoricoCSVTest.kt"
   - "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportadorHistoricoPDFTest.kt"
   - "android/feature/history/src/test/kotlin/io/signallq/app/feature/history/ExportHistoricoFlowTest.kt"
-adrs: []
+adrs:
+  - "ADR-022"
 thresholds_em: "android/feature/history/src/main/kotlin/io/signallq/app/feature/history/VereditoReteste.kt"
 ---
 
