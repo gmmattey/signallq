@@ -11,4 +11,6 @@ data class AssistContextoRede(
     val operadoraOuIsp: String? = null,
     val statusRede: String? = null,
     val semMedicao: Boolean = false,
+    /** Quando a medição vem do histórico salvo (não do teste da sessão atual), o instante em que foi feita. */
+    val medidoEmEpochMs: Long? = null,
 )

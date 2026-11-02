@@ -132,7 +132,7 @@ fun LaudoScreen(
     val dataHora =
         remember(dataHoraEpochMs) {
             val data = dataHoraEpochMs?.let { Date(it) } ?: Date()
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.of("pt", "BR")).format(data)
+            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("pt-BR")).format(data)
         }
     val redeResumo =
         listOfNotNull(

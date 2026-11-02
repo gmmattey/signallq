@@ -1067,6 +1067,7 @@ fun AppShell(
                             input = snapshotDiagnostico.input,
                             diagnosticReport = snapshotDiagnostico.relatorio,
                             resultado = snapshotSpeedtest.resultado,
+                            ultimaMedicaoSalva = primeiraHistoria,
                             analisadorState = analisadorState,
                             objetivoPreSelecionado = objetivoAssistInicial,
                             respostaPreSelecionadaPasso0 = null,

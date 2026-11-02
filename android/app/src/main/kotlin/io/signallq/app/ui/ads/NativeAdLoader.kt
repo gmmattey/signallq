@@ -129,7 +129,13 @@ private class GoogleNativeAdRequester(
                 .withAdListener(
                     object : AdListener() {
                         override fun onAdFailedToLoad(adError: LoadAdError) {
-                            Timber.w("NativeAd falhou ao carregar: ${adError.message} (${adError.code})")
+                            // Com Throwable, o ReleaseTree registra o erro como nao-fatal no Crashlytics:
+                            // sem isso o codigo do AdMob (3 = sem anuncio, 0 = erro interno) so existia
+                            // num log local e ninguem via por que o anuncio nao aparecia em producao.
+                            Timber.w(
+                                NativeAdLoadException(contentSignal.slot.name, adError.code, adError.message),
+                                "NativeAd falhou ao carregar: slot=${contentSignal.slot} code=${adError.code}",
+                            )
                             onFailure(adError.code)
                         }
                     },
@@ -140,6 +146,13 @@ private class GoogleNativeAdRequester(
         return NativeAdRequestHandle {}
     }
 }
+
+/** Falha de carregamento de anuncio nativo, com o codigo do AdMob visivel no relatorio. */
+internal class NativeAdLoadException(
+    slot: String,
+    val code: Int,
+    detalhe: String,
+) : Exception("NativeAd slot=$slot code=$code: $detalhe")
 
 private fun NativeAdLoadState.analyticsOutcome(): String =
     when (this) {

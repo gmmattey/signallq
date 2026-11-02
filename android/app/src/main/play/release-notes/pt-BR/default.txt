@@ -1,3 +1,3 @@
-• Nova tela inicial: painel simples com o estado da sua conexão, atalho direto para medir e resumo do último teste.
-• Novo histórico: registros em linha do tempo, resumo do período e comparação clara entre testes.
-• Assist Direto: converse de forma rápida para entender a sua conexão, com inteligência artificial atualizada.
+• Assist: agora usa o seu último teste de velocidade ao responder.
+• Correção de um fechamento inesperado ao gerar o laudo em alguns aparelhos.
+• Melhorias internas para diagnosticar os anúncios.

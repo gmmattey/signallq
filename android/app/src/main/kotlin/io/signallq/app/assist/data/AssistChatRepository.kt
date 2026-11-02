@@ -3,6 +3,7 @@ package io.signallq.app.assist.data
 import com.google.firebase.Firebase
 import com.google.firebase.ai.Chat
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
 import io.signallq.app.assist.model.AssistContextoRede
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ class FirebaseAssistChatRepository
         ): AssistChatSession {
             val systemPrompt = AssistSystemPromptBuilder.build(contexto)
             val generativeModel =
-                Firebase.ai.generativeModel(
+                Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
                     modelName = modelName,
                     systemInstruction = content { text(systemPrompt) },
                 )

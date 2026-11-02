@@ -22,6 +22,8 @@ arquivos:
   - "android/app/src/main/kotlin/io/signallq/app/ui/component/DiagnosticoResultadoComponents.kt"
   - "android/app/src/main/kotlin/io/signallq/app/ui/component/DiagnosticoOfflineDialog.kt"
   - "android/app/src/main/kotlin/io/signallq/app/diagnosticooffline/"
+  - "android/app/src/main/kotlin/io/signallq/app/assist/data/AssistContextoMapper.kt"
+  - "android/app/src/main/kotlin/io/signallq/app/assist/data/AssistSystemPromptBuilder.kt"
   - "android/core/diagnostico/src/main/kotlin/io/signallq/app/core/diagnostico/DiagnosticoGuiadoEngine.kt"
   - "android/core/diagnostico/src/main/kotlin/io/signallq/app/core/diagnostico/ObjetivoDiagnostico.kt"
   - "android/feature/diagnostico/src/main/kotlin/io/signallq/app/feature/diagnostico/DiagnosticOrchestrator.kt"
@@ -50,6 +52,7 @@ testes:
   - "android/app/src/test/kotlin/io/signallq/app/diagnosticooffline/DiagnosticoOfflineExecutorRealTest.kt"
   - "android/app/src/test/kotlin/io/signallq/app/diagnosticooffline/DiagnosticoOfflineViewModelTest.kt"
   - "android/app/src/test/kotlin/io/signallq/app/ui/component/DiagnosticoOfflineDialogTest.kt"
+  - "android/app/src/test/kotlin/io/signallq/app/assist/AssistContextoMedicaoSalvaTest.kt"
 adrs: []
 thresholds_em: "android/core/diagnostico/src/main/kotlin/io/signallq/app/core/diagnostico/DiagnosticoGuiadoEngine.kt"
 ---
@@ -160,3 +163,7 @@ Lista em `testes:`. Cobertura do orquestrador/NDS em `feature/diagnostico/src/te
 - Dois motores de sondagem independentes (offline × conectividade) — issue #1817.
 - Combinação de flags: `nds_v2` ligada com `nds_live` desligada não tem efeito; operar por Remote Config exige conhecer essa dependência.
 - Prosa de IA nunca pode virar decisão de status (regra de produto; sem teste dedicado verificado).
+
+### 13. Assist Direto — contexto da medição
+
+O chat do Assist Direto (ADR-020) recebe a evidência por `AssistContextoMapper`. Com o app recém-aberto não há `ResultadoSpeedtest` em memória; nesse caso o contexto vem da última medição salva no histórico (`mapDeMedicaoSalva`), a mesma que a Início mostra como "Último teste". Medição incompleta, contaminada ou sem download vira "sem medição" — ausência não vira número. O texto enviado à IA informa a data da medição (`medidoEmEpochMs`) e avisa que a conexão pode ter mudado desde então.
