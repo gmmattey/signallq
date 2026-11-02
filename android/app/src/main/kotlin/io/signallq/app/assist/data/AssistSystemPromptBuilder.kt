@@ -1,6 +1,8 @@
 package io.signallq.app.assist.data
 
 import io.signallq.app.assist.model.AssistContextoRede
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object AssistSystemPromptBuilder {
@@ -28,6 +30,10 @@ object AssistSystemPromptBuilder {
                 """.trimIndent()
             } else {
                 val sb = StringBuilder()
+                contexto.medidoEmEpochMs?.let {
+                    val quando = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("pt-BR")).format(Date(it))
+                    sb.append("- Medição realizada em: $quando (última medição salva; a conexão pode ter mudado desde então)\n")
+                }
                 contexto.downloadMbps?.let {
                     sb.append(String.format(Locale.US, "- Velocidade de Download: %.1f Mbps\n", it))
                 }

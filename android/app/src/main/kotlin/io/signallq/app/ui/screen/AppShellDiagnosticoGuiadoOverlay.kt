@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.zIndex
+import io.signallq.app.core.database.MedicaoEntity
 import io.signallq.app.core.diagnostico.DiagnosticInput
 import io.signallq.app.core.diagnostico.DiagnosticReport
 import io.signallq.app.core.diagnostico.ObjetivoDiagnostico
@@ -60,6 +61,8 @@ internal data class AppShellDiagnosticoGuiadoDados(
     val input: DiagnosticInput?,
     val diagnosticReport: DiagnosticReport? = null,
     val resultado: ResultadoSpeedtest?,
+    /** Última medição persistida (a mesma do "Último teste" da Início); o Assist a usa quando não há resultado em memória. */
+    val ultimaMedicaoSalva: MedicaoEntity? = null,
     val analisadorState: AnalisadorState,
     val objetivoPreSelecionado: ObjetivoDiagnostico?,
     val respostaPreSelecionadaPasso0: Int?,
@@ -141,13 +144,22 @@ internal fun AppShellDiagnosticoGuiadoOverlay(
         val resultado = dados.resultado
         if (entry.assistChatEnabled) {
             val contextoRede =
-                remember(resultado, dados.input, dados.ispNome, dados.operadoraMovel) {
-                    io.signallq.app.assist.data.AssistContextoMapper.map(
-                        resultado = resultado,
-                        input = dados.input,
-                        ispNome = dados.ispNome,
-                        operadoraMovel = dados.operadoraMovel,
-                    )
+                remember(resultado, dados.ultimaMedicaoSalva, dados.input, dados.ispNome, dados.operadoraMovel) {
+                    val medicaoSalva = dados.ultimaMedicaoSalva
+                    if (resultado == null && medicaoSalva != null) {
+                        io.signallq.app.assist.data.AssistContextoMapper.mapDeMedicaoSalva(
+                            medicao = medicaoSalva,
+                            ispNome = dados.ispNome,
+                            operadoraMovel = dados.operadoraMovel,
+                        )
+                    } else {
+                        io.signallq.app.assist.data.AssistContextoMapper.map(
+                            resultado = resultado,
+                            input = dados.input,
+                            ispNome = dados.ispNome,
+                            operadoraMovel = dados.operadoraMovel,
+                        )
+                    }
                 }
             LaunchedEffect(Unit) {
                 backHandler = {
