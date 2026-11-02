@@ -14,6 +14,15 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/) e este p
 
 ---
 
+## [1.1.1] — 2026-11-01
+
+### Corrigido (Android)
+- **Assist com o último teste**: ao abrir o app e conversar com o Assist, ele passa a usar a última medição salva (a mesma do "Último teste" da Início), com a data informada, em vez de dizer que não há medição.
+- **Laudo**: corrige o fechamento inesperado da tela em aparelhos Android mais antigos (`Locale.of`).
+- **Anúncios**: a falha ao carregar um anúncio agora é reportada com o código do AdMob, para diagnosticar por que ele não aparece.
+
+---
+
 ## [1.1.0] — 2026-11-01
 
 ### Adicionado (Android)

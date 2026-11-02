@@ -9,6 +9,18 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 
 ---
 
+## [1.1.1] — 2026-11-01
+
+### Corrigido
+- **Assist com o último teste**: com o app recém-aberto não havia resultado em memória e o chat respondia "nenhuma medição recente". O contexto agora vem da última medição salva (`AssistContextoMapper.mapDeMedicaoSalva`), com a data no texto enviado à IA; medição incompleta, contaminada ou sem download continua como "sem medição".
+- **Laudo**: `Locale.of("pt","BR")` (Java 19+) derrubava a tela em aparelhos sem ele (`NoSuchMethodError`); trocado por `Locale.forLanguageTag("pt-BR")`.
+- **Anúncios**: falha de carregamento reportada ao Crashlytics como não fatal, com slot e código do AdMob.
+
+### Alterado
+- Backend do Assist explícito em `googleAI()` (Gemini Developer API), igual ao comportamento anterior.
+
+---
+
 ## [1.1.0] — 2026-11-01
 
 ### Adicionado
