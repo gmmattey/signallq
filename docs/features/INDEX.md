@@ -4,7 +4,7 @@ description: "Tabela gerada de todas as páginas de feature: slug, nome, tipo, s
 type: "índice"
 status: "ativo"
 owner: "Squad"
-last_updated: "2026-11-01"
+last_updated: "2026-11-04"
 version: "1.0.0"
 ---
 

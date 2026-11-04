@@ -1,4 +1,4 @@
-﻿package io.signallq.app.feature.history
+package io.signallq.app.feature.history
 
 import android.content.Context
 import android.graphics.Color
@@ -209,28 +209,139 @@ class ExportadorHistoricoPDF {
   <title>Relatório SignallQ</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Arial', sans-serif; font-size: 12px; color: #212121; margin: 24px; background: #fff; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #1C1B1F;
+      margin: 24px;
+      background: #FFFFFF;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
 
-    .header { margin-bottom: 20px; border-bottom: 2px solid #1565C0; padding-bottom: 12px; }
-    .header h1 { color: #1565C0; font-size: 22px; font-weight: bold; margin-bottom: 4px; }
-    .header .subtitle { color: #757575; font-size: 11px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #F3EEFA;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .header-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo-svg {
+      width: 28px;
+      height: 28px;
+    }
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1C1B1F;
+      letter-spacing: -0.5px;
+    }
+    .badge-relatorio {
+      display: inline-block;
+      background: #EAE0FF;
+      color: #210A5C;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      width: fit-content;
+    }
+    .header-meta {
+      text-align: right;
+      font-size: 11px;
+      color: #49454F;
+      line-height: 1.6;
+    }
+    .header-meta strong {
+      color: #1C1B1F;
+    }
 
-    .resumo { display: flex; gap: 16px; margin-bottom: 20px; }
-    .resumo-card { background: #E3F2FD; border-radius: 6px; padding: 10px 16px; flex: 1; }
-    .resumo-card .label { font-size: 10px; color: #1565C0; text-transform: uppercase; font-weight: bold; }
-    .resumo-card .valor { font-size: 16px; font-weight: bold; color: #0D47A1; margin-top: 2px; }
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .resumo-card {
+      background: #FAF8FC;
+      border: 1px solid #E7E0EC;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .resumo-card .label {
+      font-size: 10px;
+      color: #5B21D6;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .resumo-card .valor {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1C1B1F;
+      margin-top: 2px;
+    }
 
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    thead tr { background: #1565C0; color: white; }
-    thead th { padding: 9px 8px; text-align: left; font-weight: bold; font-size: 11px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      border: 1px solid #E7E0EC;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    thead tr {
+      background: #5B21D6;
+      color: #FFFFFF;
+    }
+    thead th {
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
     thead th.num { text-align: right; }
-    tbody tr:nth-child(even) { background: #F5F5F5; }
-    tbody tr:hover { background: #E3F2FD; }
-    tbody td { padding: 7px 8px; border-bottom: 1px solid #E0E0E0; }
-    tbody td.num { text-align: right; font-family: monospace; }
+    tbody tr:nth-child(even) { background: #FAF8FC; }
+    tbody td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #E7E0EC;
+      color: #1C1B1F;
+    }
+    tbody td.num {
+      text-align: right;
+      font-weight: 600;
+    }
 
-    .footer { margin-top: 20px; font-size: 9px; color: #9E9E9E; text-align: center; border-top: 1px solid #E0E0E0; padding-top: 8px; }
-    .empty { text-align: center; padding: 32px; color: #757575; font-size: 13px; }
+    .footer {
+      margin-top: 20px;
+      font-size: 9px;
+      color: #79747E;
+      text-align: center;
+      border-top: 1px solid #E7E0EC;
+      padding-top: 8px;
+    }
+    .empty {
+      text-align: center;
+      padding: 32px;
+      color: #79747E;
+      font-size: 13px;
+    }
 
     @media print {
       body { margin: 0; }
@@ -241,8 +352,21 @@ class ExportadorHistoricoPDF {
 </head>
 <body>
   <div class="header">
-    <h1>Relatório de Medições — SignallQ</h1>
-    <p class="subtitle">Gerado em: $dataGeracao &nbsp;|&nbsp; Total de registros: $totalMedicoes</p>
+    <div class="header-brand">
+      <div class="brand-row">
+        <svg class="brand-logo-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="#5B21D6"/>
+          <path d="M16 6C10.477 6 6 10.477 6 16M16 10C12.686 10 10 12.686 10 16M16 14C14.895 14 14 14.895 14 16" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="16" cy="22" r="2.5" fill="white"/>
+        </svg>
+        <span class="brand-name">SignallQ</span>
+      </div>
+      <span class="badge-relatorio">Histórico de Medições</span>
+    </div>
+    <div class="header-meta">
+      <p>Gerado em: <strong>$dataGeracao</strong></p>
+      <p>Total de registros: <strong>$totalMedicoes</strong></p>
+    </div>
   </div>
 
   <div class="resumo">
@@ -276,7 +400,7 @@ ${if (medicoes.isEmpty()) "      <tr><td colspan=\"5\" class=\"empty\">Nenhuma m
   </table>
 
   <div class="footer">
-    SignallQ — monitoramento inteligente de rede &nbsp;|&nbsp; Relatório gerado automaticamente
+    SignallQ — monitoramento inteligente de rede &nbsp;|&nbsp; Relatório gerado automaticamente &nbsp;|&nbsp; © 2026 SignallQ
   </div>
 </body>
 </html>"""

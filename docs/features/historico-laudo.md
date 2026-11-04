@@ -4,7 +4,7 @@ description: "Lista, comparação, filtro e exportação (CSV/PDF) das mediçõe
 type: "feature"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-11-01"
+last_updated: "2026-11-04"
 version: "1.2.0"
 feature: "historico-laudo"
 tipo: "jornada"
