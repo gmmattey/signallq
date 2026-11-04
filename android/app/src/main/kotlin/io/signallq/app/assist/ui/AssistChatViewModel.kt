@@ -11,12 +11,14 @@ import io.signallq.app.assist.model.AssistRole
 import io.signallq.app.core.network.DefaultDispatcherProvider
 import io.signallq.app.core.network.DispatcherProvider
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -116,42 +118,68 @@ class AssistChatViewModel
                         return@launch
                     }
 
+                    var erroOcorrido = false
                     val buffer = StringBuilder()
-                    currentSession
-                        .enviarMensagemStream(prompt)
-                        .catch { throwable ->
-                            Timber.e(throwable, "Erro durante streaming do Assist")
-                            marcarErro(assistantMsgId, "Não consegui responder agora. Verifique a conexão e tente novamente.")
-                        }.collect { chunk ->
-                            buffer.append(chunk)
-                            val textoAtualizado = buffer.toString()
-                            _uiState.update { state ->
-                                val mensagensAtualizadas =
-                                    state.mensagens.map { msg ->
-                                        if (msg.id == assistantMsgId) {
-                                            msg.copy(texto = textoAtualizado)
-                                        } else {
-                                            msg
-                                        }
-                                    }
-                                state.copy(mensagens = mensagensAtualizadas)
-                            }
-                        }
 
-                    // Finaliza streaming com sucesso
-                    _uiState.update { state ->
-                        val mensagensAtualizadas =
-                            state.mensagens.map { msg ->
-                                if (msg.id == assistantMsgId) {
-                                    msg.copy(emAndamento = false)
-                                } else {
-                                    msg
+                    try {
+                        withTimeout(TIMEOUT_STREAM_MS) {
+                            currentSession
+                                .enviarMensagemStream(prompt)
+                                .catch { throwable ->
+                                    erroOcorrido = true
+                                    Timber.e(throwable, "Erro durante streaming do Assist")
+                                    marcarErro(
+                                        assistantMsgId,
+                                        "Não consegui responder agora. Verifique a conexão e tente novamente.",
+                                    )
+                                }.collect { chunk ->
+                                    buffer.append(chunk)
+                                    val textoAtualizado = buffer.toString()
+                                    _uiState.update { state ->
+                                        val mensagensAtualizadas =
+                                            state.mensagens.map { msg ->
+                                                if (msg.id == assistantMsgId) {
+                                                    msg.copy(texto = textoAtualizado)
+                                                } else {
+                                                    msg
+                                                }
+                                            }
+                                        state.copy(mensagens = mensagensAtualizadas)
+                                    }
                                 }
-                            }
-                        state.copy(
-                            mensagens = mensagensAtualizadas,
-                            estaProcessando = false,
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        erroOcorrido = true
+                        Timber.w(e, "Timeout atingido durante streaming do Assist")
+                        marcarErro(
+                            assistantMsgId,
+                            "Tempo de resposta esgotado. Verifique a conexão e tente novamente.",
                         )
+                    } catch (e: Exception) {
+                        erroOcorrido = true
+                        Timber.e(e, "Falha na chamada do Assist")
+                        marcarErro(
+                            assistantMsgId,
+                            "Não consegui responder agora. Verifique a conexão e tente novamente.",
+                        )
+                    }
+
+                    if (!erroOcorrido) {
+                        // Finaliza streaming com sucesso
+                        _uiState.update { state ->
+                            val mensagensAtualizadas =
+                                state.mensagens.map { msg ->
+                                    if (msg.id == assistantMsgId) {
+                                        msg.copy(emAndamento = false)
+                                    } else {
+                                        msg
+                                    }
+                                }
+                            state.copy(
+                                mensagens = mensagensAtualizadas,
+                                estaProcessando = false,
+                            )
+                        }
                     }
                 }
         }
@@ -225,5 +253,9 @@ class AssistChatViewModel
         override fun onCleared() {
             super.onCleared()
             cancelarGeracao()
+        }
+
+        companion object {
+            const val TIMEOUT_STREAM_MS = 20_000L
         }
     }

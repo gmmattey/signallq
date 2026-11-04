@@ -123,6 +123,28 @@ class AssistChatViewModelTest {
         }
 
     @Test
+    fun `enviarMensagem com timeout encerra streaming e marca erro`() =
+        runTest(testDispatcher) {
+            repository.session = FakeAssistChatSession(delayMs = 25_000L)
+
+            viewModel.enviarMensagem("Pergunta demorada...")
+            testScheduler.advanceTimeBy(25_000L)
+
+            val estado = viewModel.uiState.value
+            assertFalse(estado.estaProcessando)
+            assertNotNull(estado.erro)
+            assertEquals(2, estado.mensagens.size)
+
+            val msgAssistente = estado.mensagens[1]
+            assertTrue(msgAssistente.erro)
+            assertFalse(msgAssistente.emAndamento)
+            assertEquals(
+                "Tempo de resposta esgotado. Verifique a conexão e tente novamente.",
+                msgAssistente.texto,
+            )
+        }
+
+    @Test
     fun `limparSessao reseta todas as mensagens e estado`() =
         runTest(testDispatcher) {
             viewModel.enviarMensagem("Teste")
@@ -138,9 +160,11 @@ class AssistChatViewModelTest {
 private class FakeAssistChatSession(
     private val chunks: List<String> = listOf("Resposta teste"),
     private val shouldFail: Boolean = false,
+    private val delayMs: Long = 0L,
 ) : AssistChatSession {
     override fun enviarMensagemStream(prompt: String): Flow<String> =
         flow {
+            if (delayMs > 0) kotlinx.coroutines.delay(delayMs)
             if (shouldFail) throw IOException("Falha simulada na chamada de IA")
             for (chunk in chunks) {
                 emit(chunk)

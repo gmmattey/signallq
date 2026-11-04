@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
@@ -59,6 +61,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -500,6 +505,21 @@ fun BarraDigitacaoAssist(
                             .weight(1f)
                             .semantics { contentDescription = "Campo de mensagem" },
                     maxLines = 4,
+                    keyboardOptions =
+                        KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            autoCorrectEnabled = true,
+                            keyboardType = KeyboardType.Text,
+                            imeAction = if (podeEnviar) ImeAction.Send else ImeAction.Default,
+                        ),
+                    keyboardActions =
+                        KeyboardActions(
+                            onSend = {
+                                if (podeEnviar) {
+                                    onEnviar()
+                                }
+                            },
+                        ),
                     colors =
                         TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,

@@ -1,14 +1,17 @@
 package io.signallq.app.assist.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -38,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.signallq.app.assist.model.AssistContextoRede
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AssistChatScreen(
     contexto: AssistContextoRede?,
@@ -49,6 +52,7 @@ fun AssistChatScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var textoDigitado by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    val isImeVisible = WindowInsets.isImeVisible
 
     LaunchedEffect(contexto) {
         viewModel.inicializarContexto(contexto)
@@ -68,17 +72,22 @@ fun AssistChatScreen(
         }
     }
 
+    // Auto-scroll quando o teclado abre para não cobrir a última mensagem
+    LaunchedEffect(isImeVisible) {
+        if (isImeVisible && uiState.mensagens.isNotEmpty()) {
+            delay(100)
+            listState.animateScrollToItem(uiState.mensagens.size - 1)
+        }
+    }
+
     BackHandler {
         viewModel.limparSessao()
         onFechar()
     }
 
     Scaffold(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding(),
+        modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             TopAppBar(
                 title = {
@@ -114,12 +123,18 @@ fun AssistChatScreen(
                 texto = textoDigitado,
                 onTextoChange = { textoDigitado = it },
                 onEnviar = {
-                    viewModel.enviarMensagem(textoDigitado)
-                    textoDigitado = ""
+                    val prompt = textoDigitado.trim()
+                    if (prompt.isNotBlank()) {
+                        viewModel.enviarMensagem(prompt)
+                        textoDigitado = ""
+                    }
                 },
                 onCancelar = viewModel::cancelarGeracao,
                 estaProcessando = uiState.estaProcessando,
-                modifier = Modifier.imePadding(),
+                modifier =
+                    Modifier
+                        .navigationBarsPadding()
+                        .imePadding(),
             )
         },
     ) { innerPadding ->
