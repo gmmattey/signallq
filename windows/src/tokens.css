@@ -1,0 +1,111 @@
+/* SignallQ Design System — Windows (tokens)
+ * Derivado do DS Android (packages/design-system/src/tokens.ts, LK / LK_DARK).
+ * Cores, escala tipográfica e semântica são IDÊNTICAS ao Android; só mudam as
+ * adaptações de desktop: grid 4px, raios menores, densidade, foco por teclado.
+ * Fonte de verdade das cores: LK / LK_DARK. Não introduzir cor fora desta lista. */
+
+:root {
+  /* ---- Papéis de cor (claro) ---- */
+  --primary: #5B21D6;           --on-primary: #FFFFFF;
+  --primary-container: #EAE0FF; --on-primary-container: #210A5C;
+  --success: #146C2E;           --success-container: #B6F2BE; --on-success-container: #04210D;
+  --warning: #8A5000;           --warning-container: #FFDDB3; --on-warning-container: #2B1700;
+  --error: #BA1A1A;             --error-container: #FFDAD6;   --on-error-container: #410002;
+  --info: #2563EB;              /* fase Latência; nunca como cor de marca */
+
+  --bg: #FFFFFF;                          /* área de conteúdo */
+  --surface: #FFFFFF;
+  --surface-low: #F8F5FB;                 /* moldura do app (Mica) */
+  --surface-container: #F3EEFA;           /* cards agrupados */
+  --surface-high: #ECE5F5;                /* hover / item selecionado */
+  --surface-highest: #E6DDF2;
+  --on-surface: #1C1B1F;
+  --on-surface-variant: #49454F;
+  --outline: #79747E;
+  --outline-variant: #CAC4D0;
+  --selected-bg: #ECE5F5;
+  --selected-border: rgba(91, 33, 214, .28);
+  --scrim: rgba(0, 0, 0, .5);
+  --focus-ring: #5B21D6;
+
+  /* ---- Profundidade: tint primeiro, sombra só como reforço ---- */
+  /* Profundidade no desktop: camadas (frame < palco < card < sobreposto) em vez de contorno.
+   * Sombra tingida de violeta, em duas camadas (contato + difusa). */
+  --frame: #F3EEFA;             /* moldura da janela: barra de título e navegação */
+  --stage: #F8F5FB;             /* palco onde os cards flutuam */
+  --card: #FFFFFF;
+  --sunken: #F3EEFA;            /* área rebaixada dentro de um card */
+  --elev-1: 0 1px 2px rgba(60, 40, 100, .06), 0 2px 8px rgba(60, 40, 100, .05);
+  --elev-2: 0 2px 4px rgba(60, 40, 100, .06), 0 8px 24px rgba(60, 40, 100, .08);
+  --elev-3: 0 4px 8px rgba(60, 40, 100, .08), 0 16px 40px rgba(60, 40, 100, .14);
+  --inset: inset 0 1px 3px rgba(60, 40, 100, .08);
+  --shadow-1: none;
+  --shadow-2: var(--elev-1);
+  --shadow-3: var(--elev-3);
+  --ease: cubic-bezier(.2, 0, 0, 1);
+
+  /* ---- Tipografia (mesma escala do Android; px = sp) ---- */
+  --font: 'Google Sans Flex', 'Google Sans', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --t-display: 700 34px/40px var(--font);
+  --t-headline-l: 700 26px/32px var(--font);
+  --t-headline-s: 600 22px/28px var(--font);
+  --t-title-l: 600 20px/26px var(--font);
+  --t-title-m: 500 16px/22px var(--font);
+  --t-title-s: 500 14px/20px var(--font);
+  --t-body-l: 400 16px/24px var(--font);
+  --t-body-m: 400 14px/20px var(--font);
+  --t-body-s: 400 12px/16px var(--font);
+  --t-label-l: 500 14px/20px var(--font);
+  --t-label-m: 500 12px/16px var(--font);
+  --t-label-s: 500 11px/16px var(--font);   /* overline: + uppercase + tracking .08em */
+
+  /* ---- Espaço: grid 4px (Android usa 8dp; desktop precisa de meio-passo) ---- */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
+
+  /* ---- Forma: um degrau abaixo do Android (mouse é mais preciso que o dedo) ---- */
+  --r-control: 8px;   /* botão, campo, chip retangular */
+  --r-card: 12px;
+  --r-dialog: 16px;
+  --r-pill: 999px;
+
+  /* ---- Estrutura do app ---- */
+  --titlebar-h: 40px;
+  --nav-w: 232px;
+  --nav-w-compact: 64px;
+  --content-max: 1120px;
+  --target-min: 32px;   /* alvo mínimo com mouse; 40px quando houver toque */
+  --motion: 160ms cubic-bezier(.2, 0, 0, 1);
+}
+
+:root[data-theme="dark"] {
+  --primary: #D0BCFF;           --on-primary: #38137E;
+  --primary-container: #4F2FA8; --on-primary-container: #EADDFF;
+  --success: #83DA99;           --success-container: #0A5321; --on-success-container: #9DF4AC;
+  --warning: #FFB870;           --warning-container: #693D00; --on-warning-container: #FFDDB3;
+  --error: #FFB4AB;             --error-container: #93000A;   --on-error-container: #FFDAD6;
+  --info: #AAC7FF;
+
+  --bg: #131217;
+  --surface: #131217;
+  --surface-low: #0E0D12;
+  --surface-container: #211F26;
+  --surface-high: #2B2930;
+  --surface-highest: #36343B;
+  --on-surface: #E6E0E9;
+  --on-surface-variant: #CAC4D0;
+  --outline: #948F99;
+  --outline-variant: #49454F;
+  --selected-bg: #2B2930;
+  --selected-border: rgba(208, 188, 255, .28);
+  --scrim: rgba(0, 0, 0, .6);
+  --focus-ring: #D0BCFF;
+
+  --frame: #0E0D12;
+  --stage: #131217;
+  --card: #211F26;
+  --sunken: #1A181F;
+  --elev-1: 0 1px 2px rgba(0, 0, 0, .40), inset 0 1px 0 rgba(255, 255, 255, .04);
+  --elev-2: 0 2px 4px rgba(0, 0, 0, .35), 0 8px 24px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .05);
+  --elev-3: 0 4px 8px rgba(0, 0, 0, .40), 0 16px 40px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .06);
+  --inset: inset 0 1px 3px rgba(0, 0, 0, .45);
+}
