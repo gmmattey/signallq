@@ -8,7 +8,10 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "version:check": "node scripts/version.mjs check",
+    "version:set": "node scripts/version.mjs set",
+    "release:notes": "node scripts/release-notes.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.9.1",

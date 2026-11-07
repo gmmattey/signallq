@@ -1,0 +1,163 @@
+name: Windows Release
+
+# Gera o instalador do SignallQ para Windows a partir de uma tag `windows-vX.Y.Z`.
+# - Push de tag: valida (inclusive que o commit está na main), gera o instalador e cria a release
+#   como RASCUNHO. Quem publica é o Luiz, no GitHub. O workflow nunca publica, assina ou envia à
+#   Microsoft Store.
+# - Disparo manual: ensaio. Constrói e guarda os arquivos como artefato; não cria release.
+# O Android usa tags `v*` (release.yml); o prefixo `windows-v` não colide com elas.
+# Processo: docs/windows/RELEASE_PROCESS.md
+
+on:
+  push:
+    tags:
+      - 'windows-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag a ensaiar (ex.: windows-v0.3.0). Só constrói; não cria release.'
+        required: true
+
+# Leitura por padrão. Só o job `draft-release` recebe escrita.
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: windows
+    env:
+      # Passa pelo ambiente, nunca interpolado direto no script (a entrada manual é texto livre).
+      RAW_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validar a tag
+        id: tag
+        shell: bash
+        run: |
+          if ! [[ "$RAW_TAG" =~ ^windows-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag inválida: '$RAW_TAG'. Use windows-vX.Y.Z (sem sufixo de pré-lançamento)." >&2
+            exit 1
+          fi
+          echo "tag=$RAW_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${RAW_TAG#windows-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Exigir que o commit da tag esteja na main
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "O commit $GITHUB_SHA não está na main. Faça o merge do PR de release antes de criar a tag." >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: windows/package-lock.json
+
+      - name: Conferir versão e notas
+        shell: bash
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          node scripts/version.mjs check "$TAG"
+          node scripts/release-notes.mjs "$VERSION" > "$GITHUB_WORKSPACE/release-notes.md"
+          cat "$GITHUB_WORKSPACE/release-notes.md"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: x86_64-pc-windows-msvc
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - run: npm run tauri:build
+
+      - name: Nomear os arquivos e calcular SHA-256
+        shell: bash
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          out="$GITHUB_WORKSPACE/release-out"
+          mkdir -p "$out"
+          cp src-tauri/target/release/bundle/nsis/*-setup.exe "$out/SignallQ-Windows-${VERSION}-x64-setup.exe"
+          cp src-tauri/target/release/bundle/msi/*.msi "$out/SignallQ-Windows-${VERSION}-x64.msi"
+          cd "$out"
+          sha256sum SignallQ-Windows-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          # O hash também vai no texto da release: a página do site lê dali, na mesma resposta da API.
+          {
+            echo
+            echo '### Verificação (SHA-256)'
+            echo
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } >> "$GITHUB_WORKSPACE/release-notes.md"
+          ls -l
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signallq-windows-${{ steps.tag.outputs.version }}
+          if-no-files-found: error
+          path: release-out/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ steps.tag.outputs.version }}
+          if-no-files-found: error
+          path: release-notes.md
+
+  draft-release:
+    # Só no push de tag; o ensaio manual termina no job anterior.
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.build.outputs.tag }}
+      VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: signallq-windows-${{ needs.build.outputs.version }}
+          path: release-out
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes-${{ needs.build.outputs.version }}
+          path: notes
+
+      - name: Criar release em rascunho
+        run: |
+          # --latest=false: a release "Latest" do repositório continua sendo a do Android.
+          gh release create "$TAG" release-out/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --draft --latest=false \
+            --title "SignallQ para Windows $VERSION" \
+            --notes-file notes/release-notes.md
+          echo "Rascunho criado. Revise e publique em: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases" >> "$GITHUB_STEP_SUMMARY"

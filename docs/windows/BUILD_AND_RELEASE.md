@@ -18,8 +18,13 @@ o sistema local; ele não comprova o instalador Windows.
 `.github/workflows/windows-ci.yml` executa testes, build da UI e bundle no `windows-latest`,
 publicando o instalador como artefato. O workflow não publica, assina ou envia à Microsoft Store.
 
-## Assinatura e distribuição
+## Release e distribuição
 
-Antes de qualquer distribuição pública é necessário fornecer certificado de code signing e decidir
-o canal (MSIX/Microsoft Store ou instalador tradicional). Esses passos exigem autorização explícita
-e ficam fora desta fundação.
+O processo de versão, tag, instalador e publicação no `signallq.com/windows` está em
+[`RELEASE_PROCESS.md`](RELEASE_PROCESS.md). Resumo: tag `windows-vX.Y.Z` → `windows-release.yml`
+constrói e cria a release como **rascunho** → o Luiz publica → o site passa a oferecer o download.
+
+## Assinatura
+
+O instalador ainda não é assinado. Assinatura de código (custo recorrente) e Microsoft Store/MSIX
+dependem de decisão do Luiz e não fazem parte da fundação.

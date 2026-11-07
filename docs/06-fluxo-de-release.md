@@ -11,7 +11,7 @@ version: "1.0.0"
 # Fluxo de release
 
 - **Fonte de verdade:** `.github/workflows/release.yml`, `promote-release.yml`, `firebase-distribution.yml` e `android/gradle/libs.versions.toml`. O passo a passo detalhado está em [`operations/RELEASE.md`](operations/RELEASE.md); este documento define o vocabulário e as autorizações.
-- **Escopo:** app Android (`io.signallq.app`) e deploy dos Workers Cloudflare. Windows tem fluxo próprio em [`windows/BUILD_AND_RELEASE.md`](windows/BUILD_AND_RELEASE.md); o site em `web/`.
+- **Escopo:** app Android (`io.signallq.app`) e deploy dos Workers Cloudflare. Windows tem fluxo próprio em [`windows/RELEASE_PROCESS.md`](windows/RELEASE_PROCESS.md) (tags `windows-v*`, sem relação com as tags `v*` do Android); o site em `web/`.
 
 ## Estados que não se misturam
 

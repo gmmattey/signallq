@@ -37,6 +37,7 @@ version: "1.0.0"
 | [ADR-021](#adr-021) | Redesenho da Home: Painel de Conexão com Hero Compacto, Ações Diretas e Última Medição | 2026-11-01 | Aceito |
 | [ADR-022](#adr-022) | Redesenho do Histórico: Linha do Tempo com Resumo Compacto e Filtros Rápidos | 2026-11-01 | Aceito |
 | [ADR-023](#adr-023) | Direção visual do SignallQ Windows: protótipo `windows/design` como referência | 2026-11-07 | Aceito |
+| [ADR-024](#adr-024) | Versionamento e release do SignallQ Windows: tag `windows-v*`, GitHub Releases e página em signallq.com/windows | 2026-11-07 | Proposto |
 
 ---
 
@@ -1978,3 +1979,32 @@ O app Windows desktop foi avaliado como visualmente fraco: usava um roxo própri
 
 - A migração para `windows/src/` é trabalho separado, tela a tela (Início, Velocidade, Histórico primeiro) e embute a fonte Google Sans Flex no app.
 - Divergência a resolver no DS Android: `DESIGN.md` cita fundo escuro `#000000`, enquanto o código usa `#131217`.
+
+---
+
+## ADR-024 — Versionamento e release do SignallQ Windows
+
+- **Status:** Proposto (aguarda aprovação do Luiz)
+- **Data:** 2026-11-07
+- **Autor:** Squad SignallQ (Camillo, Marcelo, Renan)
+
+### Contexto
+
+O app Windows tinha CI que gera instalador como artefato temporário, mas nenhum processo de versão, tag, release ou distribuição. A versão vivia em cinco arquivos sem trava de consistência, e o site `signallq.com` só oferecia o app Android.
+
+### Decisão
+
+1. **Versão:** SemVer `MAJOR.MINOR.PATCH` independente do Android, sem sufixo de pré-lançamento (o MSI só aceita número). Alteração só por `windows/scripts/version.mjs`, que mantém os cinco arquivos iguais.
+2. **Tag:** `windows-vX.Y.Z`. O prefixo não colide com as tags `v*` do Android, que publicam na Play Console.
+3. **Build e release:** `.github/workflows/windows-release.yml` valida tag, versão e CHANGELOG, roda testes, `clippy` e `tauri build`, gera `SignallQ-Windows-X.Y.Z-x64-setup.exe`, `...-x64.msi` e `SHA256SUMS.txt`, e cria a release como **rascunho**, sem marcar como "Latest". Disparo manual é só ensaio.
+4. **Publicação:** só o Luiz cria a tag e publica o rascunho. Agentes preparam e conferem.
+5. **Distribuição:** GitHub Releases (repositório público, sem custo novo). A página `signallq.com/windows`, que vive no repositório do site (`gmmattey/sites`, `sites/signallq/`), consulta a API do GitHub no navegador a cada visita e aponta direto para o arquivo da última release publicada. Publicar a release atualiza a página sem deploy do site. O SHA-256 vai no texto da release. Sem release publicada ou com a API fora do ar, a página não mostra download.
+6. **Assinatura:** fora desta decisão. O instalador sai sem assinatura, com aviso de SmartScreen e SHA-256 na página, até o Luiz decidir o custo de um certificado ou serviço de assinatura.
+7. **Pasta `windows/`:** `README.md` e `CHANGELOG.md` na raiz; automação em `scripts/` com testes; referência visual em `design/`.
+
+### Consequências
+
+- Primeira release exige ensaio, instalação em Windows 10 e 11 limpos e autorização do Luiz.
+- Sem atualização automática no app: a pessoa baixa a versão nova no site.
+- Mudar o padrão de nome dos arquivos ou o bloco de verificação do texto da release exige mudar o site (`gmmattey/sites`) antes de publicar.
+- Custo adicional: nenhum, enquanto não houver assinatura de código.
