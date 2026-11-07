@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SignallQ para Windows — protótipo v3</title>
+<link rel="stylesheet" href="../tokens-windows.css">
+<style>
+@font-face{font-family:'Google Sans Flex';font-weight:400;src:url(assets/fonts/google_sans_flex_regular.ttf)}
+@font-face{font-family:'Google Sans Flex';font-weight:500;src:url(assets/fonts/google_sans_flex_medium.ttf)}
+@font-face{font-family:'Google Sans Flex';font-weight:600;src:url(assets/fonts/google_sans_flex_semibold.ttf)}
+@font-face{font-family:'Google Sans Flex';font-weight:700;src:url(assets/fonts/google_sans_flex_bold.ttf)}
+:root{--line:color-mix(in srgb,var(--outline-variant) 45%,transparent);
+ --ph-lat:var(--info);--ph-down:var(--success);--ph-up:var(--warning);
+ --sk-a:color-mix(in srgb,var(--on-surface) 6%,transparent);--sk-b:color-mix(in srgb,var(--on-surface) 12%,transparent)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:var(--t-body-m);color:var(--on-surface);background:var(--frame);min-width:960px;overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:var(--r-control)}
+html.themeing *{transition:background-color .35s,color .35s,box-shadow .35s,border-color .35s!important}
+.app{height:100vh;display:grid;grid-template-rows:var(--titlebar-h) 1fr;grid-template-columns:var(--nav-w) 1fr}
+
+/* Barra de título */
+.titlebar{grid-column:1/-1;display:flex;align-items:center;padding-left:var(--s-4)}
+.brand{display:flex;align-items:center;gap:10px;width:calc(var(--nav-w) - var(--s-4));font:600 14px/1 var(--font);letter-spacing:-.01em}
+.brand img{width:22px;height:22px}
+.brand b{font-weight:700}.brand b i{font-style:normal;color:var(--primary)}
+.search{width:360px;display:flex;align-items:center;gap:var(--s-2);height:30px;padding:0 var(--s-3);border-radius:var(--r-control);background:var(--card);color:var(--on-surface-variant);box-shadow:var(--elev-1);margin:0 auto 0 0;transition:box-shadow .2s}
+.search:hover{box-shadow:var(--elev-2)}
+.search kbd{margin-left:auto;font:var(--t-label-s);padding:1px 6px;border-radius:4px;background:var(--sunken)}
+.tb-actions{display:flex;margin-left:auto}
+.tb-btn{width:46px;height:var(--titlebar-h);border:0;background:none;display:grid;place-items:center;color:var(--on-surface-variant);cursor:pointer;transition:background .15s}
+.tb-btn:hover{background:var(--surface-high)}.tb-btn.close:hover{background:#C42B1C;color:#fff}
+.tb-btn svg{transition:transform .4s var(--ease)}#themeBtn:active svg{transform:rotate(40deg) scale(.85)}
+
+/* Navegação */
+.nav{padding:var(--s-3);display:flex;flex-direction:column;gap:2px;overflow:auto;position:relative}
+.ind{position:absolute;left:2px;top:0;width:3px;height:18px;border-radius:2px;background:var(--primary);transition:transform .35s var(--ease);will-change:transform}
+.nav-item{display:flex;align-items:center;gap:var(--s-3);height:40px;padding:0 var(--s-3);border:0;background:none;border-radius:var(--r-control);color:var(--on-surface-variant);font:var(--t-label-l);cursor:pointer;text-align:left;transition:background .2s,box-shadow .25s,color .2s,transform .12s}
+.nav-item:hover{background:color-mix(in srgb,var(--on-surface) 6%,transparent)}
+.nav-item:active{transform:scale(.97)}
+.nav-item[aria-current=page]{background:var(--card);color:var(--on-surface);font-weight:600;box-shadow:var(--elev-1)}
+.nav-item svg{transition:color .2s,transform .3s var(--ease)}
+.nav-item[aria-current=page] svg{color:var(--primary);transform:scale(1.08)}
+.nav-sep{height:1px;background:var(--line);margin:var(--s-2) var(--s-3)}
+.conn{margin-top:auto;border-radius:var(--r-card);background:var(--card);box-shadow:var(--elev-1);padding:var(--s-3);display:flex;gap:var(--s-3);align-items:center}
+.conn .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:live 2.4s ease-in-out infinite}
+.conn b{display:block;font:var(--t-title-s)}.conn small{color:var(--on-surface-variant);font:var(--t-body-s)}
+@keyframes live{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--success) 22%,transparent)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--success) 0%,transparent)}}
+
+/* Palco */
+.stage{background:var(--stage);border-radius:var(--r-dialog) 0 0 0;overflow:auto;box-shadow:var(--inset);position:relative;scroll-behavior:smooth}
+.stage.out>.page{opacity:0;transform:translateX(calc(var(--dx,24px)*-.5));transition:opacity .14s,transform .14s}
+.page{max-width:var(--content-max);margin:0 auto;padding:var(--s-8) var(--s-8) 56px;display:grid;gap:var(--s-5);animation:pageIn .5s var(--ease) both}
+.page>*{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes pageIn{from{opacity:0;transform:translateX(var(--dx,24px))}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+.loadbar{position:fixed;top:var(--titlebar-h);left:var(--nav-w);right:0;height:3px;overflow:hidden;opacity:0;transition:opacity .25s;z-index:5;pointer-events:none}
+.loadbar.on{opacity:1}
+.loadbar i{position:absolute;inset:0 auto 0 0;width:35%;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:slide 1.1s var(--ease) infinite}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+
+.head{display:flex;align-items:flex-end;gap:var(--s-4);margin-bottom:var(--s-1)}
+.head h1{font:var(--t-headline-l);margin:0;letter-spacing:-.01em}
+.head p{margin:var(--s-1) 0 0;color:var(--on-surface-variant)}
+.head .spacer{margin-left:auto;display:flex;gap:var(--s-2)}
+.overline{font:var(--t-label-s);text-transform:uppercase;letter-spacing:.08em;color:var(--on-surface-variant);margin:0 0 var(--s-3)}
+h2{font:var(--t-title-l);margin:0}h3{font:var(--t-title-m);margin:0}
+.muted{color:var(--on-surface-variant)}
+
+/* Cards: profundidade, sem contorno */
+.card{background:var(--card);border-radius:var(--r-card);padding:var(--s-6);box-shadow:var(--elev-1);transition:box-shadow .3s var(--ease),transform .3s var(--ease)}
+.card.lift:hover{box-shadow:var(--elev-3);transform:translateY(-3px)}
+.card.tint{background:var(--sunken);box-shadow:var(--inset)}
+.grid{display:grid;gap:var(--s-5)}.g12{grid-template-columns:repeat(12,1fr)}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);min-height:var(--target-min);padding:0 var(--s-4);border-radius:var(--r-control);border:0;background:var(--card);box-shadow:var(--elev-1);font:var(--t-label-l);cursor:pointer;transition:box-shadow .2s,transform .12s,filter .2s,background .2s}
+.btn:hover{box-shadow:var(--elev-2)}
+.btn:active{transform:scale(.97);box-shadow:var(--elev-1)}
+.btn.primary{background:var(--primary);color:var(--on-primary);box-shadow:0 2px 6px color-mix(in srgb,var(--primary) 35%,transparent)}
+.btn.primary:hover{filter:brightness(1.1);box-shadow:0 6px 16px color-mix(in srgb,var(--primary) 40%,transparent)}
+.btn.lg{min-height:44px;padding:0 var(--s-6);font-size:15px}
+.btn.text{background:none;box-shadow:none;color:var(--primary)}.btn.text:hover{background:var(--selected-bg)}
+.btn:disabled{opacity:.6;cursor:default;pointer-events:none}
+.btn.busy::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:var(--r-pill);font:var(--t-label-m);background:var(--surface-high);color:var(--on-surface-variant)}
+.badge.ok{background:var(--success-container);color:var(--on-success-container)}
+.badge.warn{background:var(--warning-container);color:var(--on-warning-container)}
+.badge.bad{background:var(--error-container);color:var(--on-error-container)}
+.badge.brand{background:var(--primary-container);color:var(--on-primary-container)}
+.chip{height:32px;padding:0 var(--s-4);border-radius:var(--r-pill);border:0;background:var(--sunken);font:var(--t-label-l);cursor:pointer;transition:background .2s,color .2s,box-shadow .2s,transform .12s}
+.chip:hover{background:var(--surface-high)}.chip:active{transform:scale(.96)}
+.chip[aria-pressed=true]{background:var(--primary-container);color:var(--on-primary-container);box-shadow:var(--elev-1)}
+.row{display:flex;align-items:center;gap:var(--s-3)}
+.list-row{display:flex;align-items:center;gap:var(--s-3);min-height:52px;border-top:1px solid var(--line);transition:background .2s,padding .2s;border-radius:var(--r-control)}
+.list-row:first-of-type{border-top:0}
+.list-row:hover{background:var(--sunken);padding-left:var(--s-2);padding-right:var(--s-2)}
+.list-row .grow{flex:1;min-width:0;font:var(--t-title-s)}
+.list-row small{display:block;color:var(--on-surface-variant);font:var(--t-body-s);margin-top:1px}
+.list-row .val{font:var(--t-title-s);font-variant-numeric:tabular-nums}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1fr 340px;gap:var(--s-8);padding:var(--s-8);align-items:center}
+.state{display:inline-flex;align-items:center;gap:8px;font:var(--t-label-m);color:var(--success);margin-bottom:var(--s-4)}
+.state i{width:8px;height:8px;border-radius:50%;background:var(--success);animation:live 2.4s ease-in-out infinite}
+.hero h2{font:var(--t-display);font-size:40px;line-height:46px;letter-spacing:-.02em;margin:0 0 var(--s-3);max-width:20ch}
+.hero p{font:var(--t-body-l);color:var(--on-surface-variant);margin:0;max-width:52ch}
+.hero .actions{display:flex;gap:var(--s-3);margin-top:var(--s-6)}
+.bars{background:var(--sunken);box-shadow:var(--inset);border-radius:var(--r-card);padding:var(--s-5) var(--s-5) var(--s-4)}
+.bars .plot{height:150px;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s-3)}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.bar b{font:var(--t-title-s);font-variant-numeric:tabular-nums}
+.bar>span{width:100%;border-radius:10px;min-height:10px;background:linear-gradient(var(--success) 0 5px,var(--success-container) 5px);box-shadow:var(--elev-1);animation:grow .9s var(--ease) both;animation-delay:calc(.35s + var(--k)*90ms)}
+.bar.warn>span{background:linear-gradient(var(--warning) 0 5px,var(--warning-container) 5px)}
+@keyframes grow{from{height:10px}}
+.bars .labels{display:flex;gap:var(--s-3);margin-top:var(--s-3)}
+.bars .labels span{flex:1;text-align:center;font:var(--t-label-s);color:var(--on-surface-variant)}
+.bars .cap{display:flex;justify-content:space-between;margin-bottom:var(--s-3);font:var(--t-label-m)}
+
+/* Métricas em faixa */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);padding:var(--s-2)}
+.strip>div{padding:var(--s-4) var(--s-5);border-radius:var(--r-card);transition:background .25s}
+.strip>div:hover{background:var(--sunken)}
+.metric .lbl{display:flex;align-items:center;gap:8px;font:var(--t-label-m);color:var(--on-surface-variant)}
+.metric .lbl i{width:8px;height:8px;border-radius:50%}
+.metric .num{display:block;font:var(--t-display);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin:var(--s-2) 0 2px}
+.metric .num small{font:var(--t-label-l);color:var(--on-surface-variant);margin-left:4px;letter-spacing:0}
+.metric .verdict{font:var(--t-body-s);color:var(--on-surface-variant)}
+.spark{height:28px;width:100%;margin-top:var(--s-3);animation:reveal 1.1s var(--ease) .4s both}
+.spark path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* Caminho */
+.path{display:flex;align-items:flex-start;padding:var(--s-2) var(--s-4) 0}
+.node{display:flex;flex-direction:column;align-items:center;gap:var(--s-2);width:150px;text-align:center}
+.node .c{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--success-container);color:var(--on-success-container);box-shadow:var(--elev-1);animation:pop .5s var(--ease) both;animation-delay:calc(.3s + var(--k)*160ms)}
+.node.warn .c{background:var(--warning-container);color:var(--on-warning-container)}
+.node b{font:var(--t-title-s)}.node small{color:var(--on-surface-variant);font:var(--t-body-s);line-height:1.3}
+.link{flex:1;height:2px;margin-top:23px;background:var(--success);opacity:.55;border-radius:2px;transform-origin:left;animation:draw .6s var(--ease) both;animation-delay:calc(.45s + var(--k)*160ms)}
+.link.warn{background:repeating-linear-gradient(90deg,var(--warning) 0 6px,transparent 6px 10px);opacity:.9}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+@keyframes draw{from{transform:scaleX(0)}}
+
+/* Evidência e próximo passo */
+.step-card{display:grid;grid-template-columns:auto 1fr;gap:var(--s-5)}
+.step-card .ico{width:48px;height:48px;border-radius:var(--r-card);background:var(--primary-container);color:var(--on-primary-container);display:grid;place-items:center;box-shadow:var(--elev-1)}
+.step-card h2{margin-bottom:var(--s-2)}
+.ev{display:grid;gap:var(--s-4)}
+.ev-item{display:grid;grid-template-columns:76px 1fr;gap:var(--s-3);align-items:baseline}
+.tag{font:var(--t-label-s);text-transform:uppercase;letter-spacing:.06em;padding:3px 0;border-radius:4px;text-align:center}
+.tag.fact{background:var(--success-container);color:var(--on-success-container)}
+.tag.inf{background:var(--warning-container);color:var(--on-warning-container)}
+.tag.ai{background:var(--primary-container);color:var(--on-primary-container)}
+
+/* Velocidade */
+.speed{display:grid;grid-template-columns:1fr 340px;gap:var(--s-5)}
+.arena{display:grid;place-items:center;padding:var(--s-8) var(--s-6);gap:var(--s-5);text-align:center}
+.dial{position:relative;width:280px;height:280px;display:grid;place-items:center}
+.dial svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.dial circle{fill:none;stroke-width:8;stroke-linecap:round}
+.dial .t{stroke:color-mix(in srgb,var(--on-surface) 10%,transparent)}
+.dial .p{stroke:var(--primary);stroke-dasharray:754;stroke-dashoffset:754;transition:stroke-dashoffset .25s linear,stroke .4s}
+.go{width:176px;height:176px;border-radius:50%;border:0;background:var(--primary);color:var(--on-primary);cursor:pointer;display:grid;place-items:center;font:700 22px/1 var(--font);animation:breathe 3.2s ease-in-out infinite;transition:transform .25s var(--ease),background .3s,color .3s}
+.go:hover{transform:scale(1.04)}.go:active{transform:scale(.96)}
+.go.run{background:var(--card);color:var(--on-surface);box-shadow:var(--elev-2);animation:none;cursor:default}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--primary) 12%,transparent),0 0 0 28px color-mix(in srgb,var(--primary) 6%,transparent),0 12px 28px color-mix(in srgb,var(--primary) 35%,transparent)}
+ 50%{box-shadow:0 0 0 22px color-mix(in srgb,var(--primary) 9%,transparent),0 0 0 40px color-mix(in srgb,var(--primary) 3%,transparent),0 12px 28px color-mix(in srgb,var(--primary) 35%,transparent)}}
+.go .big{font:var(--t-display);font-size:52px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.go small{display:block;font:var(--t-label-m);margin-top:6px;opacity:.8}
+.arena .hint{font:var(--t-body-s);color:var(--on-surface-variant)}
+.phase{display:flex;align-items:center;gap:var(--s-4);padding:var(--s-4) var(--s-5);border-radius:var(--r-card);background:var(--card);box-shadow:var(--elev-1);transition:box-shadow .35s var(--ease),transform .35s var(--ease)}
+.phase .pi{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff}
+.phase .v{margin-left:auto;font:var(--t-title-l);font-variant-numeric:tabular-nums}.phase .v small{font:var(--t-label-m);color:var(--on-surface-variant)}
+.phase .s{font:var(--t-body-s);color:var(--on-surface-variant)}
+.phase.now{box-shadow:var(--elev-3),0 0 0 2px var(--primary);transform:translateX(-6px)}
+.phase.done .s{color:var(--success)}
+.col{display:grid;gap:var(--s-3);align-content:start}
+
+/* Tabela e gráfico */
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font:var(--t-label-m);color:var(--on-surface-variant);text-align:left;padding:var(--s-3) var(--s-4)}
+td{padding:0 var(--s-4);height:48px;border-top:1px solid var(--line)}
+tbody tr{transition:background .2s}tbody tr:hover{background:var(--sunken)}
+tbody tr{animation:rise .5s var(--ease) both;animation-delay:calc(.25s + var(--r)*60ms)}
+td.n,th.n{text-align:right}
+.chart{width:100%;height:auto;display:block}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart text{font:12px var(--font);fill:var(--on-surface-variant)}
+.legend{display:flex;gap:var(--s-5);font:var(--t-body-s);color:var(--on-surface-variant);margin-top:var(--s-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.field{height:36px;border-radius:var(--r-control);border:0;background:var(--sunken);box-shadow:var(--inset);padding:0 var(--s-3);min-width:240px;transition:box-shadow .2s}
+.field:focus{outline:2px solid var(--focus-ring);outline-offset:1px}
+.switch{width:40px;height:22px;border-radius:11px;border:0;background:var(--sunken);box-shadow:var(--inset);position:relative;cursor:pointer;flex:none;transition:background .25s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--card);box-shadow:var(--elev-1);transition:transform .3s var(--ease)}
+.switch[aria-checked=true]{background:var(--primary)}
+.switch[aria-checked=true]::after{transform:translateX(18px)}
+.banner{display:flex;gap:var(--s-3);align-items:center;padding:var(--s-4) var(--s-5);border-radius:var(--r-card);background:var(--sunken);box-shadow:var(--inset);color:var(--on-surface-variant)}
+.console{font:13px/1.7 'Cascadia Mono',Consolas,monospace;background:var(--sunken);box-shadow:var(--inset);border-radius:var(--r-control);padding:var(--s-4) var(--s-5);min-height:120px;white-space:pre-wrap}
+.console .ln{display:block;animation:rise .35s var(--ease) both}
+.dots{display:inline-flex;gap:4px;vertical-align:middle;margin-right:8px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--primary);animation:dot 1s ease-in-out infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Carregamento (idle): skeleton com brilho */
+.sk{border-radius:8px;background:linear-gradient(90deg,var(--sk-a) 0,var(--sk-b) 50%,var(--sk-a) 100%);background-size:200% 100%;animation:shimmer 1.5s linear infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.sk.c{border-radius:50%}
+.skcol{display:grid;gap:10px}
+.skrow{display:flex;gap:var(--s-4);align-items:center}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,24px);opacity:0;background:var(--inverse-surface,#313033);color:var(--inverse-on-surface,#F4EFF4);padding:10px 18px;border-radius:var(--r-pill);box-shadow:var(--elev-3);font:var(--t-label-l);transition:all .35s var(--ease);pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.proto{position:fixed;right:12px;bottom:12px;font:var(--t-label-s);padding:4px 10px;border-radius:var(--r-pill);background:#313033;color:#F4EFF4;opacity:.7;pointer-events:none}
+@media(max-width:1180px){.app{grid-template-columns:var(--nav-w-compact) 1fr}.loadbar{left:var(--nav-w-compact)}.brand{width:auto}.brand b,.nav-item span,.conn div{display:none}.nav-item{justify-content:center;padding:0}.conn{justify-content:center}.page{padding:var(--s-6) var(--s-5) 48px}.hero,.speed{grid-template-columns:1fr}.hero h2{max-width:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="titlebar">
+    <div class="brand"><img src="assets/symbol.png" alt=""><b>Signall<i>Q</i></b></div>
+    <label class="search"><svg class="i" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Buscar medições e ferramentas</span><kbd>Ctrl K</kbd></label>
+    <div class="tb-actions">
+      <button class="tb-btn" id="themeBtn" aria-label="Alternar tema claro e escuro"><svg class="i" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+      <button class="tb-btn" aria-label="Minimizar"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button class="tb-btn" aria-label="Maximizar"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+      <button class="tb-btn close" aria-label="Fechar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </header>
+  <nav class="nav" id="nav" aria-label="Navegação principal"></nav>
+  <main class="stage" id="stage" tabindex="-1"></main>
+</div>
+<div class="loadbar" id="lb"><i></i></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="proto">Protótipo v3 · dados simulados</div>
+
+<script>
+const ICONS={
+ home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+ speed:'<path d="M4 17a8 8 0 1116 0"/><path d="M12 17l4-5"/>',
+ wifi:'<path d="M2 9a15 15 0 0120 0"/><path d="M5.5 12.5a10 10 0 0113 0"/><path d="M9 16a5 5 0 016 0"/><circle cx="12" cy="19.5" r="1"/>',
+ game:'<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11.5" r=".8"/><circle cx="18" cy="14" r=".8"/>',
+ history:'<path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.5"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/>',
+ tools:'<path d="M14.5 6.5a4 4 0 005 5L20 12l-8 8a2.1 2.1 0 01-3-3l8-8z"/><path d="M15 4l5 5"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 00-2.2-1.3L14 3h-4l-.4 2.5a7 7 0 00-2.2 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 005 12c0 .4 0 .9.1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 002.2 1.3L10 21h4l.4-2.5a7 7 0 002.2-1.3l2.3 1 2-3.4-2-1.5c.1-.4.1-.9.1-1.3z"/>',
+ laptop:'<rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/>',
+ router:'<rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 16.5h.01M11 16.5h.01"/><path d="M8 10a5.5 5.5 0 018 0M10 7.5a2.5 2.5 0 014 0"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>',
+ play:'<path d="M7 5l12 7-12 7z"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+ down:'<path d="M12 4v14M6 12l6 6 6-6"/>',up:'<path d="M12 20V6M6 12l6-6 6 6"/>',pulse:'<path d="M3 12h4l3-7 4 14 3-7h4"/>'
+};
+const ic=(n,s=20)=>`<svg class="i" viewBox="0 0 24 24" width="${s}" height="${s}">${ICONS[n]}</svg>`;
+const PAGES=[['home','Início','home'],['speed','Velocidade','speed'],['net','Minha rede','wifi'],['game','Modo gamer','game'],['hist','Histórico','history'],['tools','Ferramentas','tools']];
+const spark=(pts)=>{const mx=Math.max(...pts),mn=Math.min(...pts);const d=pts.map((v,i)=>`${i?'L':'M'}${(i/(pts.length-1)*100).toFixed(1)} ${(28-(v-mn)/(mx-mn||1)*24).toFixed(1)}`).join(' ');return `<svg class="spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" vector-effect="non-scaling-stroke"/></svg>`};
+const cnt=n=>/^[\d,.]+$/.test(String(n))?`<span data-count="${String(n).replace(',','.')}" data-dec="${(String(n).split(',')[1]||'').length}">${n}</span>`:n;
+const metric=(l,n,u,v,color,pts)=>`<div class="metric"><span class="lbl"><i style="background:${color}"></i>${l}</span><span class="num">${cnt(n)}<small>${u}</small></span><span class="verdict">${v}</span>${pts?`<div style="color:${color}">${spark(pts)}</div>`:''}</div>`;
+const lrow=(t,s,v,badge)=>`<div class="list-row"><div class="grow">${t}<small>${s||''}</small></div>${badge||''}<span class="val">${v||''}</span></div>`;
+const head=(t,p,act='')=>`<header class="head"><div><h1>${t}</h1><p>${p}</p></div><div class="spacer">${act}</div></header>`;
+const bar=(v,warn,k)=>`<div class="bar ${warn?'warn':''}" style="--k:${k}"><b>${cnt(v)}</b><span style="height:${v}%"></span></div>`;
+
+/* Gráfico do histórico, por período */
+const RANGES={
+ '7 dias':{D:[212,248,176,300,298,280,312],U:[80,96,64,110,112,104,118],L:['seg','ter','qua','qui','sex','sáb','dom']},
+ '30 dias':{D:[190,230,260,205,298,312,270,300,285,312],U:[70,88,96,72,110,118,98,112,104,118],L:['10/10','13/10','16/10','19/10','22/10','25/10','28/10','31/10','03/11','06/11']},
+ 'Tudo':{D:[160,180,210,250,230,270,300,290,310,305,312,318],U:[60,70,82,95,88,100,110,108,115,112,118,120],L:['dez','jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov']}};
+function chart(r){const {D,U,L}=RANGES[r],n=D.length,X=i=>60+i*(720/(n-1)),Y=v=>190-v/350*170,pl=a=>a.map((v,i)=>`${X(i)},${Y(v)}`).join(' ');
+ return `<svg class="chart" viewBox="0 0 800 230" role="img" aria-label="Download e upload, ${r}, em Mbps">
+  <defs><clipPath id="cp"><rect x="0" y="0" width="0" height="230"><animate attributeName="width" from="0" to="800" dur="1.1s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 0 0 1"/></rect></clipPath></defs>
+  ${[0,100,200,300].map(v=>`<line class="gl" x1="60" x2="780" y1="${Y(v)}" y2="${Y(v)}"/><text x="48" y="${Y(v)+4}" text-anchor="end">${v}</text>`).join('')}
+  ${L.map((d,i)=>`<text x="${X(i)}" y="218" text-anchor="middle">${d}</text>`).join('')}
+  <g clip-path="url(#cp)"><polygon points="${X(0)},${Y(0)} ${pl(D)} ${X(n-1)},${Y(0)}" fill="var(--ph-down)" opacity=".10"/>
+  <polyline points="${pl(D)}" fill="none" stroke="var(--ph-down)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="${pl(U)}" fill="none" stroke="var(--ph-up)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  ${D.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="4" fill="var(--card)" stroke="var(--ph-down)" stroke-width="2"/>`).join('')}</g></svg>
+  <div class="legend"><span><i style="background:var(--ph-down)"></i>Download (Mbps)</span><span><i style="background:var(--ph-up)"></i>Upload (Mbps)</span></div>`}
+const skChart=`<div class="sk" style="height:200px;border-radius:12px"></div>`;
+
+const V={
+home:()=>`<div class="page">
+ ${head('Início','Última medição há 12 minutos',`<button class="btn" data-go="hist">Ver histórico</button>`)}
+ <section class="card hero">
+  <div><span class="state"><i></i>Conexão estável</span>
+   <h2>Sua internet está boa.</h2>
+   <p>Boa para videochamadas e jogos online. Só o Wi‑Fi do escritório perde força, e mover o roteador costuma resolver.</p>
+   <div class="actions"><button class="btn primary lg" data-go="speed" data-auto="1">${ic('play',16)} Medir agora</button><button class="btn lg" data-go="tools">Diagnóstico guiado</button></div></div>
+  <div class="bars"><div class="cap"><span>Nota geral</span><b>${cnt(78)} de 100</b></div>
+   <div class="plot">${bar(92,0,0)}${bar(88,0,1)}${bar(84,0,2)}${bar(58,1,3)}</div>
+   <div class="labels"><span>VELOCIDADE</span><span>LATÊNCIA</span><span>ESTABILIDADE</span><span>WI‑FI</span></div></div>
+ </section>
+ <section class="card strip">
+  <div>${metric('Download','312','Mbps','Ótimo para 4K em 3 telas','var(--ph-down)',[220,260,300,280,312,305,312])}</div>
+  <div>${metric('Upload','118','Mbps','Bom para backup e chamadas','var(--ph-up)',[90,110,100,120,118,115,118])}</div>
+  <div>${metric('Latência','14','ms','Rápida para jogos','var(--ph-lat)',[22,18,16,15,14,17,14])}</div>
+  <div>${metric('Perda','0','%','Nenhum pacote perdido','var(--on-surface-variant)')}</div>
+ </section>
+ <section class="card"><p class="overline">Caminho da sua internet</p>
+  <div class="path">
+   <div class="node" style="--k:0"><div class="c">${ic('laptop',22)}</div><b>Este PC</b><small>Ethernet · 1 Gbps</small></div><div class="link" style="--k:0"></div>
+   <div class="node warn" style="--k:1"><div class="c">${ic('router',22)}</div><b>Roteador</b><small>Wi‑Fi 5 GHz<br>sinal médio</small></div><div class="link warn" style="--k:1"></div>
+   <div class="node" style="--k:2"><div class="c">${ic('globe',22)}</div><b>Provedor</b><small>Fibra · sem falhas</small></div>
+  </div></section>
+ <section class="grid g12">
+  <div class="card lift s7"><div class="step-card"><div class="ico">${ic('router',24)}</div><div>
+   <p class="overline" style="margin-bottom:var(--s-1)">Próximo passo</p><h2>Reposicione o roteador</h2>
+   <p class="muted" style="margin:0 0 var(--s-5)">No escritório o sinal cai para −71 dBm. Colocá‑lo mais alto e longe de paredes tende a recuperar a velocidade nesse cômodo.</p>
+   <div class="row"><button class="btn primary" data-toast="Guia aberto: reposicionar o roteador">Ver como fazer</button><button class="btn text" data-go="speed" data-auto="1">Já fiz, medir de novo</button></div></div></div></div>
+  <div class="card tint s5"><p class="overline">O que sustenta essa conclusão</p>
+   <div class="ev">
+    <div class="ev-item"><span class="tag fact">Medido</span><span>Sinal Wi‑Fi −71 dBm no canal 36</span></div>
+    <div class="ev-item"><span class="tag inf">Regra</span><span>Abaixo de −70 dBm a velocidade costuma oscilar</span></div>
+    <div class="ev-item"><span class="tag ai">IA</span><span>Posição do roteador é a causa mais provável</span></div>
+   </div><p class="muted" style="margin:var(--s-4) 0 0;font:var(--t-body-s)">Confiança média: falta medir em outro cômodo.</p></div>
+ </section></div>`,
+
+speed:()=>`<div class="page">
+ ${head('Velocidade','Latência, download e upload nesta conexão.')}
+ <section class="speed">
+  <div class="arena"><div class="dial"><svg viewBox="0 0 280 280"><circle class="t" cx="140" cy="140" r="120"/><circle class="p" id="pr" cx="140" cy="140" r="120"/></svg>
+    <button class="go" id="go" aria-label="Iniciar teste"><span id="gl">Iniciar</span></button></div>
+   <div><h2 id="gt">Pronto para medir</h2><p class="hint" id="gh" style="margin:var(--s-1) 0 0">Leva cerca de 40 segundos e usa até 1 GB de dados.</p></div></div>
+  <div class="col" id="phases">
+   ${[['lat','Latência','pulse','ms'],['down','Download','down','Mbps'],['up','Upload','up','Mbps']].map(([k,n,i,u])=>`<div class="phase" id="ph-${k}"><div class="pi" style="background:var(--ph-${k})">${ic(i,18)}</div><div><b>${n}</b><div class="s">Aguardando</div></div><div class="v">—<small> ${u}</small></div></div>`).join('')}
+  </div></section>
+ <section class="card" id="res" hidden><p class="overline">O que isso significa para você</p>
+  <div class="grid g12">
+   <div class="s4">${metric('Streaming','Ok','','4K em 3 telas ao mesmo tempo','var(--success)')}</div>
+   <div class="s4">${metric('Videochamada','Ok','','HD sem travar, mesmo com upload alto','var(--success)')}</div>
+   <div class="s4">${metric('Jogos online','Ok','','Latência de 14 ms, variação de 3 ms','var(--success)')}</div></div></section></div>`,
+
+net:()=>`<div class="page">
+ ${head('Minha rede','O que este computador consegue ver da rede local.',`<button class="btn" data-reload="net">Atualizar</button>`)}
+ <section class="grid g12">
+  <div class="card s6"><p class="overline">Conexão ativa</p>
+   ${lrow('Wi‑Fi “Casa 5G”','WPA3 · canal 36 · 80 MHz','−71 dBm','<span class="badge warn">Regular</span>')}
+   ${lrow('Ethernet','Cabo conectado','1 Gbps','<span class="badge ok">Bom</span>')}
+   ${lrow('Endereço IP local','Atribuído por DHCP','192.168.0.24')}
+   ${lrow('Servidor DNS','Do provedor','187.1.x.x','<span class="badge">Pode melhorar</span>')}</div>
+  <div class="card s6"><p class="overline">Redes por perto</p>
+   ${lrow('Casa 5G','Canal 36 · conectada','−71 dBm','<span class="badge brand">Atual</span>')}
+   ${lrow('Casa 2.4G','Canal 6','−58 dBm')}
+   ${lrow('Vizinho_5G','Canal 36 · mesmo canal','−66 dBm','<span class="badge warn">Interfere</span>')}
+   ${lrow('Vizinho_2G','Canal 11','−79 dBm')}</div>
+ </section>
+ <div class="banner">${ic('info')}<span>O Windows não informa o consumo por aparelho. Para ver quem usa a rede, use o app Android.</span></div></div>`,
+
+game:()=>`<div class="page">
+ ${head('Modo gamer','Latência e perda até os servidores do jogo escolhido.')}
+ <section class="card"><div class="row">${['Valorant','League of Legends','CS2','Fortnite'].map((g,i)=>`<button class="chip" aria-pressed="${i==0}">${g}</button>`).join('')}<span style="margin-left:auto"><button class="btn primary" data-reload="game">${ic('play',16)} Testar rota</button></span></div></section>
+ <section class="card strip">
+  <div>${metric('Ping até São Paulo','18','ms','Excelente','var(--ph-lat)',[20,19,18,22,18,17,18])}</div>
+  <div>${metric('Variação','3','ms','Estável','var(--on-surface-variant)')}</div>
+  <div>${metric('Perda de pacotes','0,4','%','Aceitável, com picos','var(--warning)')}</div>
+  <div>${metric('Amostras','19/20','','abaixo de 30 ms','var(--success)')}</div></section>
+ <section class="card tint"><p class="overline">Veredito para Valorant</p><h2>Pronto para jogar competitivo</h2><p class="muted" style="margin:var(--s-2) 0 0">Se notar travadas, prefira cabo: a perda sobe quando você usa Wi‑Fi.</p></section></div>`,
+
+hist:()=>`<div class="page">
+ ${head('Histórico','Suas medições salvas neste computador.',`<button class="btn" id="exp">Exportar CSV</button>`)}
+ <section class="card"><div class="row" style="margin-bottom:var(--s-4)" id="rng"><button class="chip" aria-pressed="true">7 dias</button><button class="chip" aria-pressed="false">30 dias</button><button class="chip" aria-pressed="false">Tudo</button></div>
+  <div id="chartbox">${chart('7 dias')}</div></section>
+ <section class="card" style="padding:var(--s-2) var(--s-3)"><table><thead><tr><th>Quando</th><th>Rede</th><th class="n">Download</th><th class="n">Upload</th><th class="n">Latência</th><th>Estado</th></tr></thead><tbody>
+ ${[['Hoje 14:02','Casa 5G','312','118','14','ok','Completa'],['Hoje 09:40','Casa 5G','298','112','16','ok','Completa'],['Ontem 21:15','Casa 5G','176','64','31','warn','Regular'],['Ontem 08:30','Ethernet','940','480','5','ok','Completa'],['05/11 19:00','Casa 5G','—','—','—','bad','Interrompida']].map((r,i)=>`<tr style="--r:${i}"><td>${r[0]}</td><td>${r[1]}</td><td class="n">${r[2]}</td><td class="n">${r[3]}</td><td class="n">${r[4]}${r[4]=='—'?'':' ms'}</td><td><span class="badge ${r[5]}">${r[6]}</span></td></tr>`).join('')}</tbody></table></section></div>`,
+
+tools:()=>`<div class="page">
+ ${head('Ferramentas','Ping, DNS e rota para investigar um problema específico.')}
+ <section class="card"><div class="row"><div class="row" style="gap:var(--s-2)"><button class="chip" aria-pressed="true">Ping</button><button class="chip" aria-pressed="false">DNS</button><button class="chip" aria-pressed="false">Rota</button></div>
+  <input class="field" value="1.1.1.1" aria-label="Destino"><button class="btn primary" id="runTool">Executar</button></div>
+  <div class="console" id="cons" style="margin-top:var(--s-4)" aria-live="polite">Aguardando execução.</div>
+  <p class="muted" style="font:var(--t-body-s);margin:var(--s-3) 0 0">Resultado bruto. Para uma explicação simples, use o Diagnóstico guiado.</p></section>
+ <section class="card"><p class="overline">Preferências</p>
+  ${[['Medir automaticamente a cada hora','Só em Wi‑Fi ou cabo',1],['Manter na bandeja ao fechar','Continua monitorando em segundo plano',0],['Compartilhar dados anônimos de uso','Ajuda a melhorar o diagnóstico',0]].map(([t,s,on])=>`<div class="list-row"><div class="grow">${t}<small>${s}</small></div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${t}"></button></div>`).join('')}</section></div>`
+};
+
+/* Esqueletos: formato de cada tela enquanto os dados carregam */
+const L=(w,h=12)=>`<div class="sk" style="width:${w};height:${h}px"></div>`;
+const skHead=`<header class="head"><div class="skcol">${L('220px',30)}${L('300px',14)}</div></header>`;
+const skRows=n=>Array.from({length:n},()=>`<div class="skrow" style="padding:10px 0"><div class="sk c" style="width:32px;height:32px"></div><div class="skcol" style="flex:1">${L('45%',13)}${L('28%',10)}</div>${L('64px',14)}</div>`).join('');
+const SK={
+ home:`${skHead}<section class="card hero"><div class="skcol" style="gap:16px">${L('120px',14)}${L('420px',40)}${L('80%',14)}${L('60%',14)}<div class="skrow" style="margin-top:12px">${L('150px',44)}${L('170px',44)}</div></div><div class="sk" style="height:230px;border-radius:12px"></div></section>
+  <section class="card strip">${[0,1,2,3].map(()=>`<div class="skcol" style="padding:var(--s-4) var(--s-5);gap:14px">${L('80px',12)}${L('120px',34)}${L('150px',11)}${L('100%',26)}</div>`).join('')}</section>
+  <section class="card"><div class="skrow" style="justify-content:space-between;padding:8px 40px">${[0,1,2].map(()=>`<div class="skcol" style="justify-items:center"><div class="sk c" style="width:48px;height:48px"></div>${L('70px',12)}</div>`).join('')}</div></section>`,
+ speed:`${skHead}<section class="speed"><div class="arena"><div class="sk c" style="width:220px;height:220px"></div>${L('180px',20)}</div><div class="col">${[0,1,2].map(()=>`<div class="phase"><div class="sk" style="width:36px;height:36px;border-radius:10px"></div><div class="skcol" style="flex:1">${L('90px',13)}${L('60px',10)}</div></div>`).join('')}</div></section>`,
+ hist:`${skHead}<section class="card"><div class="skrow" style="margin-bottom:16px">${L('72px',32)}${L('72px',32)}${L('60px',32)}</div><div class="sk" style="height:200px;border-radius:12px"></div></section><section class="card">${skRows(4)}</section>`,
+ gen:`${skHead}<section class="grid g12"><div class="card s6">${skRows(4)}</div><div class="card s6">${skRows(4)}</div></section>`
+};
+const skel=p=>SK[p]||SK.gen;
+
+/* Navegação construída uma vez: o indicador desliza entre itens */
+const stage=document.getElementById('stage'),nav=document.getElementById('nav'),lb=document.getElementById('lb');
+nav.innerHTML=`<span class="ind" id="ind"></span>`+PAGES.map(([id,l,i])=>`<button class="nav-item" data-go="${id}">${ic(i)}<span>${l}</span></button>`).join('')+`<div class="nav-sep"></div><button class="nav-item" data-go="tools">${ic('settings')}<span>Configurações</span></button><div class="conn"><i class="dot"></i><div><b>Casa 5G</b><small>Conectado · Wi‑Fi</small></div></div>`;
+nav.onclick=e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+let cur=null,tok=0;const loaded=new Set();
+function setActive(p){const items=[...nav.querySelectorAll('.nav-item')];items.forEach(b=>b.removeAttribute('aria-current'));
+ const i=PAGES.findIndex(x=>x[0]==p);if(i<0)return;const el=items[i];el.setAttribute('aria-current','page');document.getElementById('ind').style.transform=`translateY(${el.offsetTop+11}px)`}
+function stagger(){[...stage.querySelector('.page').children].forEach((c,i)=>c.style.setProperty('--i',i))}
+function counts(root){root.querySelectorAll('[data-count]').forEach(el=>{const to=parseFloat(el.dataset.count),d=+el.dataset.dec,t0=performance.now()+250;
+ const f=n=>n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});el.textContent=f(0);
+ (function tick(t){const k=Math.min(1,Math.max(0,(t-t0)/1000)),e=1-Math.pow(1-k,3);el.textContent=f(to*e);if(k<1)requestAnimationFrame(tick)})(performance.now())})}
+async function go(p,o={}){
+ const my=++tok,pi=PAGES.findIndex(x=>x[0]==p),ci=PAGES.findIndex(x=>x[0]==cur);
+ stage.style.setProperty('--dx',(pi>=ci?28:-28)+'px');
+ setActive(p);try{sessionStorage.p=p}catch(e){}
+ if(cur&&stage.firstElementChild){stage.classList.add('out');await wait(140);if(my!==tok)return}
+ stage.classList.remove('out');cur=p;
+ stage.innerHTML=skel(p).replace(/^/,'<div class="page">')+'</div>';stagger();stage.scrollTop=0;lb.classList.add('on');
+ await wait(o.force||!loaded.has(p)?1100:380);if(my!==tok)return;
+ loaded.add(p);lb.classList.remove('on');
+ stage.innerHTML=V[p]();stagger();counts(stage);bind(p,o);
+}
+function bind(p,o){
+ stage.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go,{auto:b.dataset.auto}));
+ stage.querySelectorAll('[data-reload]').forEach(b=>b.onclick=()=>go(b.dataset.reload,{force:1}));
+ stage.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast));
+ stage.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{c.parentElement.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));
+  if(p=='hist'&&RANGES[c.textContent]){const box=document.getElementById('chartbox');box.innerHTML=skChart;lb.classList.add('on');setTimeout(()=>{box.innerHTML=chart(c.textContent);lb.classList.remove('on')},750)}});
+ stage.querySelectorAll('.switch').forEach(s=>s.onclick=()=>s.setAttribute('aria-checked',s.getAttribute('aria-checked')!=='true'));
+ if(p=='speed'){speed();if(o.auto)setTimeout(()=>document.getElementById('go').click(),500)}
+ if(p=='hist')document.getElementById('exp').onclick=async e=>{const b=e.currentTarget;b.classList.add('busy');b.disabled=true;b.textContent='Exportando…';b.classList.add('busy');await wait(1100);b.classList.remove('busy');b.disabled=false;b.textContent='Exportar CSV';toast('Histórico salvo em Downloads')};
+ if(p=='tools')document.getElementById('runTool').onclick=async e=>{const b=e.currentTarget,c=document.getElementById('cons');b.disabled=true;c.innerHTML='<span class="dots"><i></i><i></i><i></i></span>Executando…';await wait(1000);
+  c.innerHTML='';for(const t of ['Resposta de 1.1.1.1: 4 de 4 pacotes','mín 12 ms · média 14 ms · máx 17 ms','Perda: 0%']){c.insertAdjacentHTML('beforeend',`<span class="ln">${t}</span>`);await wait(260)}b.disabled=false};
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400)}
+function speed(){
+ const g=document.getElementById('go'),gl=document.getElementById('gl'),pr=document.getElementById('pr'),gt=document.getElementById('gt'),gh=document.getElementById('gh');
+ const ph=[['lat','Latência','ms',14],['down','Download','Mbps',312],['up','Upload','Mbps',118]];
+ g.onclick=async()=>{if(g.classList.contains('run'))return;g.classList.add('run');document.getElementById('res').hidden=true;pr.style.strokeDashoffset=754;
+  document.querySelectorAll('.phase').forEach(e=>{e.className='phase';e.querySelector('.s').textContent='Aguardando';e.querySelector('.v').innerHTML='—'});
+  for(let k=0;k<3;k++){const [id,n,u,t]=ph[k],el=document.getElementById('ph-'+id);el.classList.add('now');el.querySelector('.s').textContent='Medindo…';gt.textContent=n;gh.textContent='Fase '+(k+1)+' de 3';pr.style.stroke=`var(--ph-${id})`;
+   for(let i=1;i<=22;i++){const v=Math.round(t*(i/22)*(.92+Math.random()*.16));gl.innerHTML=`<span class="big">${v}</span><small>${u}</small>`;el.querySelector('.v').innerHTML=`${v}<small> ${u}</small>`;pr.style.strokeDashoffset=754*(1-((k+i/22)/3));await wait(42)}
+   el.className='phase done';el.querySelector('.s').textContent='Concluído';el.querySelector('.v').innerHTML=`${t}<small> ${u}</small>`}
+  gt.textContent='Teste concluído';gh.textContent='Resultado salvo no histórico.';gl.textContent='Medir de novo';pr.style.strokeDashoffset=0;pr.style.stroke='var(--success)';g.classList.remove('run');
+  const r=document.getElementById('res');r.hidden=false;r.style.animation='rise .55s var(--ease) both';toast('Medição concluída e salva')};
+}
+document.getElementById('themeBtn').onclick=()=>{const r=document.documentElement;r.classList.add('themeing');r.dataset.theme=r.dataset.theme=='dark'?'light':'dark';setTimeout(()=>r.classList.remove('themeing'),450)};
+addEventListener('resize',()=>setActive(cur));
+let start='home';try{start=sessionStorage.p||'home'}catch(e){}
+go(start);
+</script>
+</body>
+</html>

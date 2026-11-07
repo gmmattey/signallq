@@ -4,7 +4,7 @@ description: "Documento único e vivo das decisões do produto e da engenharia d
 type: "adr"
 status: "ativo"
 owner: "Marcelo"
-last_updated: "2026-10-30"
+last_updated: "2026-11-07"
 version: "1.0.0"
 ---
 
@@ -36,6 +36,7 @@ version: "1.0.0"
 | [ADR-020](#adr-020) | Assist Direto com Firebase AI Logic nativo e App Check | 2026-11-01 | Aceito |
 | [ADR-021](#adr-021) | Redesenho da Home: Painel de Conexão com Hero Compacto, Ações Diretas e Última Medição | 2026-11-01 | Aceito |
 | [ADR-022](#adr-022) | Redesenho do Histórico: Linha do Tempo com Resumo Compacto e Filtros Rápidos | 2026-11-01 | Aceito |
+| [ADR-023](#adr-023) | Direção visual do SignallQ Windows: protótipo `windows/design` como referência | 2026-11-07 | Aceito |
 
 ---
 
@@ -1952,3 +1953,28 @@ Transformar o Histórico em uma linha do tempo clara de medições com resumo de
 - Resolve a sobrecarga cognitiva ao abrir a aba de Histórico.
 - Mantém o foco do Histórico em acompanhar a evolução da conexão ao longo do tempo.
 - Preserva todas as entidades de banco Room (`MedicaoEntity`) e contratos de exportação CSV/compartilhamento.
+
+---
+
+## ADR-023 — Direção visual do SignallQ Windows: protótipo `windows/design` como referência
+
+- **Status:** Aceito
+- **Data:** 2026-11-07
+- **Autor:** Luiz (CEO) / Squad SignallQ (Marcelo, Priscila, Camillo)
+
+### Contexto
+
+O app Windows desktop foi avaliado como visualmente fraco: usava um roxo próprio (`#6c2bff`) diferente do Design System (`#5B21D6`), não tinha escala tipográfica nem hierarquia de decisão e agrupava 9 itens no mesmo nível de menu.
+
+### Decisão
+
+1. O protótipo navegável `windows/design/prototype/index.html`, com dados simulados, é a **referência visual** para o desenvolvimento do app Windows. Não é funcionalidade entregue.
+2. A especificação vive em `windows/design/DESIGN_SYSTEM_WINDOWS.md` (rascunho) e os tokens em `windows/design/tokens-windows.css`. Cores e escala tipográfica seguem o Design System Android (`LK`/`LK_DARK`); só mudam as adaptações de desktop (grid de 4 px, raios menores, foco por teclado).
+3. Profundidade por camadas e sombra, sem contorno em cards; movimento entre telas; skeleton no carregamento; números, barras e gráficos animados; estado ocioso discreto.
+4. Navegação em 6 destinos mais Configurações. A tela de Velocidade não usa card em volta do disco de medição.
+5. A nota geral e as quatro barras de qualidade da Início são ilustrativas: dependem de regra de pontuação a definir no motor de diagnóstico antes de entrar no app real.
+
+### Consequências
+
+- A migração para `windows/src/` é trabalho separado, tela a tela (Início, Velocidade, Histórico primeiro) e embute a fonte Google Sans Flex no app.
+- Divergência a resolver no DS Android: `DESIGN.md` cita fundo escuro `#000000`, enquanto o código usa `#131217`.
